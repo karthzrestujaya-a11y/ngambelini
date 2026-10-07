@@ -135,11 +135,12 @@ a.btn.ghost{border:1.5px solid var(--line);color:var(--fg)}
     <div class="chips" id="quick"></div>
 
     <div class="savings" aria-live="polite">
-      <div class="row"><span class="lbl">You saved this month</span><span class="lbl">estimated</span></div>
+      <div class="row"><span class="lbl">Confirmed savings this month</span><span class="lbl">from real orders</span></div>
       <div class="row">
         <span class="big num" id="saved">RM0.00</span>
-        <span class="num" style="font-size:13px;color:var(--navy-muted);text-align:right" id="orders">0 buys tapped</span>
+        <span class="num" style="font-size:13px;color:var(--navy-muted);text-align:right" id="orders">0 confirmed orders</span>
       </div>
+      <span class="num" style="font-size:13px;color:var(--navy-muted)" id="waiting">Nothing waiting for confirmation</span>
       <div class="return">
         <div style="display:flex;flex-direction:column;gap:2px">
           <span style="font-size:13px;font-weight:700" class="num" id="ret">Return money: RM0.00 pending</span>
@@ -235,7 +236,7 @@ function sorted(it){ return [...it.offers].sort((a,b)=>perUnit(a)-perUnit(b)); }
 
 // Per-device test data (safe if storage is blocked)
 let state = {saved:0, ret:0, buys:0, missed:[]};
-try{ const s = JSON.parse(localStorage.getItem('nbn-test')||'null'); if(s) state = Object.assign(state, s); }catch(e){}
+try{ const s = JSON.parse(localStorage.getItem('nbn-test')||'null'); if(s && s.missed) state.missed = s.missed; }catch(e){}
 function save(){ try{ localStorage.setItem('nbn-test', JSON.stringify(state)); }catch(e){} }
 
 function show(view){
@@ -258,8 +259,8 @@ function row(it){
 
 function renderHome(){
   $('saved').textContent = rm(state.saved);
-  $('orders').textContent = state.buys + (state.buys===1?' buy tapped':' buys tapped');
-  $('ret').textContent = 'Return money: ' + rm(state.ret) + ' pending';
+  $('orders').textContent = state.buys + (state.buys===1?' confirmed order':' confirmed orders');
+  $('ret').textContent = 'Return money: ' + rm(state.ret) + ' (confirmed orders)';
   const pop = $('popular'); pop.innerHTML = '';
   POPULAR.map(id=>CATALOGUE.find(c=>c.id===id)).filter(Boolean).forEach(it => pop.appendChild(row(it)));
   const src=$('src'); if(src) src.textContent = SOURCE;
@@ -318,13 +319,9 @@ function openCompare(it){
       <div class="head"><span class="price num">${rm(o.price)}</span><span class="unit num">${rm(perUnit(o))} ${unitLabel(it.unit)}</span></div>
       <a class="btn ${i===0?'primary':'ghost'}" href="${buyUrl(o.p,it,o)}" target="_blank" rel="noopener">Buy on ${o.p}</a>`;
     d.querySelector('a').addEventListener('click', () => {
-      state.buys += 1;
       const s2 = (i===0) ? saving : 0;
-      state.saved += s2;
-      state.ret += o.price * 0.04 * 0.35; // ~4% commission, 35% shared back (estimate)
-      save(); renderHome();
       if(sb && USER && o.lid){ sb.from('clicks').insert({ user_id: USER.id, listing_id: o.lid, saving_rm: Number(s2.toFixed(2)), price_rm: o.price }).then(()=>loadMySavings()); }
-      toast(s2>0 ? `Saving ${rm(s2)} added (estimated)` : 'Buy tapped. No saving on this choice.');
+      toast(s2>0 ? `Tracked. Your ${rm(s2)} saving counts once ${o.p} confirms your order.` : 'Tracked. No saving on this choice.');
     });
     box.appendChild(d);
   });
@@ -341,15 +338,20 @@ function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; 
 function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
 async function loadMySavings(){
   if(!sb || !USER) return;
-  const { data } = await sb.from('clicks').select('saving_rm, price_rm, clicked_at').eq('user_id', USER.id);
+  const { data } = await sb.from('clicks').select('saving_rm, price_rm, clicked_at, confirmed_at, status').eq('user_id', USER.id);
   if(!data) return;
   const m0 = new Date(); m0.setDate(1); m0.setHours(0,0,0,0);
-  state.saved = data.filter(c=>new Date(c.clicked_at)>=m0).reduce((a,c)=>a+Number(c.saving_rm||0),0);
-  state.allSaved = data.reduce((a,c)=>a+Number(c.saving_rm||0),0);
-  state.buys = data.length;
-  state.ret = data.reduce((a,c)=>a+Number(c.price_rm||0)*0.04*0.35,0);
+  const week = Date.now() - 7*24*3600*1000;
+  const conf = data.filter(c=>c.status==='confirmed');
+  const wait = data.filter(c=>c.status==='waiting' && new Date(c.clicked_at).getTime() > week && Number(c.saving_rm) > 0);
+  state.saved = conf.filter(c=>new Date(c.confirmed_at||c.clicked_at)>=m0).reduce((a,c)=>a+Number(c.saving_rm||0),0);
+  state.allSaved = conf.reduce((a,c)=>a+Number(c.saving_rm||0),0);
+  state.buys = conf.length;
+  state.ret = conf.reduce((a,c)=>a+Number(c.price_rm||0)*0.04*0.35,0);
   renderHome();
-  $('orders').textContent = rm(state.allSaved) + ' since joining · ' + state.buys + (state.buys===1?' buy':' buys');
+  $('orders').textContent = rm(state.allSaved) + ' since joining · ' + conf.length + (conf.length===1?' order':' orders');
+  const w = wait.reduce((a,c)=>a+Number(c.saving_rm||0),0);
+  $('waiting').textContent = wait.length ? rm(w) + ' waiting for order confirmation (' + wait.length + (wait.length===1?' item)':' items)') : 'Nothing waiting for confirmation';
 }
 async function afterLogin(){
   const { data: prof } = await sb.from('profiles').select('invite_code').eq('id', USER.id).maybeSingle();
