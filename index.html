@@ -92,9 +92,13 @@ a.btn.ghost{border:1.5px solid var(--line);color:var(--fg)}
 .field input{height:52px;border-radius:14px;border:1.5px solid var(--line);background:var(--surface);color:var(--fg);padding:0 14px;font-family:var(--body);font-size:16px}
 .btn-wide{border:none;background:var(--navy);color:var(--navy-fg);font-weight:700;font-size:16px;border-radius:14px;height:52px;width:100%}
 .btn-wide:disabled{opacity:.6}
+.scanbtn{border:none;background:var(--soft);color:var(--fg);border-radius:10px;height:40px;width:44px;display:grid;place-items:center;flex-shrink:0}
+#scanner{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:10px}
+#reader{width:100%;min-height:200px;border-radius:12px;overflow:hidden;background:#000}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 </head><body>
 <div class="app">
   <div class="top">
@@ -130,8 +134,14 @@ a.btn.ghost{border:1.5px solid var(--line);color:var(--fg)}
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color:var(--muted)"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
       
       <input id="q" type="search" aria-label="Search any product" placeholder="e.g. mamypoko, susu, dynamo" autocomplete="off">
+      <button class="scanbtn" type="button" id="scanBtn" aria-label="Scan a barcode"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 8v8M10 8v8M13 8v8M17 8v8"/></svg></button>
       <button class="btn-primary" type="submit">Search</button>
     </form>
+    <div id="scanner" hidden>
+      <div id="reader"></div>
+      <p class="fine" id="scanMsg">Point the camera at the barcode on the pack.</p>
+      <button class="btn-wide" type="button" id="scanStop" style="background:var(--soft);color:var(--fg)">Cancel</button>
+    </div>
     <div class="chips" id="quick"></div>
 
     <div class="savings" aria-live="polite">
@@ -402,6 +412,39 @@ $('joinForm').addEventListener('submit', async e => {
     msg.textContent = error ? ('Could not send the email: ' + error.message) : ('Link sent to ' + email + '. Open your email on this phone and tap the link.');
   } finally { btn.disabled = false; }
 });
+
+// ---- Barcode scan (on the phone; only the number is used) ----
+let scanner = null;
+async function stopScan(){ try{ if(scanner){ await scanner.stop(); await scanner.clear(); } }catch(e){} scanner = null; $('scanner').hidden = true; }
+async function lookupBarcode(code){
+  $('scanMsg').textContent = 'Found barcode ' + code + '. Looking it up…';
+  // 1) our own catalogue
+  try{
+    const { data } = sb ? await sb.from('products').select('id').eq('barcode', code).limit(1) : { data: null };
+    if(data && data.length){ const it = CATALOGUE.find(c => c.id === String(data[0].id)); if(it){ await stopScan(); if(sb && USER) sb.from('searches').insert({ user_id: USER.id, term: 'barcode:' + code, results: 1 }).then(()=>{}); openCompare(it); return; } }
+  }catch(e){}
+  // 2) open product database (name of the product from its barcode)
+  let name = '';
+  try{
+    const r = await fetch('https://world.openfoodfacts.org/api/v2/product/' + code + '.json?fields=product_name,brands,quantity');
+    const j = await r.json();
+    if(j && j.product){ name = [j.product.brands ? j.product.brands.split(',')[0] : '', j.product.product_name || '', j.product.quantity || ''].join(' ').replace(/\s+/g,' ').trim(); }
+  }catch(e){}
+  await stopScan();
+  if(sb && USER) sb.from('searches').insert({ user_id: USER.id, term: 'barcode:' + code + (name ? ' ' + name : ''), results: 0 }).then(()=>{});
+  if(name){ $('q').value = name; search(name.split(' ').slice(0,3).join(' ')); toast('Scanned: ' + name); }
+  else { $('q').value = ''; toast('We could not identify barcode ' + code + '. Please type the product name.'); $('q').focus(); }
+}
+$('scanBtn').addEventListener('click', async () => {
+  if(!window.Html5Qrcode){ toast('Scanner could not load. Please type the product name.'); return; }
+  $('scanner').hidden = false; $('scanMsg').textContent = 'Point the camera at the barcode on the pack.';
+  try{
+    scanner = new Html5Qrcode('reader', { formatsToSupport: [ Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.EAN_8, Html5QrcodeSupportedFormats.UPC_A, Html5QrcodeSupportedFormats.UPC_E, Html5QrcodeSupportedFormats.CODE_128 ] });
+    let done = false;
+    await scanner.start({ facingMode: 'environment' }, { fps: 10, qrbox: { width: 260, height: 120 } }, txt => { if(done) return; done = true; lookupBarcode(txt.trim()); }, () => {});
+  }catch(e){ $('scanMsg').textContent = 'Camera not available. Allow camera access in your browser settings, or type the product name.'; }
+});
+$('scanStop').addEventListener('click', stopScan);
 
 renderHome(); boot().catch(()=>show('home'));
 loadLive().then(renderHome).catch(()=>{ SOURCE='built-in list (database not reachable)'; renderHome(); });
