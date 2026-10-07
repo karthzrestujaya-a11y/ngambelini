@@ -87,8 +87,14 @@ a.btn.ghost{border:1.5px solid var(--line);color:var(--fg)}
 .link{border:none;background:transparent;color:var(--muted);text-decoration:underline;font-size:12px;padding:4px 0}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:12px;font-weight:600;font-size:14px;max-width:calc(100% - 32px);text-align:center}
 @media (prefers-reduced-motion: no-preference){.view{animation:in .18s ease-out}@keyframes in{from{opacity:.4;transform:translateY(4px)}to{opacity:1;transform:none}}}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:13px;font-weight:600;color:var(--muted)}
+.field input{height:52px;border-radius:14px;border:1.5px solid var(--line);background:var(--surface);color:var(--fg);padding:0 14px;font-family:var(--body);font-size:16px}
+.btn-wide{border:none;background:var(--navy);color:var(--navy-fg);font-weight:700;font-size:16px;border-radius:14px;height:52px;width:100%}
+.btn-wide:disabled{opacity:.6}
 </style>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 </head><body>
 <div class="app">
   <div class="top">
@@ -99,8 +105,23 @@ a.btn.ghost{border:1.5px solid var(--line);color:var(--fg)}
     <span class="pill">Pilot</span>
   </div>
 
+  <!-- JOIN -->
+  <section id="join" class="view" hidden style="flex-direction:column;gap:18px">
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <h1>Never overpay for your monthly shopping.</h1>
+      <p class="muted">Search any item. We show the cheapest on Shopee and Lazada, and how much you saved.</p>
+    </div>
+    <div class="note warn"><b>Pilot:</b> only 50 members, by invite code.</div>
+    <form id="joinForm" style="display:flex;flex-direction:column;gap:14px">
+      <div class="field"><label for="code">Invite code</label><input id="code" autocomplete="off" placeholder="e.g. NBN-7Q2M" style="text-transform:uppercase;letter-spacing:1px"></div>
+      <div class="field" id="emailField"><label for="email">Email</label><input id="email" type="email" autocomplete="email" placeholder="you@example.com"></div>
+      <button class="btn-wide" id="joinBtn" type="submit">Send my login link</button>
+      <p class="fine" id="joinMsg">We email you a link. Tap it on this phone to log in. No password needed.</p>
+    </form>
+  </section>
+
   <!-- HOME -->
-  <section id="home" class="view" style="display:flex;flex-direction:column;gap:18px">
+  <section id="home" class="view" hidden style="flex-direction:column;gap:18px">
     <div style="display:flex;flex-direction:column;gap:6px">
       <h1>Find the cheapest price, every time.</h1>
       <p class="muted">Search an item. We compare Shopee and Lazada by price per piece or per kg.</p>
@@ -114,7 +135,7 @@ a.btn.ghost{border:1.5px solid var(--line);color:var(--fg)}
     <div class="chips" id="quick"></div>
 
     <div class="savings" aria-live="polite">
-      <div class="row"><span class="lbl">You saved (this device)</span><span class="lbl">estimated</span></div>
+      <div class="row"><span class="lbl">You saved this month</span><span class="lbl">estimated</span></div>
       <div class="row">
         <span class="big num" id="saved">RM0.00</span>
         <span class="num" style="font-size:13px;color:var(--navy-muted);text-align:right" id="orders">0 buys tapped</span>
@@ -197,7 +218,7 @@ async function loadLive(){
     keys: (p.brand + ' ' + (p.search_keyword||'')), popular: p.is_popular,
     offers: prices.filter(x => x.product_id === p.id).map(x => ({
       p: x.platform === 'shopee' ? 'Shopee' : x.platform === 'lazada' ? 'Lazada' : x.platform,
-      price: Number(x.price_rm), qty: Number(x.pack_qty), url: x.product_url,
+      price: Number(x.price_rm), qty: Number(x.pack_qty), url: x.product_url, lid: x.listing_id,
       note: [x.title && x.title !== p.pack_size ? x.title : '', x.shop_name && !/seller$/i.test(x.shop_name) ? x.shop_name : '', x.sold_count ? (x.sold_count>=1000 ? Math.floor(x.sold_count/1000)+'k+ sold' : x.sold_count+' sold') : ''].filter(Boolean).join(' · ')
     })),
     checked: prices.filter(x => x.product_id === p.id).map(x=>x.checked_at).sort().pop()
@@ -218,7 +239,7 @@ try{ const s = JSON.parse(localStorage.getItem('nbn-test')||'null'); if(s) state
 function save(){ try{ localStorage.setItem('nbn-test', JSON.stringify(state)); }catch(e){} }
 
 function show(view){
-  for(const v of ['home','results','compare']){ const el=$(v); el.hidden = v!==view; if(v===view) el.style.display='flex'; }
+  for(const v of ['join','home','results','compare']){ const el=$(v); el.hidden = v!==view; if(v===view) el.style.display='flex'; }
   window.scrollTo(0,0);
 }
 document.addEventListener('click', e => { const g = e.target.closest('[data-go]'); if(g) show(g.dataset.go); });
@@ -302,6 +323,7 @@ function openCompare(it){
       state.saved += s2;
       state.ret += o.price * 0.04 * 0.35; // ~4% commission, 35% shared back (estimate)
       save(); renderHome();
+      if(sb && USER && o.lid){ sb.from('clicks').insert({ user_id: USER.id, listing_id: o.lid, saving_rm: Number(s2.toFixed(2)), price_rm: o.price }).then(()=>loadMySavings()); }
       toast(s2>0 ? `Saving ${rm(s2)} added (estimated)` : 'Buy tapped. No saving on this choice.');
     });
     box.appendChild(d);
@@ -312,7 +334,61 @@ function openCompare(it){
 let tt; function toast(msg){ const t=$('toast'); t.textContent=msg; t.hidden=false; clearTimeout(tt); tt=setTimeout(()=>t.hidden=true, 2600); }
 $('reset').onclick = () => { state={saved:0,ret:0,buys:0,missed:[]}; save(); renderHome(); toast('Test data cleared'); };
 
-renderHome(); show('home');
+// ---- Login with invite code (Supabase Auth, magic link) ----
+const sb = window.supabase ? window.supabase.createClient(SB_URL, SB_KEY) : null;
+let USER = null;
+function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+async function loadMySavings(){
+  if(!sb || !USER) return;
+  const { data } = await sb.from('clicks').select('saving_rm, price_rm, clicked_at').eq('user_id', USER.id);
+  if(!data) return;
+  const m0 = new Date(); m0.setDate(1); m0.setHours(0,0,0,0);
+  state.saved = data.filter(c=>new Date(c.clicked_at)>=m0).reduce((a,c)=>a+Number(c.saving_rm||0),0);
+  state.allSaved = data.reduce((a,c)=>a+Number(c.saving_rm||0),0);
+  state.buys = data.length;
+  state.ret = data.reduce((a,c)=>a+Number(c.price_rm||0)*0.04*0.35,0);
+  renderHome();
+  $('orders').textContent = rm(state.allSaved) + ' since joining · ' + state.buys + (state.buys===1?' buy':' buys');
+}
+async function afterLogin(){
+  const { data: prof } = await sb.from('profiles').select('invite_code').eq('id', USER.id).maybeSingle();
+  if(prof && prof.invite_code){ show('home'); loadMySavings(); return; }
+  const code = lsGet('nbn-code');
+  if(code){ const { data: ok } = await sb.rpc('redeem_invite', { p_code: code }); if(ok){ show('home'); loadMySavings(); return; } }
+  // logged in but no valid code yet
+  $('emailField').hidden = true; $('joinBtn').textContent = 'Join with this code';
+  $('joinMsg').textContent = 'You are logged in as ' + USER.email + '. Enter your invite code to join.';
+  show('join');
+}
+async function boot(){
+  if(!sb){ show('home'); return; }
+  const { data: { session } } = await sb.auth.getSession();
+  if(session){ USER = session.user; await afterLogin(); } else show('join');
+  sb.auth.onAuthStateChange((ev, ses)=>{ if(ses && !USER){ USER = ses.user; afterLogin(); } });
+}
+$('joinForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const code = $('code').value.trim().toUpperCase(), btn = $('joinBtn'), msg = $('joinMsg');
+  if(!code){ msg.textContent = 'Enter your invite code.'; return; }
+  btn.disabled = true;
+  try{
+    if(USER){
+      const { data: ok } = await sb.rpc('redeem_invite', { p_code: code });
+      if(ok){ show('home'); loadMySavings(); } else msg.textContent = 'That code is not valid or already used. Check it and try again.';
+      return;
+    }
+    const email = $('email').value.trim();
+    if(!email){ msg.textContent = 'Enter your email.'; return; }
+    const { data: ok } = await sb.rpc('check_invite', { p_code: code });
+    if(!ok){ msg.textContent = 'That code is not valid or already used. Check it and try again.'; return; }
+    lsSet('nbn-code', code);
+    const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: location.origin + location.pathname } });
+    msg.textContent = error ? ('Could not send the email: ' + error.message) : ('Link sent to ' + email + '. Open your email on this phone and tap the link.');
+  } finally { btn.disabled = false; }
+});
+
+renderHome(); boot().catch(()=>show('home'));
 loadLive().then(renderHome).catch(()=>{ SOURCE='built-in list (database not reachable)'; renderHome(); });
 </script>
 </body></html>
