@@ -10,7 +10,7 @@
 <style>
 /* Layout: one phone-width column, three views (home, results, compare) swapped in place. */
 :root{
-  --bg:#F5F6F1; --surface:#FFFFFF; --fg:#15201A; --muted:#4D5A52; --line:#DDE2DB; --soft:#EEF1EB;
+  --bg:#FFF9EC; --surface:#FFFFFF; --fg:#16203A; --muted:#545C70; --line:#ECE3CF; --soft:#FFF1CC;
   --navy:#0A2A66; --navy-fg:#FFFFFF; --navy-muted:#C9D6F0; --red:#C8102E; --gold:#FFCC00;
   --good:#0B6B3F; --good-bg:#E3F1E8; --warn-bg:#FFF1D6; --warn-fg:#6A4200; --bad-bg:#FCEBEA; --bad-fg:#7A1616;
   --display:'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
@@ -38,8 +38,8 @@ button,a.btn{font-family:var(--body);cursor:pointer}
 
 .top{display:flex;justify-content:space-between;align-items:center;gap:10px}
 .brand{display:flex;align-items:center;gap:8px}
-.mark{width:34px;height:34px;border-radius:10px;background:var(--navy);display:grid;place-items:center;flex-shrink:0}
-.word{font-family:var(--display);font-weight:700;font-size:20px}
+.mark{width:40px;height:40px;border-radius:11px;display:block;flex-shrink:0;box-shadow:0 1px 3px rgba(10,42,102,.25)}
+.word{font-family:var(--display);font-weight:700;font-size:21px;letter-spacing:-.2px}
 .word .n{color:var(--navy)} .word .r{color:var(--red)}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .word .n{color:#8FB0F0}}
 :root[data-theme="dark"] .word .n{color:#8FB0F0}
@@ -88,7 +88,7 @@ a.btn.ghost{border:1.5px solid var(--line);color:var(--fg)}
 .note.bad{background:var(--bad-bg);color:var(--bad-fg)}
 .fine{font-size:12px;line-height:1.45;color:var(--muted)}
 .link{border:none;background:transparent;color:var(--muted);text-decoration:underline;font-size:12px;padding:4px 0}
-.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:12px;font-weight:600;font-size:14px;max-width:calc(100% - 32px);text-align:center}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(92px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:12px;font-weight:600;font-size:14px;max-width:calc(100% - 32px);text-align:center}
 @media (prefers-reduced-motion: no-preference){.view{animation:in .18s ease-out}@keyframes in{from{opacity:.4;transform:translateY(4px)}to{opacity:1;transform:none}}}
 .field{display:flex;flex-direction:column;gap:6px}
 .field label{font-size:13px;font-weight:600;color:var(--muted)}
@@ -98,19 +98,74 @@ a.btn.ghost{border:1.5px solid var(--line);color:var(--fg)}
 .scanbtn{border:none;background:var(--soft);color:var(--fg);border-radius:10px;height:40px;width:44px;display:grid;place-items:center;flex-shrink:0}
 #scanner{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:10px}
 #reader{width:100%;min-height:200px;border-radius:12px;overflow:hidden;background:#000}
+
+/* Platform colours: Shopee orange, Lazada orange-pink. Used only to label where a price comes from. */
+:root{--shopee:#C7381B;--lazada-a:#C2410C;--lazada-b:#BE0F6A}
+.plat{display:inline-flex;align-items:center;font-size:12px;font-weight:700;color:#fff;padding:3px 9px;border-radius:999px;line-height:1.3;vertical-align:middle}
+.plat.Shopee{background:var(--shopee)}
+.plat.Lazada{background:linear-gradient(90deg,var(--lazada-a),var(--lazada-b))}
+a.btn.Shopee.primary{background:var(--shopee);color:#fff}
+a.btn.Lazada.primary{background:linear-gradient(90deg,var(--lazada-a),var(--lazada-b));color:#fff}
+a.btn.Shopee.ghost{border-color:var(--shopee);color:var(--shopee)}
+a.btn.Lazada.ghost{border-color:var(--lazada-b);color:var(--lazada-b)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) a.btn.Shopee.ghost{color:#FF8A6B;border-color:#FF8A6B}:root:not([data-theme="light"]) a.btn.Lazada.ghost{color:#FF7DB8;border-color:#FF7DB8}}
+:root[data-theme="dark"] a.btn.Shopee.ghost{color:#FF8A6B;border-color:#FF8A6B} :root[data-theme="dark"] a.btn.Lazada.ghost{color:#FF7DB8;border-color:#FF7DB8}
+.offer.win{border:2px solid var(--gold)}
+
+/* Layout A "Sunny Deals": yellow hero header, floating search, category tiles, deal cards, bottom menu */
+body{padding-bottom:110px}
+.hero{margin:-16px -16px 0;padding:18px 16px 18px;background:#FFCC00;border-radius:0 0 28px 28px;display:flex;flex-direction:column;gap:14px}
+body.on-home .hero{padding-bottom:62px}
+.hero .word .n{color:#0A2A66!important} .hero .word .r{color:#B00D26}
+.hero .word{font-size:22px;font-weight:800;letter-spacing:-.3px}
+.hero .pill{background:#0A2A66;color:#FFCC00}
+.hero .mark{width:44px;height:44px;border-radius:12px;box-shadow:0 2px 6px rgba(10,42,102,.25)}
+.heroline{font-family:var(--display);font-weight:800;font-size:31px;line-height:1.06;color:#0A2A66;letter-spacing:-.6px;margin:0;display:none}
+body.on-home .heroline{display:block}
+.search.float{margin-top:-62px;position:relative;z-index:1;border:none;border-radius:20px;height:64px;padding:0 10px 0 14px;box-shadow:0 10px 28px rgba(10,42,102,.18)}
+.search.float .scanbtn{background:var(--navy);color:var(--gold);width:46px;height:46px;border-radius:14px}
+.cats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.cat{height:76px;border:none;border-radius:16px;background:var(--surface);color:var(--fg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font-size:12px;font-weight:700;box-shadow:0 1px 0 var(--line)}
+.deals{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.deal{border:none;text-align:left;background:var(--surface);color:var(--fg);border-radius:18px;padding:12px;display:flex;flex-direction:column;gap:8px;font-family:var(--body)}
+.deal .pic{height:84px;border-radius:12px;background:var(--soft);display:grid;place-items:center;position:relative;font-size:12px;font-weight:800;color:var(--muted);letter-spacing:.5px}
+.deal .save{position:absolute;top:8px;left:8px;background:#0A2A66;color:#FFCC00;font-size:11px;font-weight:800;padding:3px 8px;border-radius:999px}
+.deal .nm{font-size:13px;font-weight:600;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:34px}
+.deal .ft{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.deal .pr{font-family:var(--display);font-weight:800;font-size:18px}
+.secthead{display:flex;justify-content:space-between;align-items:baseline}
+.secthead h2{font-size:19px;font-weight:800}
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:5;background:var(--surface);border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:8px 0 calc(10px + env(safe-area-inset-bottom,0px))}
+.tabbar button{border:none;background:transparent;min-width:72px;height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11px;font-weight:600;color:var(--muted)}
+.tabbar button.on{color:var(--navy);font-weight:800}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .tabbar button.on{color:var(--gold)}}
+:root[data-theme="dark"] .tabbar button.on{color:var(--gold)}
+body.no-tabs .tabbar{display:none}
+.tabbar button{min-width:64px}
+.bell{width:44px;height:44px;border-radius:22px;border:none;background:rgba(10,42,102,.10);display:grid;place-items:center;flex-shrink:0}
+.minisave{border:none;width:100%;background:#0A2A66;color:#fff;border-radius:18px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;gap:10px;font-family:var(--body);text-align:left}
+.minisave .ml{font-size:12px;font-weight:600;color:#C9D6F0}
+.minisave .mv{font-family:var(--display);font-weight:800;font-size:28px;line-height:1.05;color:#FFCC00}
+.minisave .mr{font-size:17px;font-weight:700;color:#fff}
+.seeall{border:none;background:transparent;color:var(--navy);font-weight:700;font-size:14px;text-decoration:underline;padding:8px 0}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .seeall{color:var(--gold)}}
+:root[data-theme="dark"] .seeall{color:var(--gold)}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 </head><body>
 <div class="app">
+  <header class="hero">
   <div class="top">
     <div class="brand">
-      <div class="mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8Z"/><circle cx="8" cy="8" r="2" fill="#FFCC00" stroke="#FFCC00"/></svg></div>
+      <img class="mark" alt="" width="40" height="40" src="data:image/png;base64,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">
       <span class="word"><span class="n">Ngam</span> <span class="r">Beli</span> <span class="n">Ni</span></span>
     </div>
-    <span class="pill">Pilot</span>
+    <button type="button" class="bell" id="bellBtn" aria-label="Price alerts"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0A2A66" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></button>
   </div>
+  <h1 class="heroline">Same item.<br>Cheaper price.</h1>
+  </header>
 
   <!-- JOIN -->
   <section id="join" class="view" hidden style="flex-direction:column;gap:18px">
@@ -120,7 +175,7 @@ a.btn.ghost{border:1.5px solid var(--line);color:var(--fg)}
     </div>
     <div class="note warn"><b>Pilot:</b> only 50 members, by invite code.</div>
     <form id="joinForm" style="display:flex;flex-direction:column;gap:14px">
-      <div class="field"><label for="code">Invite code</label><input id="code" autocomplete="off" placeholder="e.g. NBN-7Q2M" style="text-transform:uppercase;letter-spacing:1px"></div>
+      <div class="field"><label for="code">Invite code</label><input id="code" autocomplete="off" placeholder="NBN-7Q2M" style="text-transform:uppercase;letter-spacing:1px"></div>
       <div class="field" id="emailField"><label for="email">Email</label><input id="email" type="email" autocomplete="email" placeholder="you@example.com"></div>
       <button class="btn-wide" id="joinBtn" type="submit">Send my login link</button>
       <p class="fine" id="joinMsg">We email you a link. Tap it on this phone to log in. No password needed.</p>
@@ -129,39 +184,28 @@ a.btn.ghost{border:1.5px solid var(--line);color:var(--fg)}
 
   <!-- HOME -->
   <section id="home" class="view" hidden style="flex-direction:column;gap:18px">
-    <div style="display:flex;flex-direction:column;gap:6px">
-      <h1>Find the cheapest price, every time.</h1>
-      <p class="muted">Search an item. We compare Shopee and Lazada by price per piece or per kg.</p>
-    </div>
-    <form id="searchForm" class="search" role="search">
+    <form id="searchForm" class="search float" role="search">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color:var(--muted)"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
       
-      <input id="q" type="search" aria-label="Search any product" placeholder="e.g. mamypoko, susu, dynamo" autocomplete="off">
+      <input id="q" type="search" aria-label="Search any product" placeholder="Search milo, pampers, susu…" autocomplete="off">
       <button class="scanbtn" type="button" id="scanBtn" aria-label="Scan a barcode"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 8v8M10 8v8M13 8v8M17 8v8"/></svg></button>
-      <button class="btn-primary" type="submit">Search</button>
     </form>
     <div id="scanner" hidden>
       <div id="reader"></div>
       <p class="fine" id="scanMsg">Point the camera at the barcode on the pack.</p>
       <button class="btn-wide" type="button" id="scanStop" style="background:var(--soft);color:var(--fg)">Cancel</button>
     </div>
-    <div class="chips" id="quick"></div>
+    <div class="cats" id="cats"></div>
 
-    <div class="savings" aria-live="polite">
-      <div class="row"><span class="lbl">Confirmed savings this month</span><span class="lbl">from real orders</span></div>
-      <div class="row">
-        <span class="big num" id="saved">RM0.00</span>
-        <span class="num" style="font-size:13px;color:var(--navy-muted);text-align:right" id="orders">0 confirmed orders</span>
-      </div>
-      <span class="num" style="font-size:13px;color:var(--navy-muted)" id="waiting">Nothing waiting for confirmation</span>
-      <div class="return">
-        <div style="display:flex;flex-direction:column;gap:2px">
-          <span style="font-size:13px;font-weight:700" class="num" id="ret">Return money: RM0.00 pending</span>
-          <span style="font-size:12px;color:var(--navy-muted)">Payout starts Feb 2027</span>
-        </div>
-        <span style="font-size:11px;font-weight:700;color:#0A2A66;background:var(--gold);padding:4px 8px;border-radius:999px">Pilot</span>
-      </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div class="secthead"><h2>Best deals today</h2><button type="button" class="seeall" id="seeAll">See all</button></div>
+      <div class="deals" id="deals"></div>
     </div>
+
+    <button type="button" class="minisave" id="miniSave">
+      <span style="display:flex;flex-direction:column;gap:2px;align-items:flex-start"><span class="ml">You saved this month</span><span class="mv num" id="savedMini">RM0.00</span></span>
+      <span style="display:flex;flex-direction:column;gap:2px;align-items:flex-end"><span class="ml">Cash back to you</span><span class="mr num" id="retMini">RM0.00</span></span>
+    </button>
 
     <div style="display:flex;flex-direction:column;gap:10px">
       <div class="top"><h2>Popular this week</h2><span class="muted" style="font-size:13px">Household</span></div>
@@ -175,6 +219,39 @@ a.btn.ghost{border:1.5px solid var(--line);color:var(--fg)}
     <p class="fine">Pilot preview. Data: <span id="src">loading…</span>. Prices checked by hand on 7–8 Oct 2026. Buy buttons open Shopee or Lazada through our partner links. <button class="link" id="reset" type="button">Reset my test data</button></p>
   </section>
 
+  <!-- SAVINGS -->
+  <section id="wallet" class="view" hidden style="flex-direction:column;gap:16px">
+    <h1 style="font-size:24px">Your savings</h1>
+    <div class="savings" aria-live="polite">
+      <div class="row"><span class="lbl">Confirmed savings this month</span><span class="lbl">from real orders</span></div>
+      <div class="row">
+        <span class="big num" id="saved">RM0.00</span>
+        <span class="num" style="font-size:13px;color:var(--navy-muted);text-align:right" id="orders">0 confirmed orders</span>
+      </div>
+      <span class="num" style="font-size:13px;color:var(--navy-muted)" id="waiting">Nothing waiting for confirmation</span>
+      <div class="return">
+        <div style="display:flex;flex-direction:column;gap:2px">
+          <span style="font-size:13px;font-weight:700" class="num" id="ret">Return money: RM0.00 pending</span>
+          <span style="font-size:12px;color:var(--navy-muted)" id="retPaid">40% of our commission comes back to you</span>
+        </div>
+        <span style="font-size:11px;font-weight:700;color:#0A2A66;background:var(--gold);padding:4px 8px;border-radius:999px">Pilot</span>
+      </div>
+    </div>
+
+    <div class="note warn" style="line-height:1.5"><b>How cash back works:</b> buy through our Buy buttons. When Shopee or Lazada confirm your order (about 30 days after delivery), 40% of our commission is yours. We pay it by DuitNow at month end, then your balance clears.</div>
+  </section>
+
+  <!-- ME -->
+  <section id="me" class="view" hidden style="flex-direction:column;gap:14px">
+    <h1 style="font-size:24px">Me</h1>
+    <div class="list">
+      <div class="item" style="cursor:default"><div class="t"><span class="sub">Logged in as</span><span class="name" id="meEmail">Not logged in</span></div></div>
+      <div class="item" style="cursor:default"><div class="t"><span class="sub">Cash back paid to</span><span class="name">DuitNow (we will ask for your DuitNow ID before your first payout)</span></div></div>
+    </div>
+    <button class="btn-wide" type="button" id="logoutBtn" style="background:var(--soft);color:var(--fg)">Log out</button>
+    <p class="fine">Pilot member. Questions or problems: reply to your invite message.</p>
+  </section>
+
   <!-- RESULTS -->
   <section id="results" class="view" hidden style="flex-direction:column;gap:14px">
     <button class="back" type="button" data-go="home">‹ Back to search</button>
@@ -183,14 +260,20 @@ a.btn.ghost{border:1.5px solid var(--line);color:var(--fg)}
     <div id="notFound" hidden class="note warn"></div>
     <div id="elsewhere" style="display:flex;flex-direction:column;gap:8px">
       <p class="fine" id="elsewhereHead"></p>
-      <a class="btn primary" id="goShopee" target="_blank" rel="noopener" href="#">Search on Shopee</a>
-      <a class="btn ghost" id="goLazada" target="_blank" rel="noopener" href="#">Search on Lazada</a>
+      <a class="btn Shopee primary" id="goShopee" target="_blank" rel="noopener" href="#">Search on Shopee</a>
+      <a class="btn Lazada primary" id="goLazada" target="_blank" rel="noopener" href="#">Search on Lazada</a>
     </div>
   </section>
 
   <!-- COMPARE -->
   <section id="compare" class="view" hidden style="flex-direction:column;gap:12px"></section>
 </div>
+<nav class="tabbar" aria-label="Main">
+  <button type="button" id="tabHome" class="on"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Home</button>
+  <button type="button" id="tabScan"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 8v8M12 8v8M17 8v8"/></svg>Scan</button>
+  <button type="button" id="tabSave"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>Savings</button>
+  <button type="button" id="tabMe"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Me</button>
+</nav>
 <div class="toast" id="toast" hidden></div>
 
 <script>
@@ -244,7 +327,12 @@ async function loadLive(){
   })).filter(it => it.offers.length);
   if(cat.length){ CATALOGUE = cat; POPULAR = cat.filter(c=>c.popular).map(c=>c.id).slice(0,4); SOURCE = 'live database'; }
 }
-const QUICK = ['milo','susu','dynamo','huggies','nescafe'];
+const CATS = [
+  {tags:['MILK','KIDS'], label:'Milk', color:'#C7381B', icon:'<path d="M8 2h8l-1 5H9z"/><path d="M9 7h6l2 4v9a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2v-9z"/>'},
+  {tags:['BABY'], label:'Baby', color:'#BE0F6A', icon:'<circle cx="12" cy="8" r="4"/><path d="M6 21v-2a6 6 0 0 1 12 0v2"/>'},
+  {tags:['WASH'], label:'Laundry', color:'#2F62C8', icon:'<rect x="4" y="3" width="16" height="18" rx="2"/><circle cx="12" cy="13" r="4"/><path d="M8 6h.01M11 6h.01"/>'},
+  {tags:['DRINK'], label:'Drinks', color:'#A07A00', icon:'<path d="M17 8h1a4 4 0 0 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z"/><path d="M6 2v2M10 2v2M14 2v2"/>'}
+];
 
 const $ = id => document.getElementById(id);
 const rm = n => 'RM' + n.toFixed(2);
@@ -258,7 +346,9 @@ try{ const s = JSON.parse(localStorage.getItem('nbn-test')||'null'); if(s && s.m
 function save(){ try{ localStorage.setItem('nbn-test', JSON.stringify(state)); }catch(e){} }
 
 function show(view){
-  for(const v of ['join','home','results','compare']){ const el=$(v); el.hidden = v!==view; if(v===view) el.style.display='flex'; }
+  for(const v of ['join','home','results','compare','wallet','me']){ const el=$(v); el.hidden = v!==view; if(v===view) el.style.display='flex'; }
+  document.body.classList.toggle('on-home', view==='home');
+  document.body.classList.toggle('no-tabs', view==='join' || view==='admin');
   window.scrollTo(0,0);
 }
 document.addEventListener('click', e => { const g = e.target.closest('[data-go]'); if(g) show(g.dataset.go); });
@@ -269,7 +359,7 @@ function row(it){
   btn.className = 'item'; btn.type = 'button';
   btn.innerHTML = `<div class="tag">${it.tag}</div>
     <div class="t"><span class="name">${it.name} ${it.size}</span>
-    <span class="sub num">from <strong class="best">${rm(b.price)}</strong> on ${b.p}${platforms.size<2?' · 1 platform checked':''}</span></div>
+    <span class="sub num">from <strong class="best">${rm(b.price)}</strong> on <span class="plat ${b.p}">${b.p}</span>${platforms.size<2?' · 1 platform checked':''}</span></div>
     <div class="per num best">${rm(perUnit(b))}<small>${unitLabel(it.unit)}</small></div>`;
   btn.onclick = () => openCompare(it);
   return btn;
@@ -278,12 +368,23 @@ function row(it){
 function renderHome(){
   $('saved').textContent = rm(state.saved);
   $('orders').textContent = state.buys + (state.buys===1?' confirmed order':' confirmed orders');
-  $('ret').textContent = 'Return money: ' + rm(state.ret) + ' (confirmed orders)';
+  $('ret').textContent = 'Return money: ' + rm(state.ret) + ' to be paid';
+  $('savedMini').textContent = rm(state.saved); $('retMini').textContent = rm(state.ret);
+  if($('retPaid')) $('retPaid').textContent = state.paidOut ? rm(state.paidOut) + ' already paid to you · 40% of our commission' : '40% of our commission comes back to you';
   const pop = $('popular'); pop.innerHTML = '';
   POPULAR.map(id=>CATALOGUE.find(c=>c.id===id)).filter(Boolean).forEach(it => pop.appendChild(row(it)));
   const src=$('src'); if(src) src.textContent = SOURCE;
-  const q = $('quick'); q.innerHTML = '';
-  QUICK.forEach(w => { const c=document.createElement('button'); c.type='button'; c.className='chip'; c.textContent=w; c.onclick=()=>{ $('q').value=w; search(w); }; q.appendChild(c); });
+  const cats = $('cats'); cats.innerHTML = '';
+  CATS.forEach(c => { const b=document.createElement('button'); b.type='button'; b.className='cat'; b.innerHTML=`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="${c.color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${c.icon}</svg>${c.label}`; b.onclick=()=>browseTag(c); cats.appendChild(b); });
+  const deals = $('deals'); deals.innerHTML = '';
+  const withSave = CATALOGUE.map(it => { const s=sorted(it), o=s.find(x=>x.p!==s[0].p); return {it, best:s[0], save: o ? (perUnit(o)-perUnit(s[0]))*s[0].qty : 0}; });
+  withSave.sort((a,b)=>b.save-a.save);
+  const pickIds = new Set(); const picks = [];
+  withSave.filter(x=>x.save>0).forEach(x=>{ if(picks.length<2){ picks.push(x); pickIds.add(x.it.id); } });
+  POPULAR.forEach(id=>{ const x=withSave.find(w=>w.it.id===id); if(x && picks.length<2 && !pickIds.has(id)){ picks.push(x); pickIds.add(id); } });
+  picks.forEach(x => { const d=document.createElement('button'); d.type='button'; d.className='deal';
+    d.innerHTML=`<div class="pic">${x.it.tag}${x.save>0?`<span class="save">Save ${rm(x.save)}</span>`:''}</div><span class="nm">${x.it.name} ${x.it.size}</span><div class="ft"><span class="pr num">${rm(x.best.price)}</span><span class="plat ${x.best.p}">${x.best.p}</span></div>`;
+    d.onclick=()=>openCompare(x.it); deals.appendChild(d); });
   $('missedBox').hidden = !state.missed.length;
   $('missed').textContent = state.missed.join(' · ');
 }
@@ -291,6 +392,7 @@ function renderHome(){
 function search(term){
   term = term.trim().toLowerCase();
   if(!term) return;
+  $('elsewhere').hidden = false;
   const words = term.split(/\s+/);
   const hits = CATALOGUE.filter(it => { const hay=(it.name+' '+it.size+' '+it.keys).toLowerCase(); return words.every(w=>hay.includes(w)); })
     .sort((a,b)=>perUnit(sorted(a)[0])-perUnit(sorted(b)[0]));
@@ -341,9 +443,9 @@ function openCompare(it){
   s.forEach((o,i) => {
     const d = document.createElement('div');
     d.className = 'offer' + (i===0?' win':'');
-    d.innerHTML = `<div class="head"><b>${o.p}${o.note?` <span class="muted" style="font-weight:500;font-size:13px">· ${o.note}</span>`:''}</b>${i===0?'<span class="badge">Cheapest</span>':''}</div>
+    d.innerHTML = `<div class="head"><b><span class="plat ${o.p}" style="font-size:13px">${o.p}</span>${o.note?` <span class="muted" style="font-weight:500;font-size:13px">· ${o.note}</span>`:''}</b>${i===0?'<span class="badge" style="background:var(--gold);color:#0A2A66">Cheapest</span>':''}</div>
       <div class="head"><span class="price num">${rm(o.price)}</span><span class="unit num">${rm(perUnit(o))} ${unitLabel(it.unit)}</span></div>
-      <a class="btn ${i===0?'primary':'ghost'}" href="${buyUrl(o.p,it,o)}" target="_blank" rel="noopener">Buy on ${o.p}</a>`;
+      <a class="btn ${o.p} ${i===0?'primary':'ghost'}" href="${buyUrl(o.p,it,o)}" target="_blank" rel="noopener">Buy on ${o.p}</a>`;
     d.querySelector('a').addEventListener('click', () => {
       const s2 = (i===0) ? saving : 0;
       if(sb && USER && o.lid){ sb.from('clicks').insert({ user_id: USER.id, listing_id: o.lid, saving_rm: Number(s2.toFixed(2)), price_rm: o.price }).then(()=>loadMySavings()); }
@@ -360,20 +462,25 @@ $('reset').onclick = () => { state={saved:0,ret:0,buys:0,missed:[]}; save(); ren
 // ---- Login with invite code (Supabase Auth, magic link) ----
 const sb = window.supabase ? window.supabase.createClient(SB_URL, SB_KEY) : null;
 let USER = null;
+const CUSTOMER_SHARE = 0.40;
 function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
 function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
 async function loadMySavings(){
   if(!sb || !USER) return;
-  const { data } = await sb.from('clicks').select('saving_rm, price_rm, clicked_at, confirmed_at, status').eq('user_id', USER.id);
+  let { data, error } = await sb.from('clicks').select('saving_rm, price_rm, clicked_at, confirmed_at, status, commission_rm, paid_at').eq('user_id', USER.id);
+  if(error){ ({ data } = await sb.from('clicks').select('saving_rm, price_rm, clicked_at, confirmed_at, status').eq('user_id', USER.id)); }
   if(!data) return;
   const m0 = new Date(); m0.setDate(1); m0.setHours(0,0,0,0);
   const week = Date.now() - 7*24*3600*1000;
-  const conf = data.filter(c=>c.status==='confirmed');
+  const conf = data.filter(c=>c.status==='confirmed' || c.status==='paid');
   const wait = data.filter(c=>c.status==='waiting' && new Date(c.clicked_at).getTime() > week && Number(c.saving_rm) > 0);
   state.saved = conf.filter(c=>new Date(c.confirmed_at||c.clicked_at)>=m0).reduce((a,c)=>a+Number(c.saving_rm||0),0);
   state.allSaved = conf.reduce((a,c)=>a+Number(c.saving_rm||0),0);
   state.buys = conf.length;
-  state.ret = conf.reduce((a,c)=>a+Number(c.price_rm||0)*0.04*0.35,0);
+  // Customer gets 40% of our commission (NBN keeps 60%). Use the real commission from the affiliate report once entered; until then estimate at 4% of price.
+  const share = c => (c.commission_rm != null ? Number(c.commission_rm) : Number(c.price_rm||0)*0.04) * CUSTOMER_SHARE;
+  state.ret = conf.filter(c=>c.status==='confirmed').reduce((a,c)=>a+share(c),0);
+  state.paidOut = conf.filter(c=>c.status==='paid').reduce((a,c)=>a+share(c),0);
   renderHome();
   $('orders').textContent = rm(state.allSaved) + ' since joining · ' + conf.length + (conf.length===1?' order':' orders');
   const w = wait.reduce((a,c)=>a+Number(c.saving_rm||0),0);
@@ -449,6 +556,23 @@ $('scanBtn').addEventListener('click', async () => {
 });
 $('scanStop').addEventListener('click', stopScan);
 
+function browseTag(c){
+  const hits = CATALOGUE.filter(it => c.tags.includes(it.tag)).sort((a,b)=>perUnit(sorted(a)[0])-perUnit(sorted(b)[0]));
+  const list = $('resultsList'); list.innerHTML = ''; hits.forEach(it => list.appendChild(row(it))); list.hidden = !hits.length;
+  $('resultsHead').textContent = hits.length ? `${c.label} · ${hits.length} item${hits.length===1?'':'s'} · cheapest per unit first` : c.label;
+  $('notFound').hidden = !!hits.length; $('notFound').textContent = `${c.label} coming soon. We are adding more products every week.`; $('elsewhereHead').textContent = '';
+  $('elsewhere').hidden = true;
+  show('results');
+}
+function setTab(id){ ['tabHome','tabScan','tabSave','tabMe'].forEach(t=>$(t).classList.toggle('on', t===id)); }
+$('tabHome').onclick = () => { setTab('tabHome'); show('home'); };
+$('tabScan').onclick = () => { setTab('tabScan'); show('home'); $('scanBtn').click(); };
+$('tabSave').onclick = () => { setTab('tabSave'); show('wallet'); };
+$('miniSave').onclick = () => { setTab('tabSave'); show('wallet'); };
+$('tabMe').onclick = () => { setTab('tabMe'); $('meEmail').textContent = (USER && USER.email) || 'Not logged in'; show('me'); };
+$('logoutBtn').onclick = async () => { if(sb){ await sb.auth.signOut(); } USER = null; setTab('tabHome'); show(sb ? 'join' : 'home'); toast('Logged out'); };
+$('bellBtn').onclick = () => toast('Price-drop alerts are coming soon.');
+$('seeAll').onclick = () => { const hits=[...CATALOGUE].sort((a,b)=>a.name.localeCompare(b.name)); const list=$('resultsList'); list.innerHTML=''; hits.forEach(it=>list.appendChild(row(it))); list.hidden=false; $('resultsHead').textContent = `All ${hits.length} products`; $('notFound').hidden=true; $('elsewhere').hidden=true; show('results'); };
 renderHome(); boot().catch(()=>show('home'));
 loadLive().then(renderHome).catch(()=>{ SOURCE='built-in list (database not reachable)'; renderHome(); });
 </script>
