@@ -124,6 +124,7 @@ body.on-home .hero{padding-bottom:62px}
 body.on-home .heroline{display:block}
 .search.float{margin-top:-62px;position:relative;z-index:1;border:none;border-radius:20px;height:64px;padding:0 10px 0 14px;box-shadow:0 10px 28px rgba(10,42,102,.18)}
 .search.float .scanbtn{background:var(--navy);color:var(--gold);width:46px;height:46px;border-radius:14px}
+.search.float .camb{background:var(--gold);color:#0A2A66;margin-right:6px}
 .cats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
 .cat{height:76px;border:none;border-radius:16px;background:var(--surface);color:var(--fg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font-size:12px;font-weight:700;box-shadow:0 1px 0 var(--line)}
 .deals{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
@@ -187,7 +188,9 @@ body.no-tabs .tabbar{display:none}
     <form id="searchForm" class="search float" role="search">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color:var(--muted)"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
       
-      <input id="q" type="search" aria-label="Search any product" placeholder="Search milo, pampers, susu…" autocomplete="off">
+      <input id="q" type="search" aria-label="Search any product" placeholder="Search or paste a link" autocomplete="off">
+      <button class="scanbtn camb" type="button" id="photoBtn" aria-label="Search by photo or screenshot"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/></svg></button>
+      <input type="file" id="photoInput" accept="image/*" hidden>
       <button class="scanbtn" type="button" id="scanBtn" aria-label="Scan a barcode"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 8v8M10 8v8M13 8v8M17 8v8"/></svg></button>
     </form>
     <div id="scanner" hidden>
@@ -389,7 +392,19 @@ function renderHome(){
   $('missed').textContent = state.missed.join(' · ');
 }
 
+// Paste-a-link: full Shopee/Lazada links carry the product name in the address; short links need the API (later).
+function nameFromLink(t){
+  let u; try{ u = new URL(t.trim()); }catch(e){ return null; }
+  if(!/shopee\.com\.my|lazada\.com\.my|shope\.ee|s\.shopee|s\.lazada/.test(u.hostname)) return null;
+  let seg = decodeURIComponent(u.pathname.split('/').filter(Boolean).pop() || '');
+  seg = seg.replace(/-i\.\d+\.\d+$/,'').replace(/-i\d+(-s\d+)?\.html$/,'').replace(/\.html$/,'').replace(/[-_]+/g,' ').trim();
+  if(!seg || /^[A-Za-z0-9]{4,12}$/.test(seg)) return '';   // short link: no name inside
+  return seg.split(' ').slice(0,8).join(' ');
+}
 function search(term){
+  const fromLink = nameFromLink(term);
+  if(fromLink === ''){ toast('Short links are not supported yet. Open the product in Shopee, tap Share, then Copy link and paste the full link.'); return; }
+  if(fromLink){ term = fromLink; $('q').value = fromLink; toast('Searching for: ' + fromLink); }
   term = term.trim().toLowerCase();
   if(!term) return;
   $('elsewhere').hidden = false;
@@ -578,6 +593,35 @@ $('tabMe').onclick = () => { setTab('tabMe'); $('meEmail').textContent = (USER &
 $('logoutBtn').onclick = async () => { if(sb){ await sb.auth.signOut(); } USER = null; setTab('tabHome'); show(sb ? 'join' : 'home'); toast('Logged out'); };
 $('bellBtn').onclick = () => toast('Price-drop alerts are coming soon.');
 $('seeAll').onclick = () => { const hits=[...CATALOGUE].sort((a,b)=>a.name.localeCompare(b.name)); const list=$('resultsList'); list.innerHTML=''; hits.forEach(it=>list.appendChild(row(it))); list.hidden=false; $('resultsHead').textContent = `All ${hits.length} products`; $('notFound').hidden=true; $('elsewhere').hidden=true; show('results'); };
+// Photo search: shrink the photo on the phone, send to our photo-search function, then search the phrase it returns.
+async function shrink(file){
+  const img = await new Promise((ok, bad) => { const i = new Image(); i.onload = () => ok(i); i.onerror = bad; i.src = URL.createObjectURL(file); });
+  const k = Math.min(1, 1024 / Math.max(img.width, img.height));
+  const c = document.createElement('canvas'); c.width = Math.round(img.width*k); c.height = Math.round(img.height*k);
+  c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+  return c.toDataURL('image/jpeg', 0.8).split(',')[1];
+}
+$('photoBtn').onclick = () => $('photoInput').click();
+$('photoInput').onchange = async (e) => {
+  const f = e.target.files && e.target.files[0]; e.target.value = '';
+  if(!f) return;
+  if(!sb || !USER){ toast('Photo search works after you log in.'); return; }
+  toast('Looking at your photo…');
+  try{
+    const image = await shrink(f);
+    const { data, error } = await sb.functions.invoke('photo-search', { body: { image } });
+    if(error){
+      const st = error.context && error.context.status;
+      toast(st === 402 ? 'You have used your free photo searches this month. Buy through NBN to unlock 10 more.' : 'Photo search is not available right now. Try typing the name.');
+      return;
+    }
+    if(!data || !data.query){ toast('Could not recognise that. Try a clearer photo or type the name.'); return; }
+    $('q').value = data.query;
+    search(data.query);
+    const left = data.limit ? ` · ${Math.max(0, data.limit - data.used)} photo searches left this month` : '';
+    toast(`We think it's: ${data.query}${data.confidence==='low' ? ' (not sure, check it)' : ''}${left}`);
+  }catch(err){ toast('Photo search failed. Try again or type the name.'); }
+};
 renderHome(); boot().catch(()=>show('home'));
 loadLive().then(renderHome).catch(()=>{ SOURCE='built-in list (database not reachable)'; renderHome(); });
 </script>
