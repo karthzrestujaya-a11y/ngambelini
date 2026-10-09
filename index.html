@@ -186,17 +186,13 @@ body.no-tabs .tabbar{display:none}
 
   <!-- JOIN -->
   <section id="join" class="view" hidden style="flex-direction:column;gap:18px">
-    <div style="display:flex;flex-direction:column;gap:8px">
-      <h1>Never overpay for your monthly shopping.</h1>
-      <p class="muted">Search any item. We show the cheapest on Shopee and Lazada, and how much you saved.</p>
-    </div>
-    <div class="note warn"><b>Pilot:</b> only 50 members, by invite code.</div>
+    <h1 style="font-size:24px">Log in</h1>
     <form id="joinForm" style="display:flex;flex-direction:column;gap:14px">
-      <div class="field"><label for="code">Invite code</label><input id="code" autocomplete="off" placeholder="NBN-7Q2M" style="text-transform:uppercase;letter-spacing:1px"></div>
+      <input id="code" type="hidden" value="">
       <div class="field" id="emailField"><label for="email">Email</label><input id="email" type="email" autocomplete="email" placeholder="you@example.com"></div>
-      <button class="btn-wide" id="joinBtn" type="submit">Send my login link</button>
+      <button class="btn-wide" id="joinBtn" type="submit">Log in</button>
       <p class="fine" id="joinMsg">We email you a link. Tap it on this phone to log in. No password needed.</p>
-      <p class="fine">By joining you agree to our <button class="link" type="button" data-go="privacy" style="font-size:12px">privacy notice</button>.</p>
+      <p class="fine">By logging in you agree to our <button class="link" type="button" data-go="privacy" style="font-size:12px">privacy notice</button>.</p>
     </form>
   </section>
 
@@ -592,7 +588,7 @@ async function afterLogin(){
   let { data: prof, error: pe } = await sb.from('profiles').select('invite_code, is_admin').eq('id', USER.id).maybeSingle();
   if(pe){ ({ data: prof } = await sb.from('profiles').select('invite_code').eq('id', USER.id).maybeSingle()); }
   $('adminBtn').hidden = !(prof && prof.is_admin);
-  if(prof && prof.invite_code){ show('home'); loadMySavings(); return; }
+  show('home'); loadMySavings(); return;
   const code = lsGet('nbn-code');
   if(code){ const { data: ok } = await sb.rpc('redeem_invite', { p_code: code }); if(ok){ show('home'); loadMySavings(); return; } }
   // logged in but no valid code yet
@@ -609,19 +605,11 @@ async function boot(){
 $('joinForm').addEventListener('submit', async e => {
   e.preventDefault();
   const code = $('code').value.trim().toUpperCase(), btn = $('joinBtn'), msg = $('joinMsg');
-  if(!code){ msg.textContent = 'Enter your invite code.'; return; }
   btn.disabled = true;
   try{
-    if(USER){
-      const { data: ok } = await sb.rpc('redeem_invite', { p_code: code });
-      if(ok){ show('home'); loadMySavings(); } else msg.textContent = 'That code is not valid or already used. Check it and try again.';
-      return;
-    }
+    if(USER){ show('home'); loadMySavings(); return; }
     const email = $('email').value.trim();
     if(!email){ msg.textContent = 'Enter your email.'; return; }
-    const { data: ok } = await sb.rpc('check_invite', { p_code: code });
-    if(!ok){ msg.textContent = 'That code is not valid or already used. Check it and try again.'; return; }
-    lsSet('nbn-code', code);
     const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: location.origin + location.pathname } });
     msg.textContent = error ? ('Could not send the email: ' + error.message) : ('Link sent to ' + email + '. Open your email on this phone and tap the link.');
   } finally { btn.disabled = false; }
