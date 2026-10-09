@@ -151,10 +151,26 @@ body.no-tabs .tabbar{display:none}
 .seeall{border:none;background:transparent;color:var(--navy);font-weight:700;font-size:14px;text-decoration:underline;padding:8px 0}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .seeall{color:var(--gold)}}
 :root[data-theme="dark"] .seeall{color:var(--gold)}
+/* Admin + privacy */
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--soft);border-radius:14px;padding:4px}
+.seg button{border:none;border-radius:10px;height:40px;background:transparent;color:var(--fg);font-weight:700;font-size:14px}
+.seg button.on{background:var(--surface);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.card .r1{display:flex;justify-content:space-between;gap:8px;font-size:14px}
+.card .r2{font-size:12px;color:var(--muted)}
+.card .acts{display:flex;gap:8px;align-items:center}
+.card input{height:40px;border-radius:10px;border:1.5px solid var(--line);background:var(--bg);color:var(--fg);padding:0 10px;font-size:15px;min-width:0;flex:1}
+.sbtn{border:none;border-radius:10px;height:40px;padding:0 14px;font-weight:700;font-size:14px;background:var(--navy);color:var(--navy-fg);flex-shrink:0}
+.sbtn.ghost{background:var(--soft);color:var(--fg)}
+.sbtn:disabled{opacity:.5}
+.filebox{border:2px dashed var(--line);border-radius:14px;padding:18px;text-align:center;display:flex;flex-direction:column;gap:8px;align-items:center}
+.legal h2{font-size:16px;margin-top:6px} .legal p,.legal li{font-size:14px;line-height:1.55} .legal ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px}
+.checked{font-size:12px;color:var(--muted)}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="pricesheet.js"></script>
 </head><body>
 <div class="app">
   <header class="hero">
@@ -180,6 +196,7 @@ body.no-tabs .tabbar{display:none}
       <div class="field" id="emailField"><label for="email">Email</label><input id="email" type="email" autocomplete="email" placeholder="you@example.com"></div>
       <button class="btn-wide" id="joinBtn" type="submit">Send my login link</button>
       <p class="fine" id="joinMsg">We email you a link. Tap it on this phone to log in. No password needed.</p>
+      <p class="fine">By joining you agree to our <button class="link" type="button" data-go="privacy" style="font-size:12px">privacy notice</button>.</p>
     </form>
   </section>
 
@@ -219,7 +236,7 @@ body.no-tabs .tabbar{display:none}
       <h2 style="font-size:15px">Searches we couldn't find yet</h2>
       <p class="fine" id="missed"></p>
     </div>
-    <p class="fine">Pilot preview. Data: <span id="src">loading…</span>. Prices checked by hand on 7–8 Oct 2026. Buy buttons open Shopee or Lazada through our partner links. <button class="link" id="reset" type="button">Reset my test data</button></p>
+    <p class="fine">Pilot preview. Data: <span id="src">loading…</span>. <span id="checkedNote">Prices checked by hand.</span> Buy buttons open Shopee or Lazada through our partner links. <button class="link" id="reset" type="button">Reset my test data</button></p>
   </section>
 
   <!-- SAVINGS -->
@@ -251,7 +268,9 @@ body.no-tabs .tabbar{display:none}
       <div class="item" style="cursor:default"><div class="t"><span class="sub">Logged in as</span><span class="name" id="meEmail">Not logged in</span></div></div>
       <div class="item" style="cursor:default"><div class="t"><span class="sub">Cash back paid to</span><span class="name">DuitNow (we will ask for your DuitNow ID before your first payout)</span></div></div>
     </div>
+    <button class="btn-wide" type="button" id="adminBtn" hidden>Admin: prices and cash back</button>
     <button class="btn-wide" type="button" id="logoutBtn" style="background:var(--soft);color:var(--fg)">Log out</button>
+    <button class="link" type="button" data-go="privacy" style="align-self:flex-start">Privacy notice</button>
     <p class="fine">Pilot member. Questions or problems: reply to your invite message.</p>
   </section>
 
@@ -266,6 +285,59 @@ body.no-tabs .tabbar{display:none}
       <a class="btn Shopee primary" id="goShopee" target="_blank" rel="noopener" href="#">Search on Shopee</a>
       <a class="btn Lazada primary" id="goLazada" target="_blank" rel="noopener" href="#">Search on Lazada</a>
     </div>
+  </section>
+
+  <!-- ADMIN (only for admins; the database also refuses non-admins) -->
+  <section id="admin" class="view" hidden style="flex-direction:column;gap:14px">
+    <button class="back" type="button" data-go="me">‹ Back</button>
+    <h1 style="font-size:24px">Admin</h1>
+    <div class="seg" role="tablist"><button type="button" id="segPrices" class="on">Upload prices</button><button type="button" id="segCash">Cash back</button></div>
+    <div id="admPrices" style="display:flex;flex-direction:column;gap:12px">
+      <div class="filebox">
+        <b>Upload the price sheet (Excel)</b>
+        <span class="fine">Use the NBN price sheet. Only rows with a price and a product link update the app.</span>
+        <input type="file" id="sheetInput" accept=".xlsx,.xls" hidden>
+        <button class="sbtn" type="button" id="sheetPick">Choose file</button>
+      </div>
+      <div id="sheetPreview" class="card" hidden></div>
+    </div>
+    <div id="admCash" hidden style="display:flex;flex-direction:column;gap:12px">
+      <p class="fine">1) Check the Shopee / Lazada conversion report. 2) Confirm the taps that became orders, with the commission from the report. 3) Pay members by DuitNow and mark them paid.</p>
+      <h2 style="font-size:16px">Ready to pay</h2>
+      <div id="payList" style="display:flex;flex-direction:column;gap:8px"></div>
+      <h2 style="font-size:16px">Waiting for confirmation</h2>
+      <div id="tapList" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+  </section>
+
+  <!-- PRIVACY -->
+  <section id="privacy" class="view legal" hidden style="flex-direction:column;gap:10px">
+    <button class="back" type="button" id="privBack">‹ Back</button>
+    <h1 style="font-size:24px">Privacy notice</h1>
+    <p class="fine">Ngam Beli Ni (NBN) pilot · Last updated 10 October 2026</p>
+    <p>NBN is a price-comparison service run by Kaarthigeyen a/l Ramachandren in Malaysia. This notice explains, under the Personal Data Protection Act 2010, what we collect, why, and your choices.</p>
+    <h2>What we collect</h2>
+    <ul>
+      <li><b>Your email address and invite code</b> — to log you in and keep the pilot to invited members.</li>
+      <li><b>What you search</b> (typed words, pasted links, scanned barcodes) — to show results and learn which products to add.</li>
+      <li><b>Buy taps</b> — the product, price and time when you tap a Buy button, so we can match your order and pay your cash back.</li>
+      <li><b>Photos you choose to search with</b> — sent once to Google's Gemini service to read the product name. We keep only the product name it returns, not the photo.</li>
+      <li><b>Your DuitNow ID</b> (only when you claim cash back) — to pay you.</li>
+    </ul>
+    <h2>What we do not collect</h2>
+    <p>No IC number, no bank card, no Shopee or Lazada password, no contacts, no location.</p>
+    <h2>Who else sees it</h2>
+    <ul>
+      <li><b>Shopee and Lazada</b> receive a short random code with your Buy tap (not your name or email), so their reports can show which orders came through NBN.</li>
+      <li><b>Service providers</b> that run the app for us: Supabase (database and login), Resend (login emails), Google (photo search), GitHub (website hosting). Some of them store data outside Malaysia.</li>
+      <li>We do not sell your data or use it for other companies' advertising.</li>
+    </ul>
+    <h2>How long we keep it</h2>
+    <p>For as long as you are a member, and up to 7 years for cash-back payment records. Delete your account and we remove the rest within 30 days.</p>
+    <h2>Your choices</h2>
+    <p>You can ask to see, correct or delete your data, or stop using NBN at any time. Email <a href="mailto:hello@ngambelini.com">hello@ngambelini.com</a> and we will reply within 21 days.</p>
+    <h2>Commission</h2>
+    <p>We may earn a commission when you buy through our links. You never pay extra. 40% of what we earn on your confirmed orders comes back to you as cash back.</p>
   </section>
 
   <!-- COMPARE -->
@@ -311,7 +383,7 @@ let SOURCE = 'built-in list';
 // Live data from our Supabase database (publishable key is safe in a browser: tables are read-only by RLS)
 const SB_URL = 'https://okotkpoagvnrktpsftap.supabase.co';
 const SB_KEY = 'sb_publishable_Ipx8aDVVWev3uP3SV1ljaw_VL5gkkxJ';
-const TAGS = {'Family milk':'MILK','Kids milk':'KIDS','Laundry':'WASH','Baby diapers':'BABY','Baby wipes':'BABY','Softener':'WASH','Dishwash':'WASH'};
+const TAGS = {'Milk & Formula':'MILK','Baby & Diapers':'BABY','Laundry & Cleaning':'WASH','Drinks':'DRINK','Groceries & Pantry':'FOOD','Personal Care':'CARE','Household':'HOME','Family milk':'MILK','Kids milk':'KIDS','Laundry':'WASH','Baby diapers':'BABY','Baby wipes':'BABY','Softener':'WASH','Dishwash':'WASH'};
 async function loadLive(){
   const h = {apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY};
   const [prods, prices] = await Promise.all([
@@ -320,7 +392,7 @@ async function loadLive(){
   ]);
   const cat = prods.map(p => ({
     id: String(p.id), tag: TAGS[p.category] || p.category.slice(0,4).toUpperCase(), name: p.name, size: p.pack_size || '', unit: p.unit,
-    keys: (p.brand + ' ' + (p.search_keyword||'')), popular: p.is_popular,
+    keys: (p.brand + ' ' + (p.search_keyword||'') + ' ' + p.category), popular: p.is_popular,
     offers: prices.filter(x => x.product_id === p.id).map(x => ({
       p: x.platform === 'shopee' ? 'Shopee' : x.platform === 'lazada' ? 'Lazada' : x.platform,
       price: Number(x.price_rm), qty: Number(x.pack_qty), url: x.product_url, lid: x.listing_id,
@@ -328,7 +400,9 @@ async function loadLive(){
     })),
     checked: prices.filter(x => x.product_id === p.id).map(x=>x.checked_at).sort().pop()
   })).filter(it => it.offers.length);
-  if(cat.length){ CATALOGUE = cat; POPULAR = cat.filter(c=>c.popular).map(c=>c.id).slice(0,4); SOURCE = 'live database'; }
+  if(cat.length){ CATALOGUE = cat; POPULAR = cat.filter(c=>c.popular).map(c=>c.id).slice(0,4);
+    if(POPULAR.length < 4){ cat.filter(c=>!POPULAR.includes(c.id) && new Set(c.offers.map(o=>o.p)).size > 1).slice(0, 4 - POPULAR.length).forEach(c=>POPULAR.push(c.id)); }
+    SOURCE = 'live database'; }
 }
 const CATS = [
   {tags:['MILK','KIDS'], label:'Milk', color:'#C7381B', icon:'<path d="M8 2h8l-1 5H9z"/><path d="M9 7h6l2 4v9a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2v-9z"/>'},
@@ -340,6 +414,10 @@ const CATS = [
 const $ = id => document.getElementById(id);
 const rm = n => 'RM' + n.toFixed(2);
 const perUnit = o => o.price / o.qty;
+const fmtChecked = t => { if(!t) return ''; const d = new Date(t); if(isNaN(d)) return ''; const today = new Date(); const y = new Date(Date.now()-864e5);
+  const same = (a,b) => a.toDateString() === b.toDateString();
+  const day = same(d,today) ? 'today' : same(d,y) ? 'yesterday' : d.toLocaleDateString('en-MY',{day:'numeric',month:'short'});
+  return 'Price checked ' + day + ', ' + d.toLocaleTimeString('en-MY',{hour:'numeric',minute:'2-digit'}); };
 const unitLabel = u => u === 'piece' ? 'per piece' : 'per ' + u;
 function sorted(it){ return [...it.offers].sort((a,b)=>perUnit(a)-perUnit(b)); }
 
@@ -348,10 +426,12 @@ let state = {saved:0, ret:0, buys:0, missed:[]};
 try{ const s = JSON.parse(localStorage.getItem('nbn-test')||'null'); if(s && s.missed) state.missed = s.missed; }catch(e){}
 function save(){ try{ localStorage.setItem('nbn-test', JSON.stringify(state)); }catch(e){} }
 
+let LASTVIEW = 'home';
 function show(view){
-  for(const v of ['join','home','results','compare','wallet','me']){ const el=$(v); el.hidden = v!==view; if(v===view) el.style.display='flex'; }
+  for(const v of ['join','home','results','compare','wallet','me','admin','privacy']){ const el=$(v); el.hidden = v!==view; if(v===view) el.style.display='flex'; }
   document.body.classList.toggle('on-home', view==='home');
-  document.body.classList.toggle('no-tabs', view==='join' || view==='admin');
+  document.body.classList.toggle('no-tabs', view==='join' || view==='admin' || (view==='privacy' && !USER));
+  if(view !== 'privacy') LASTVIEW = view;
   window.scrollTo(0,0);
 }
 document.addEventListener('click', e => { const g = e.target.closest('[data-go]'); if(g) show(g.dataset.go); });
@@ -362,7 +442,7 @@ function row(it){
   btn.className = 'item'; btn.type = 'button';
   btn.innerHTML = `<div class="tag">${it.tag}</div>
     <div class="t"><span class="name">${it.name} ${it.size}</span>
-    <span class="sub num">from <strong class="best">${rm(b.price)}</strong> on <span class="plat ${b.p}">${b.p}</span>${platforms.size<2?' · 1 platform checked':''}</span></div>
+    <span class="sub num">from <strong class="best">${rm(b.price)}</strong> on <span class="plat ${b.p}">${b.p}</span>${platforms.size<2?' · 1 platform checked':''}</span>${it.checked?`<span class="checked">${fmtChecked(it.checked)}</span>`:''}</div>
     <div class="per num best">${rm(perUnit(b))}<small>${unitLabel(it.unit)}</small></div>`;
   btn.onclick = () => openCompare(it);
   return btn;
@@ -377,6 +457,7 @@ function renderHome(){
   const pop = $('popular'); pop.innerHTML = '';
   POPULAR.map(id=>CATALOGUE.find(c=>c.id===id)).filter(Boolean).forEach(it => pop.appendChild(row(it)));
   const src=$('src'); if(src) src.textContent = SOURCE;
+  const lastChk = CATALOGUE.map(c=>c.checked).filter(Boolean).sort().pop(); if(lastChk && $('checkedNote')) $('checkedNote').textContent = fmtChecked(lastChk).replace('Price checked','Prices last checked') + '.';
   const cats = $('cats'); cats.innerHTML = '';
   CATS.forEach(c => { const b=document.createElement('button'); b.type='button'; b.className='cat'; b.innerHTML=`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="${c.color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${c.icon}</svg>${c.label}`; b.onclick=()=>browseTag(c); cats.appendChild(b); });
   const deals = $('deals'); deals.innerHTML = '';
@@ -456,6 +537,7 @@ function openCompare(it){
     </div>
     ${other ? `<div class="verdict"><b>Cheapest now: ${best.p}</b><span class="num">You save ${rm(saving)} vs ${other.p} on this pack</span></div>`
             : `<div class="note warn">Only ${best.p} checked so far for this item. No saving shown until we have a second platform.</div>`}
+    ${it.checked ? `<p class="checked">${fmtChecked(it.checked)}. Prices can change on Shopee and Lazada; you always pay the price shown there.</p>` : ''}
     <div id="offers" style="display:flex;flex-direction:column;gap:10px"></div>
     ${it.hidden ? `<div class="note bad">${it.hidden}</div>` : ''}
     <p class="fine">We may earn a small commission when you buy through our links. You never pay extra, and we always show the cheapest first.</p>`;
@@ -507,7 +589,9 @@ async function loadMySavings(){
   $('waiting').textContent = wait.length ? rm(w) + ' waiting for order confirmation (' + wait.length + (wait.length===1?' item)':' items)') : 'Nothing waiting for confirmation';
 }
 async function afterLogin(){
-  const { data: prof } = await sb.from('profiles').select('invite_code').eq('id', USER.id).maybeSingle();
+  let { data: prof, error: pe } = await sb.from('profiles').select('invite_code, is_admin').eq('id', USER.id).maybeSingle();
+  if(pe){ ({ data: prof } = await sb.from('profiles').select('invite_code').eq('id', USER.id).maybeSingle()); }
+  $('adminBtn').hidden = !(prof && prof.is_admin);
   if(prof && prof.invite_code){ show('home'); loadMySavings(); return; }
   const code = lsGet('nbn-code');
   if(code){ const { data: ok } = await sb.rpc('redeem_invite', { p_code: code }); if(ok){ show('home'); loadMySavings(); return; } }
@@ -622,6 +706,68 @@ $('photoInput').onchange = async (e) => {
     toast(`We think it's: ${data.query}${data.confidence==='low' ? ' (not sure, check it)' : ''}${left}`);
   }catch(err){ toast('Photo search failed. Try again or type the name.'); }
 };
+// ---- Privacy ----
+$('privBack').onclick = () => show(USER || !sb ? (LASTVIEW || 'me') : 'join');
+
+// ---- Admin: upload price sheet + cash back ----
+const esc = t => String(t ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function seg(which){ $('segPrices').classList.toggle('on', which==='prices'); $('segCash').classList.toggle('on', which==='cash');
+  $('admPrices').hidden = which!=='prices'; $('admCash').hidden = which!=='cash'; if(which==='cash') loadCash(); }
+$('adminBtn').onclick = () => { show('admin'); seg('prices'); };
+$('segPrices').onclick = () => seg('prices'); $('segCash').onclick = () => seg('cash');
+function loadXLSX(){ return window.XLSX ? Promise.resolve(window.XLSX) : new Promise((ok, bad) => { const sc = document.createElement('script');
+  sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'; sc.onload = () => ok(window.XLSX); sc.onerror = () => bad(new Error('Could not load the Excel reader. Check your internet.')); document.head.appendChild(sc); }); }
+let SHEET = null;
+$('sheetPick').onclick = () => $('sheetInput').click();
+$('sheetInput').onchange = async e => {
+  const f = e.target.files && e.target.files[0]; e.target.value = ''; if(!f) return;
+  const box = $('sheetPreview'); box.hidden = false; box.innerHTML = '<span class="fine">Reading ' + esc(f.name) + '…</span>';
+  try{
+    const X = await loadXLSX();
+    const wb = X.read(await f.arrayBuffer());
+    SHEET = priceSheetRows(X, wb);
+    const both = SHEET.rows.filter(r => r.shopee_price !== '' && r.lazada_price !== '').length;
+    box.innerHTML = `<b>${esc(f.name)}</b>
+      <div class="r1"><span>Products in sheet</span><b class="num">${SHEET.rows.length}</b></div>
+      <div class="r1"><span>With at least one price</span><b class="num">${SHEET.priced}</b></div>
+      <div class="r1"><span>Priced on both stores</span><b class="num">${both}</b></div>
+      ${SHEET.problems.length ? `<div class="note warn"><b>${SHEET.problems.length} to fix (skipped):</b><br>${SHEET.problems.slice(0,8).map(esc).join('<br>')}${SHEET.problems.length>8?'<br>…':''}</div>` : ''}
+      ${SHEET.priced >= 20 ? '<p class="fine">20+ priced products: the old test products will be hidden after this upload.</p>' : ''}
+      <button class="btn-wide" type="button" id="sheetGo" ${SHEET.rows.length ? '' : 'disabled'}>Upload to the app</button>`;
+    $('sheetGo').onclick = uploadSheet;
+  }catch(err){ box.innerHTML = '<div class="note bad">' + esc(err.message || err) + '</div>'; }
+};
+async function uploadSheet(){
+  const b = $('sheetGo'); b.disabled = true; b.textContent = 'Uploading…';
+  const { data, error } = await sb.rpc('admin_import_prices', { p_rows: SHEET.rows });
+  if(error){ b.disabled = false; b.textContent = 'Upload to the app'; toast('Upload failed: ' + error.message); return; }
+  b.textContent = 'Done'; toast(`Uploaded: ${data.products} products, ${data.prices} prices`);
+  try{ await loadLive(); renderHome(); }catch(e){}
+}
+async function loadCash(){
+  const pay = $('payList'), taps = $('tapList');
+  pay.innerHTML = taps.innerHTML = '<span class="fine">Loading…</span>';
+  const [{ data: due, error: e1 }, { data: wait, error: e2 }] = await Promise.all([sb.rpc('admin_payouts'), sb.rpc('admin_clicks', { p_status: 'waiting' })]);
+  if(e1 || e2){ pay.innerHTML = '<div class="note bad">' + esc((e1||e2).message) + '</div>'; taps.innerHTML = ''; return; }
+  pay.innerHTML = due.length ? '' : '<span class="fine">Nobody to pay right now.</span>';
+  due.forEach(d => { const c = document.createElement('div'); c.className = 'card';
+    c.innerHTML = `<div class="r1"><b>${esc(d.email)}</b><b class="num">${rm(Number(d.due_rm))}</b></div>
+      <div class="r2">${d.orders} confirmed order${d.orders===1?'':'s'} · our commission ${rm(Number(d.commission_rm))} · 40% to member</div>
+      <div class="acts"><input placeholder="DuitNow reference" aria-label="Payment reference"><button class="sbtn" type="button">Mark paid</button></div>`;
+    c.querySelector('button').onclick = async () => { const ref = c.querySelector('input').value.trim(); if(!ref){ toast('Type the DuitNow reference first.'); return; }
+      const { error } = await sb.rpc('admin_pay_user', { p_user: d.user_id, p_ref: ref }); if(error){ toast(error.message); return; } toast('Marked paid'); loadCash(); };
+    pay.appendChild(c); });
+  taps.innerHTML = wait.length ? '' : '<span class="fine">No taps waiting.</span>';
+  wait.forEach(t => { const c = document.createElement('div'); c.className = 'card';
+    c.innerHTML = `<div class="r1"><span>${esc(t.product)}</span><span class="plat ${t.platform==='shopee'?'Shopee':'Lazada'}">${t.platform==='shopee'?'Shopee':'Lazada'}</span></div>
+      <div class="r2">${esc(t.email)} · sub_id <b>${esc(t.sub_id)}</b> · ${rm(Number(t.price_rm||0))} · ${new Date(t.clicked_at).toLocaleString('en-MY',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'})}</div>
+      <div class="acts"><input inputmode="decimal" placeholder="Commission RM" aria-label="Commission in RM"><button class="sbtn" type="button" data-a="ok">Confirm</button><button class="sbtn ghost" type="button" data-a="no">No order</button></div>`;
+    c.querySelector('[data-a="ok"]').onclick = async () => { const v = Number(c.querySelector('input').value); if(!(v > 0)){ toast('Type the commission from the report.'); return; }
+      const { error } = await sb.rpc('admin_set_click', { p_id: t.id, p_status: 'confirmed', p_commission: v }); if(error){ toast(error.message); return; } toast('Confirmed'); loadCash(); };
+    c.querySelector('[data-a="no"]').onclick = async () => { const { error } = await sb.rpc('admin_set_click', { p_id: t.id, p_status: 'expired' }); if(error){ toast(error.message); return; } toast('Marked no order'); loadCash(); };
+    taps.appendChild(c); });
+}
+
 renderHome(); boot().catch(()=>show('home'));
 loadLive().then(renderHome).catch(()=>{ SOURCE='built-in list (database not reachable)'; renderHome(); });
 </script>
