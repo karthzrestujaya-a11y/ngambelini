@@ -408,7 +408,7 @@ function search(term){
   } else nf.hidden = true;
   const enc = encodeURIComponent(term);
   const sid = USER ? USER.id.replace(/-/g,'').slice(0,12) : 'guest';
-  $('goShopee').href = 'https://shope.ee/an_redir?origin_link=' + encodeURIComponent('https://shopee.com.my/search?keyword=' + term) + '&affiliate_id=12111910001&sub_id=' + sid;
+  $('goShopee').href = shopeeAff('https://shopee.com.my/search?keyword=' + term);
   $('goLazada').href = 'https://www.lazada.com.my/catalog/?q=' + enc;
   $('goShopee').textContent = `Search "${term}" on Shopee`;
   $('goLazada').textContent = `Search "${term}" on Lazada`;
@@ -418,10 +418,15 @@ function search(term){
 }
 $('searchForm').addEventListener('submit', e => { e.preventDefault(); search($('q').value); });
 
+// Every Shopee link goes through our affiliate redirect, tagged with the user (sub_id) so orders can be matched for cash back.
+const SHOPEE_AFF = '12111910001';
+function subId(){ return USER ? USER.id.replace(/-/g,'').slice(0,12) : 'guest'; }
+function shopeeAff(url){ return 'https://shope.ee/an_redir?origin_link=' + encodeURIComponent(url) + '&affiliate_id=' + SHOPEE_AFF + '&sub_id=' + subId(); }
 function buyUrl(p, it, o){
-  if(o && o.url) return o.url;
   const q = encodeURIComponent(it.name + ' ' + it.size);
-  return p==='Shopee' ? 'https://shopee.com.my/search?keyword=' + q : 'https://www.lazada.com.my/catalog/?q=' + q;
+  const raw = (o && o.url) ? o.url : (p==='Shopee' ? 'https://shopee.com.my/search?keyword=' + q : 'https://www.lazada.com.my/catalog/?q=' + q);
+  if(p==='Shopee' && !/an_redir|shope\.ee|s\.shopee/.test(raw)) return shopeeAff(raw);
+  return raw;
 }
 
 function openCompare(it){
