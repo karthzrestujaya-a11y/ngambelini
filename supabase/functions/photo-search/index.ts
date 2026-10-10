@@ -52,7 +52,11 @@ Include model numbers and pack size when visible. If it is a book, use the title
         generationConfig: { responseMimeType: "application/json", temperature: 0.1 },
       }),
     });
-    if (!g.ok) return json({ error: "ai", status: g.status }, 502);
+    if (!g.ok) {
+      const body = (await g.text()).slice(0, 500);
+      console.error("gemini error", g.status, body);
+      return json({ error: "ai", status: g.status, detail: body.slice(0, 200) }, 502);
+    }
     const gj = await g.json();
     const text = gj?.candidates?.[0]?.content?.parts?.[0]?.text ?? "{}";
     let out: Record<string, string> = {};
