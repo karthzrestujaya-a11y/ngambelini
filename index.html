@@ -88,6 +88,16 @@ a.btn.ghost{border:1.5px solid var(--line);color:var(--fg)}
 .note.bad{background:var(--bad-bg);color:var(--bad-fg)}
 .fine{font-size:12px;line-height:1.45;color:var(--muted)}
 .link{border:none;background:transparent;color:var(--muted);text-decoration:underline;font-size:12px;padding:4px 0}
+.pbox{position:fixed;inset:0;z-index:60;display:grid;place-items:center;background:rgba(10,20,40,.45);padding:16px}
+.pbox .card{background:var(--surface);color:var(--fg);border-radius:16px;padding:20px;width:min(340px,100%);box-shadow:0 10px 30px rgba(0,0,0,.25);text-align:center}
+.pbox .lbl{font-weight:700;font-size:15px;margin-bottom:12px}
+.pbar{height:10px;border-radius:999px;background:var(--soft);overflow:hidden}
+.pbar i{display:block;height:100%;width:0;background:var(--gold);border-radius:999px;transition:width .25s linear}
+.pbox.fail .pbar i{background:var(--muted)}
+.pbox .pct{font-size:12px;color:var(--muted);margin-top:8px}
+.pbox .acts{display:flex;gap:8px;justify-content:center;margin-top:14px}
+.pbox .acts button{border:none;border-radius:10px;padding:10px 14px;font-weight:700;font-size:14px;background:var(--soft);color:var(--fg)}
+.pbox .acts .pri{background:var(--gold);color:#16203A}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(92px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:12px;font-weight:600;font-size:14px;max-width:calc(100% - 32px);text-align:center}
 @media (prefers-reduced-motion: no-preference){.view{animation:in .18s ease-out}@keyframes in{from{opacity:.4;transform:translateY(4px)}to{opacity:1;transform:none}}}
 .field{display:flex;flex-direction:column;gap:6px}
@@ -386,6 +396,12 @@ body.no-tabs .tabbar{display:none}
   <button type="button" id="tabMe"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Me</button>
 </nav>
 <div class="toast" id="toast" hidden></div>
+<div class="pbox" id="pbox" hidden role="status" aria-live="polite"><div class="card">
+  <div class="lbl" id="pLbl">Preparing photo…</div>
+  <div class="pbar"><i id="pFill"></i></div>
+  <div class="pct" id="pPct">0%</div>
+  <div class="acts" id="pActs" hidden><button type="button" id="pClose">Close</button><button type="button" class="pri" id="pRetry">Try again</button></div>
+</div></div>
 
 <script>
 // Real prices checked on the affiliate portals, 6–7 Oct 2026. qty = pack amount in the unit shown.
@@ -502,8 +518,16 @@ function renderHome(){
   const withSave = CATALOGUE.map(it => { const s=sorted(it), o=s.find(x=>x.p!==s[0].p); return {it, best:s[0], save: o ? (perUnit(o)-perUnit(s[0]))*s[0].qty : 0}; });
   withSave.sort((a,b)=>b.save-a.save);
   const pickIds = new Set(); const picks = [];
-  withSave.filter(x=>x.save>0).forEach(x=>{ if(picks.length<2){ picks.push(x); pickIds.add(x.it.id); } });
-  POPULAR.forEach(id=>{ const x=withSave.find(w=>w.it.id===id); if(x && picks.length<2 && !pickIds.has(id)){ picks.push(x); pickIds.add(id); } });
+  // We only earn on Shopee links: show deals where Shopee is the cheapest first; Lazada-cheapest only if nothing else.
+  const add = x => { if(x && picks.length<2 && !pickIds.has(x.it.id)){ picks.push(x); pickIds.add(x.it.id); } };
+  const shopeeFirst = !LAZADA_LINKS;
+  if(shopeeFirst){
+    withSave.filter(x=>x.best.p==='shopee' && x.save>0).forEach(add);
+    POPULAR.forEach(id=>add(withSave.find(w=>w.it.id===id && w.best.p==='shopee')));
+    withSave.filter(x=>x.best.p==='shopee').forEach(add);
+  }
+  withSave.filter(x=>x.save>0).forEach(add);
+  POPULAR.forEach(id=>add(withSave.find(w=>w.it.id===id)));
   picks.forEach(x => { const d=document.createElement('button'); d.type='button'; d.className='deal';
     d.innerHTML=`<div class="pic">${x.it.tag}${x.save>0?`<span class="save">Save ${rm(x.save)}</span>`:''}</div><span class="nm">${x.it.name} ${x.it.size}</span><div class="ft"><span class="pr num">${rm(x.best.price)}</span><span class="plat ${x.best.p}">${x.best.p}</span></div>`;
     d.onclick=()=>openCompare(x.it); deals.appendChild(d); });
@@ -656,7 +680,7 @@ async function afterLogin(){
   let { data: prof, error: pe } = await sb.from('profiles').select('invite_code, is_admin').eq('id', USER.id).maybeSingle();
   if(pe){ ({ data: prof } = await sb.from('profiles').select('invite_code').eq('id', USER.id).maybeSingle()); }
   $('adminBtn').hidden = !(prof && prof.is_admin);
-  show('home'); loadMySavings(); return;
+  show('home'); loadMySavings(); try{ warmPhoto(); }catch(e){} return;
   const code = lsGet('nbn-code');
   if(code){ const { data: ok } = await sb.rpc('redeem_invite', { p_code: code }); if(ok){ show('home'); loadMySavings(); return; } }
   // logged in but no valid code yet
@@ -737,33 +761,62 @@ $('bellBtn').onclick = () => toast('Price-drop alerts are coming soon.');
 $('seeAll').onclick = () => { const hits=[...CATALOGUE].sort((a,b)=>a.name.localeCompare(b.name)); const list=$('resultsList'); list.innerHTML=''; hits.forEach(it=>list.appendChild(row(it))); list.hidden=false; $('resultsHead').textContent = `All ${hits.length} products`; $('notFound').hidden=true; $('elsewhere').hidden=true; show('results'); };
 // Photo search: shrink the photo on the phone, send to our photo-search function, then search the phrase it returns.
 async function shrink(file){
-  const img = await new Promise((ok, bad) => { const i = new Image(); i.onload = () => ok(i); i.onerror = bad; i.src = URL.createObjectURL(file); });
-  const k = Math.min(1, 1024 / Math.max(img.width, img.height));
-  const c = document.createElement('canvas'); c.width = Math.round(img.width*k); c.height = Math.round(img.height*k);
-  c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-  return c.toDataURL('image/jpeg', 0.8).split(',')[1];
+  // 640px is enough to read a label and uploads ~2x faster than 1024px on mobile data.
+  let src, w, h;
+  if(window.createImageBitmap){ try{ src = await createImageBitmap(file); w = src.width; h = src.height; }catch(e){ src = null; } }
+  if(!src){ src = await new Promise((ok, bad) => { const i = new Image(); i.onload = () => ok(i); i.onerror = bad; i.src = URL.createObjectURL(file); }); w = src.width; h = src.height; }
+  const k = Math.min(1, 640 / Math.max(w, h));
+  const c = document.createElement('canvas'); c.width = Math.round(w*k); c.height = Math.round(h*k);
+  c.getContext('2d').drawImage(src, 0, 0, c.width, c.height);
+  return c.toDataURL('image/jpeg', 0.75).split(',')[1];
+}
+// Progress card: an estimate that keeps moving so people wait; real steps push it forward.
+const PHOTO_LIMIT_MS = 10000;
+let P = { pct:0, target:0, timer:null, run:0, file:null };
+function pSet(label, target){ if(label) $('pLbl').textContent = label; P.target = Math.max(P.target, target); }
+function pTick(){ if(P.pct < P.target) P.pct += Math.max(0.5, (P.target-P.pct)*0.15); else P.pct += (95-P.pct)*0.012; P.pct = Math.min(P.pct, 95); $('pFill').style.width = P.pct.toFixed(1)+'%'; $('pPct').textContent = Math.round(P.pct)+'%'; }
+function pOpen(){ P.pct = 0; P.target = 5; $('pbox').classList.remove('fail'); $('pActs').hidden = true; $('pFill').style.width='0%'; $('pPct').textContent='0%'; $('pLbl').textContent='Preparing photo…'; $('pbox').hidden = false; clearInterval(P.timer); P.timer = setInterval(pTick, 120); }
+function pDone(){ clearInterval(P.timer); P.pct = 100; $('pFill').style.width='100%'; $('pPct').textContent='100%'; $('pLbl').textContent='✓ Found it'; return new Promise(r=>setTimeout(()=>{ $('pbox').hidden = true; r(); }, 350)); }
+function pFail(msg){ clearInterval(P.timer); $('pbox').classList.add('fail'); $('pLbl').textContent = msg; $('pPct').textContent = ''; $('pActs').hidden = false; }
+$('pClose').onclick = () => { P.run++; clearInterval(P.timer); $('pbox').hidden = true; };
+$('pRetry').onclick = () => { if(P.file) photoSearch(P.file); else { $('pbox').hidden = true; $('photoInput').click(); } };
+async function photoSearch(f){
+  const run = ++P.run; P.file = f; const t0 = Date.now();
+  pOpen();
+  const late = () => run !== P.run;
+  const limit = new Promise(r => setTimeout(() => r('timeout'), PHOTO_LIMIT_MS));
+  const work = (async () => {
+    const image = await shrink(f);
+    if(late()) return null;
+    pSet('Uploading…', 35);
+    const call = sb.functions.invoke('photo-search', { body: { image } });
+    setTimeout(() => { if(!late() && P.target < 60) pSet('Reading the product…', 60); }, 700);
+    const res = await call; pSet('Reading the product…', 90); return res;
+  })();
+  let res;
+  try{ res = await Promise.race([work, limit]); }catch(err){ if(!late()) pFail('Photo search failed. Try again or type the name.'); return; }
+  if(late()) return;
+  if(res === 'timeout'){ P.run++; pFail('Taking too long. Try a screenshot, or type the name.'); return; }
+  const { data, error } = res || {};
+  if(error){ const st = error.context && error.context.status;
+    pFail(st === 402 ? 'You have used your free photo searches this month.' : 'Photo search is not available right now. Try typing the name.'); return; }
+  if(!data || !data.query){ pFail('Could not recognise that. Try a clearer photo or type the name.'); return; }
+  await pDone(); P.file = null;
+  $('q').value = data.query; search(data.query);
+  const secs = ((Date.now()-t0)/1000).toFixed(1);
+  const left = data.limit ? ` · ${Math.max(0, data.limit - data.used)} photo searches left this month` : '';
+  toast(`We think it's: ${data.query}${data.confidence==='low' ? ' (not sure, check it)' : ''} · ${secs}s${left}`);
 }
 $('photoBtn').onclick = () => $('photoInput').click();
-$('photoInput').onchange = async (e) => {
+$('photoInput').onchange = (e) => {
   const f = e.target.files && e.target.files[0]; e.target.value = '';
   if(!f) return;
   if(!sb || !USER){ toast('Photo search works after you log in.'); return; }
-  toast('Looking at your photo…');
-  try{
-    const image = await shrink(f);
-    const { data, error } = await sb.functions.invoke('photo-search', { body: { image } });
-    if(error){
-      const st = error.context && error.context.status;
-      toast(st === 402 ? 'You have used your free photo searches this month. Buy through NBN to unlock 10 more.' : 'Photo search is not available right now. Try typing the name.');
-      return;
-    }
-    if(!data || !data.query){ toast('Could not recognise that. Try a clearer photo or type the name.'); return; }
-    $('q').value = data.query;
-    search(data.query);
-    const left = data.limit ? ` · ${Math.max(0, data.limit - data.used)} photo searches left this month` : '';
-    toast(`We think it's: ${data.query}${data.confidence==='low' ? ' (not sure, check it)' : ''}${left}`);
-  }catch(err){ toast('Photo search failed. Try again or type the name.'); }
+  photoSearch(f);
 };
+// Wake the photo server early so the first photo search skips the start-up delay.
+let WARMED = false;
+function warmPhoto(){ if(WARMED || !sb || !USER) return; WARMED = true; sb.functions.invoke('photo-search', { body: { warm: true } }).catch(()=>{}); }
 // ---- Privacy ----
 $('privBack').onclick = () => show(USER || !sb ? (LASTVIEW || 'me') : 'join');
 

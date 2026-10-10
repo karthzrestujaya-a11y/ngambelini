@@ -19,6 +19,8 @@ const json = (b: unknown, status = 200) =>
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   try {
+    const body = await req.json().catch(() => ({}));
+    if (body && body.warm) return json({ ok: true, warm: true });   // app pings this on login so the first photo search is fast
     const url = Deno.env.get("SUPABASE_URL")!;
     const auth = req.headers.get("Authorization") ?? "";
     const userClient = createClient(url, Deno.env.get("SUPABASE_ANON_KEY")!, { global: { headers: { Authorization: auth } } });
@@ -28,6 +30,7 @@ Deno.serve(async (req) => {
 
     // Usage this calendar month (Malaysia time is close enough to UTC month start for a counter)
     const m0 = new Date(); m0.setUTCDate(1); m0.setUTCHours(0, 0, 0, 0);
+    const tStart = Date.now();
     const { count: used } = await admin.from("photo_searches").select("id", { count: "exact", head: true })
       .eq("user_id", user.id).gte("created_at", m0.toISOString());
     const { data: buys } = await admin.from("clicks").select("price_rm, status")
@@ -36,7 +39,7 @@ Deno.serve(async (req) => {
     const limit = FREE_PER_MONTH + (spent >= BONUS_MIN_SPEND ? BONUS_PER_MONTH : 0);
     if (!PILOT_UNLIMITED && (used ?? 0) >= limit) return json({ error: "limit", used, limit, spent }, 402);
 
-    const { image } = await req.json();
+    const { image } = body as { image?: string };
     if (typeof image !== "string" || image.length < 100) return json({ error: "no image" }, 400);
     if (image.length > 2_800_000) return json({ error: "image too big" }, 413);
 
@@ -49,14 +52,18 @@ If it is a listing: "platform" is the shop app shown, "price_rm" is the main pri
 "shop" is the seller/shop name if visible, "pack" is the pack size or variant (e.g. "2kg", "L 40pcs"). Otherwise use false, "", null, "", "", "".
 "query" is the best short search phrase a shopper would type on Shopee, e.g. "Casio MTP-1374D", "Dynamo detergent 3.9kg", "Milo 2kg refill".
 Include model numbers and pack size when visible. If it is a book, use the title and author. If you cannot tell, use your best guess and confidence "low".`;
-    const g = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`, {
+    // Speed: no "thinking" step and a short answer. If the model rejects the thinking setting, retry without it.
+    const ask = (fast: boolean) => fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-goog-api-key": Deno.env.get("GEMINI_API_KEY")! },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: "image/jpeg", data: image } }] }],
-        generationConfig: { responseMimeType: "application/json", temperature: 0.1 },
+        generationConfig: { responseMimeType: "application/json", temperature: 0.1, maxOutputTokens: 400,
+          ...(fast ? { thinkingConfig: { thinkingLevel: "minimal" } } : {}) },
       }),
     });
+    let g = await ask(true);
+    if (g.status === 400) { const t = await g.text(); console.warn("fast mode rejected", t.slice(0, 200)); g = await ask(false); }
     if (!g.ok) {
       const body = (await g.text()).slice(0, 500);
       console.error("gemini error", g.status, body);
@@ -78,6 +85,7 @@ Include model numbers and pack size when visible. If it is a book, use the title
       price_note: listing ? String(o.price_note ?? "").slice(0, 60) : null,
       shop: listing ? String(o.shop ?? "").slice(0, 80) : null, pack: String(o.pack ?? "").slice(0, 40) || null,
     });
+    console.log("photo-search ms", Date.now() - tStart);
     return json({ ...out, query, used: (used ?? 0) + 1, limit: PILOT_UNLIMITED ? null : limit });
   } catch (e) {
     return json({ error: "server", detail: String(e).slice(0, 200) }, 500);
