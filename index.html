@@ -243,7 +243,7 @@ body.no-tabs .tabbar{display:none}
     </div>
 
     <button type="button" class="minisave" id="miniSave">
-      <span style="display:flex;flex-direction:column;gap:2px;align-items:flex-start"><span class="ml">You saved this month</span><span class="mv num" id="savedMini">RM0.00</span></span>
+      <span style="display:flex;flex-direction:column;gap:2px;align-items:flex-start"><span class="ml">Savings this month</span><span class="mv num" id="savedMini">RM0.00</span></span>
       <span style="display:flex;flex-direction:column;gap:2px;align-items:flex-end"><span class="ml">Cash back to you</span><span class="mr num" id="retMini">RM0.00</span></span>
     </button>
 
@@ -263,7 +263,7 @@ body.no-tabs .tabbar{display:none}
   <section id="wallet" class="view" hidden style="flex-direction:column;gap:16px">
     <h1 style="font-size:24px">Your savings</h1>
     <div class="savings" aria-live="polite">
-      <div class="row"><span class="lbl">Confirmed savings this month</span><span class="lbl">from real orders</span></div>
+      <div class="row"><span class="lbl">Savings this month</span><span class="lbl num" id="savedSplit">Confirmed RM0.00 · On the way RM0.00</span></div>
       <div class="row">
         <span class="big num" id="saved">RM0.00</span>
         <span class="num" style="font-size:13px;color:var(--navy-muted);text-align:right" id="orders">0 confirmed orders</span>
@@ -278,7 +278,7 @@ body.no-tabs .tabbar{display:none}
       </div>
     </div>
 
-    <div class="note warn" style="line-height:1.5"><b>How cash back works:</b> buy through our Buy buttons. When Shopee or Lazada confirm your order, 40% of our commission is yours. We pay it by DuitNow once Shopee or Lazada pay us (usually 1–2 months after delivery), then your balance clears.</div>
+    <div class="note warn" style="line-height:1.5"><b>How cash back works:</b> buy through our Buy buttons. Savings show as "on the way" right after you tap Buy, and become confirmed when Shopee or Lazada confirm your order. 40% of our commission is yours. We pay it by DuitNow monthly once your cash back reaches <b>RM5</b> and Shopee or Lazada have paid us (usually 1–2 months after delivery); smaller amounts carry forward. <i>Pilot terms may change.</i></div>
   </section>
 
   <!-- ME -->
@@ -485,10 +485,12 @@ function row(it){
 }
 
 function renderHome(){
-  $('saved').textContent = rm(state.saved);
+  const total = state.saved + (state.onway||0);
+  $('saved').textContent = rm(total);
+  if($('savedSplit')) $('savedSplit').textContent = 'Confirmed ' + rm(state.saved) + ' · On the way ' + rm(state.onway||0);
   $('orders').textContent = state.buys + (state.buys===1?' confirmed order':' confirmed orders');
   $('ret').textContent = 'Return money: ' + rm(state.ret) + ' to be paid';
-  $('savedMini').textContent = rm(state.saved); $('retMini').textContent = rm(state.ret);
+  $('savedMini').textContent = rm(total); $('retMini').textContent = rm(state.ret);
   if($('retPaid')) $('retPaid').textContent = state.paidOut ? rm(state.paidOut) + ' already paid to you · 40% of our commission' : '40% of our commission comes back to you';
   const pop = $('popular'); pop.innerHTML = '';
   POPULAR.map(id=>CATALOGUE.find(c=>c.id===id)).filter(Boolean).forEach(it => pop.appendChild(row(it)));
@@ -559,11 +561,16 @@ function search(term, fromLinkDone){
   $('goShopee').href = shopeeAff('https://shopee.com.my/search?keyword=' + term);
   $('goLazada').href = 'https://www.lazada.com.my/catalog/?q=' + enc;
   $('goShopee').textContent = `Search "${term}" on Shopee`;
+  LAST_TERM = term;
   $('goLazada').textContent = `Search "${term}" on Lazada`;
   $('elsewhereHead').textContent = hits.length ? 'Want a different size or brand?' : '';
   if(sb && USER){ sb.from('searches').insert({ user_id: USER.id, term, results: hits.length }).then(()=>{}); }
   show('results');
 }
+let LAST_TERM = '';
+function logSearchTap(platform){ if(sb && USER && LAST_TERM){ sb.from('clicks').insert({ user_id: USER.id, platform, search_term: LAST_TERM.slice(0,120), saving_rm: 0 }).then(()=>{}); } }
+$('goShopee').addEventListener('click', () => logSearchTap('shopee'));
+$('goLazada').addEventListener('click', () => logSearchTap('lazada'));
 $('searchForm').addEventListener('submit', e => { e.preventDefault(); search($('q').value); });
 $('q').addEventListener('paste', e => { const t = (e.clipboardData || window.clipboardData)?.getData('text') || ''; if(/https?:\/\//i.test(t)){ e.preventDefault(); $('q').value = t.trim(); searchLink(t); } });
 
@@ -629,6 +636,7 @@ async function loadMySavings(){
   const week = Date.now() - 7*24*3600*1000;
   const conf = data.filter(c=>c.status==='confirmed' || c.status==='received' || c.status==='paid');
   const wait = data.filter(c=>c.status==='waiting' && new Date(c.clicked_at).getTime() > week && Number(c.saving_rm) > 0);
+  state.onway = data.filter(c=>c.status==='waiting' && new Date(c.clicked_at)>=m0).reduce((a,c)=>a+Number(c.saving_rm||0),0);
   state.saved = conf.filter(c=>new Date(c.confirmed_at||c.clicked_at)>=m0).reduce((a,c)=>a+Number(c.saving_rm||0),0);
   state.allSaved = conf.reduce((a,c)=>a+Number(c.saving_rm||0),0);
   state.buys = conf.length;
@@ -854,9 +862,10 @@ async function loadCash(){
   pay.innerHTML = due.length ? '' : '<span class="fine">Nobody to pay right now. Members show here once their commission is received.</span>';
   due.forEach(d => { const c = document.createElement('div'); c.className = 'card';
     c.innerHTML = `<div class="r1"><b>${esc(d.email)}</b><b class="num">${rm(Number(d.due_rm))}</b></div>
-      <div class="r2">${d.orders} order${d.orders===1?'':'s'} received · our commission ${rm(Number(d.commission_rm))} · 40% to member</div>
+      <div class="r2">${d.orders} order${d.orders===1?'':'s'} received · our commission ${rm(Number(d.commission_rm))} · 40% to member${Number(d.due_rm) < 5 ? ' · <b>below RM5 minimum: carry forward</b>' : ''}</div>
       <div class="acts"><input placeholder="DuitNow reference" aria-label="Payment reference"><button class="sbtn" type="button">Mark paid</button></div>`;
     c.querySelector('button').onclick = async () => { const ref = c.querySelector('input').value.trim(); if(!ref){ toast('Type the DuitNow reference first.'); return; }
+      if(Number(d.due_rm) < 5 && !confirm('Below the RM5 minimum. Pay anyway?')) return;
       const { error } = await sb.rpc('admin_pay_user', { p_user: d.user_id, p_ref: ref }); if(error){ toast(error.message); return; } toast('Marked paid'); loadCash(); };
     pay.appendChild(c); });
   taps.innerHTML = wait.length ? '' : '<span class="fine">No taps waiting.</span>';

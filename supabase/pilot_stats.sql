@@ -139,7 +139,7 @@ begin
   with days as (select g::date as d from generate_series(d0, d1, interval '1 day') g),
   weeks as (select distinct date_trunc('week', d)::date as w from days),
   mem as (select (p.created_at at time zone 'Asia/Kuala_Lumpur')::date as d from profiles p where not p.is_admin),
-  tap as (select (c.clicked_at at time zone 'Asia/Kuala_Lumpur')::date as d, c.*, l.platform, pr.category
+  tap as (select (c.clicked_at at time zone 'Asia/Kuala_Lumpur')::date as d, c.id, c.user_id, c.price_rm, c.status, c.confirmed_at, c.commission_rm, coalesce(l.platform, c.platform) as platform, coalesce(pr.category, case when c.search_term is not null then 'Search (not on list)' end) as category
             from clicks c left join listings l on l.id = c.listing_id left join products pr on pr.id = l.product_id
            where not exists (select 1 from profiles a where a.id = c.user_id and a.is_admin)),
   srch as (select (s.created_at at time zone 'Asia/Kuala_Lumpur')::date as d, s.user_id, s.term, s.results
