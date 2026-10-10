@@ -224,11 +224,12 @@ body.no-tabs .tabbar{display:none}
     <form id="searchForm" class="search float" role="search">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color:var(--muted)"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
       
-      <input id="q" type="search" aria-label="Search any product" placeholder="Search or paste a link" autocomplete="off">
+      <input id="q" type="search" aria-label="Search any product" placeholder="Paste link or type name" autocomplete="off">
       <button class="scanbtn camb" type="button" id="photoBtn" aria-label="Search by photo or screenshot"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/></svg></button>
       <input type="file" id="photoInput" accept="image/*" hidden>
       <button class="scanbtn" type="button" id="scanBtn" aria-label="Scan a barcode"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 8v8M10 8v8M13 8v8M17 8v8"/></svg></button>
     </form>
+    <p class="fine" id="linkHint" style="margin-top:-8px">Best way: in Shopee or Lazada tap <b>Share → Copy link</b>, then paste it here. Photo is optional.</p>
     <div id="scanner" hidden>
       <div id="reader"></div>
       <p class="fine" id="scanMsg">Point the camera at the barcode on the pack.</p>
@@ -323,6 +324,9 @@ body.no-tabs .tabbar{display:none}
     <div id="admRep" hidden style="display:flex;flex-direction:column;gap:10px">
       <p class="fine">Prices members shared from Shopee / Lazada screenshots. Check the price looks right (not a voucher-only price), pick a category, then Approve. Approved items appear in the app.</p>
       <div id="repList" style="display:flex;flex-direction:column;gap:8px"></div>
+      <h2 style="font-size:16px;margin-top:6px">Links members shared</h2>
+      <p class="fine">Add the item with its price. For Lazada, first convert the link in the Lazada affiliate portal (Link Convertor → Short Link) and paste the converted link, so we earn commission.</p>
+      <div id="linkList" style="display:flex;flex-direction:column;gap:8px"></div>
     </div>
     <div id="admCash" hidden style="display:flex;flex-direction:column;gap:12px">
       <p class="fine">1) Order completed: check the Shopee / Lazada conversion report and confirm the taps that became orders, with the commission. 2) Commission received: when Shopee / Lazada pay us, mark it received. 3) Pay members their 40% by DuitNow and mark them paid. We only pay members money we have received.</p>
@@ -353,6 +357,7 @@ body.no-tabs .tabbar{display:none}
       <li><b>What you search</b> (typed words, pasted links, scanned barcodes) — to show results and learn which products to add.</li>
       <li><b>Buy taps</b> — the product, price and time when you tap a Buy button, so we can match your order and pay your cash back.</li>
       <li><b>Photos you choose to search with</b> — sent once to Google's Gemini service to read the product name. We keep only what it reads (product name, and for shop screenshots the price, shop and pack size), never the photo. Prices you share this way may be used to update our price list.</li>
+      <li><b>Shop links you paste</b> — the Shopee or Lazada product link, so we can show the product and add it to our price list.</li>
       <li><b>Your DuitNow ID</b> (only when you claim cash back) — to pay you.</li>
     </ul>
     <h2>What we do not collect</h2>
@@ -513,16 +518,31 @@ function nameFromLink(t){
   if(!seg || /^[A-Za-z0-9]{4,12}$/.test(seg)) return '';   // short link: no name inside
   return seg.split(' ').slice(0,8).join(' ');
 }
-function search(term){
-  const fromLink = nameFromLink(term);
-  if(fromLink === ''){ toast('Short links are not supported yet. Open the product in Shopee, tap Share, then Copy link and paste the full link.'); return; }
-  if(fromLink){ term = fromLink; $('q').value = fromLink; toast('Searching for: ' + fromLink); }
+// Pasted Shopee/Lazada link: our resolve-link function opens short links (headers only), saves the link for us, and returns the product name.
+async function searchLink(link){
+  const m = String(link).match(/https?:\/\/\S+/i); if(!m) return false;
+  const url = m[0];
+  let host = ''; try{ host = new URL(url).hostname; }catch(e){ return false; }
+  if(!/shopee\.com\.my|shope\.ee|lazada\.com\.my/i.test(host)){ toast('Paste a Shopee or Lazada link.'); return true; }
+  let name = nameFromLink(url) || '';
+  if(sb && USER){
+    toast('Reading your link…');
+    try{ const { data } = await sb.functions.invoke('resolve-link', { body: { link: url } }); if(data && data.name) name = data.name; }catch(e){}
+  }
+  if(!name){ toast('Link saved, thank you! We will add this item. Type the product name to compare now.'); $('q').value = ''; return true; }
+  $('q').value = name; toast('Searching for: ' + name); search(name, true); return true;
+}
+function search(term, fromLinkDone){
+  if(!fromLinkDone && /https?:\/\//i.test(term)){ searchLink(term); return; }
   term = term.trim().toLowerCase();
   if(!term) return;
   $('elsewhere').hidden = false;
-  const words = term.split(/\s+/);
-  const hits = CATALOGUE.filter(it => { const hay=(it.name+' '+it.size+' '+it.keys).toLowerCase(); return words.every(w=>hay.includes(w)); })
-    .sort((a,b)=>perUnit(sorted(a)[0])-perUnit(sorted(b)[0]));
+  let words = term.split(/\s+/);
+  const find = ws => CATALOGUE.filter(it => { const hay=(it.name+' '+it.size+' '+it.keys).toLowerCase(); return ws.every(w=>hay.includes(w)); });
+  let hits = find(words);
+  // Names read from a shop link are long ("dutch lady full cream milk 1kg"): drop words from the end until something matches (min 2).
+  while(fromLinkDone && !hits.length && words.length > 2){ words = words.slice(0, -1); hits = find(words); }
+  hits.sort((a,b)=>perUnit(sorted(a)[0])-perUnit(sorted(b)[0]));
   const list = $('resultsList'); list.innerHTML = '';
   hits.forEach(it => list.appendChild(row(it)));
   list.hidden = !hits.length;
@@ -544,6 +564,7 @@ function search(term){
   show('results');
 }
 $('searchForm').addEventListener('submit', e => { e.preventDefault(); search($('q').value); });
+$('q').addEventListener('paste', e => { const t = (e.clipboardData || window.clipboardData)?.getData('text') || ''; if(/https?:\/\//i.test(t)){ e.preventDefault(); $('q').value = t.trim(); searchLink(t); } });
 
 // Every Shopee link goes through our affiliate redirect, tagged with the user (sub_id) so orders can be matched for cash back.
 const SHOPEE_AFF = '12111910001';
@@ -738,7 +759,7 @@ $('privBack').onclick = () => show(USER || !sb ? (LASTVIEW || 'me') : 'join');
 const esc = t => String(t ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function seg(which){ $('segPrices').classList.toggle('on', which==='prices'); $('segCash').classList.toggle('on', which==='cash'); $('segRep').classList.toggle('on', which==='rep'); $('segStats').classList.toggle('on', which==='stats');
   $('admPrices').hidden = which!=='prices'; $('admCash').hidden = which!=='cash'; $('admRep').hidden = which!=='rep'; $('admStats').hidden = which!=='stats';
-  if(which==='cash') loadCash(); if(which==='rep') loadReported(); if(which==='stats') loadStats(); }
+  if(which==='cash') loadCash(); if(which==='rep'){ loadReported(); loadLinks(); } if(which==='stats') loadStats(); }
 $('adminBtn').onclick = () => { show('admin'); seg('prices'); };
 $('segPrices').onclick = () => seg('prices'); $('segCash').onclick = () => seg('cash'); $('segRep').onclick = () => seg('rep'); $('segStats').onclick = () => seg('stats');
 function loadXLSX(){ return window.XLSX ? Promise.resolve(window.XLSX) : new Promise((ok, bad) => { const sc = document.createElement('script');
@@ -791,6 +812,29 @@ async function loadReported(){
       const { error } = await sb.rpc('admin_review_report', { p_id: r.id, p_action: 'approve', p_category: f('cat').value, p_name: f('name').value, p_price: price, p_size: f('size').value });
       if(error){ toast(error.message); return; } toast('Approved: now in the app'); loadReported(); try{ await loadLive(); renderHome(); }catch(e){} };
     c.querySelector('[data-a="no"]').onclick = async () => { const { error } = await sb.rpc('admin_review_report', { p_id: r.id, p_action: 'skip' }); if(error){ toast(error.message); return; } toast('Skipped'); loadReported(); };
+    box.appendChild(c); });
+}
+async function loadLinks(){
+  const box = $('linkList'); box.innerHTML = '<span class="fine">Loading…</span>';
+  const { data, error } = await sb.rpc('admin_links', { p_review: 'new' });
+  if(error){ box.innerHTML = '<div class="note bad">' + esc(error.message) + '</div>'; return; }
+  box.innerHTML = data.length ? '' : '<span class="fine">No new links. They appear here when members paste a Shopee or Lazada link.</span>';
+  data.forEach(r => { const c = document.createElement('div'); c.className = 'card'; const P = r.platform==='lazada' ? 'Lazada' : 'Shopee';
+    c.innerHTML = `<div class="r1"><b>${esc(r.name || 'Name not in link')}</b><span class="plat ${P}">${P}</span></div>
+      <div class="r2">${esc((r.email||'').split('@')[0])} · ${new Date(r.created_at).toLocaleString('en-MY',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'})}${r.times>1?` · shared ${r.times}×`:''} · <a href="${esc(r.resolved_url || r.original_url)}" target="_blank" rel="noopener">open product</a></div>
+      <div class="acts"><input data-f="name" value="${esc(r.name||'')}" placeholder="Product name" aria-label="Product name"></div>
+      <div class="acts"><input data-f="price" inputmode="decimal" placeholder="Price RM" aria-label="Price RM" style="max-width:110px"><input data-f="size" placeholder="Size" aria-label="Size" style="max-width:110px">
+        <select data-f="cat" aria-label="Category"><option value="">Category…</option>${REP_CATS.map(x=>`<option>${x}</option>`).join('')}</select></div>
+      ${P==='Lazada' ? '<div class="acts"><input data-f="link" placeholder="Converted Lazada link (c.lazada.com.my/…)" aria-label="Converted Lazada link"></div>' : ''}
+      <div class="acts"><button class="sbtn" type="button" data-a="ok">Add to app</button><button class="sbtn ghost" type="button" data-a="no">Skip</button></div>`;
+    const f = k => c.querySelector(`[data-f="${k}"]`);
+    c.querySelector('[data-a="ok"]').onclick = async () => {
+      if(!f('cat').value){ toast('Pick a category first.'); return; }
+      const price = Number(f('price').value); if(!(price > 0)){ toast('Type the price.'); return; }
+      if(P==='Lazada' && !f('link').value.trim() && !confirm('No converted Lazada link — we will not earn on this item. Add anyway?')) return;
+      const { error } = await sb.rpc('admin_review_link', { p_id: r.id, p_action: 'approve', p_category: f('cat').value, p_name: f('name').value, p_price: price, p_size: f('size').value, p_link: f('link') ? f('link').value : null });
+      if(error){ toast(error.message); return; } toast('Added to the app'); loadLinks(); try{ await loadLive(); renderHome(); }catch(e){} };
+    c.querySelector('[data-a="no"]').onclick = async () => { const { error } = await sb.rpc('admin_review_link', { p_id: r.id, p_action: 'skip' }); if(error){ toast(error.message); return; } toast('Skipped'); loadLinks(); };
     box.appendChild(c); });
 }
 async function loadCash(){
