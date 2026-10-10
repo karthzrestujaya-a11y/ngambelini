@@ -11,8 +11,8 @@ const cors = {
 const json = (b: unknown, status = 200) =>
   new Response(JSON.stringify(b), { status, headers: { ...cors, "Content-Type": "application/json" } });
 
-const ALLOWED = /(^|\.)(shopee\.com\.my|shope\.ee|lazada\.com\.my)$/i;
-const platformOf = (h: string) => /lazada/i.test(h) ? "lazada" : /shope/i.test(h) ? "shopee" : "";
+const ALLOWED = /(^|\.)(shopee\.com\.my|shope\.ee|shp\.ee|lazada\.com\.my)$/i;
+const platformOf = (h: string) => /lazada/i.test(h) ? "lazada" : /(shope|shp\.ee)/i.test(h) ? "shopee" : "";
 
 function nameFrom(u: URL): string {
   let seg = decodeURIComponent(u.pathname.split("/").filter(Boolean).pop() || "");

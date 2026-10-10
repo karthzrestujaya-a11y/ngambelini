@@ -512,7 +512,8 @@ function renderHome(){
 // Paste-a-link: full Shopee/Lazada links carry the product name in the address; short links need the API (later).
 function nameFromLink(t){
   let u; try{ u = new URL(t.trim()); }catch(e){ return null; }
-  if(!/shopee\.com\.my|lazada\.com\.my|shope\.ee|s\.shopee|s\.lazada/.test(u.hostname)) return null;
+  if(!/shopee\.com\.my|lazada\.com\.my|shope\.ee|shp\.ee/.test(u.hostname)) return null;
+  if(/^(s\.|my\.shp\.ee|shp\.ee|shope\.ee)/i.test(u.hostname)) return '';   // short share link: no name inside
   let seg = decodeURIComponent(u.pathname.split('/').filter(Boolean).pop() || '');
   seg = seg.replace(/-i\.\d+\.\d+$/,'').replace(/-i\d+(-s\d+)?\.html$/,'').replace(/\.html$/,'').replace(/[-_]+/g,' ').trim();
   if(!seg || /^[A-Za-z0-9]{4,12}$/.test(seg)) return '';   // short link: no name inside
@@ -523,13 +524,13 @@ async function searchLink(link){
   const m = String(link).match(/https?:\/\/\S+/i); if(!m) return false;
   const url = m[0];
   let host = ''; try{ host = new URL(url).hostname; }catch(e){ return false; }
-  if(!/shopee\.com\.my|shope\.ee|lazada\.com\.my/i.test(host)){ toast('Paste a Shopee or Lazada link.'); return true; }
+  if(!/shopee\.com\.my|shope\.ee|shp\.ee|lazada\.com\.my/i.test(host)){ toast('Paste a Shopee or Lazada link.'); return true; }
   let name = nameFromLink(url) || '';
   if(sb && USER){
     toast('Reading your link…');
     try{ const { data } = await sb.functions.invoke('resolve-link', { body: { link: url } }); if(data && data.name) name = data.name; }catch(e){}
   }
-  if(!name){ toast('Link saved, thank you! We will add this item. Type the product name to compare now.'); $('q').value = ''; return true; }
+  if(!name){ $('q').value = ''; $('q').placeholder = 'Now type the product name'; $('q').focus(); toast('Link saved, thank you! Now type the product name to compare.'); return true; }
   $('q').value = name; toast('Searching for: ' + name); search(name, true); return true;
 }
 function search(term, fromLinkDone){
