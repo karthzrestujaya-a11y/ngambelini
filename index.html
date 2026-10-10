@@ -563,6 +563,7 @@ function search(term, fromLinkDone){
   $('goShopee').textContent = `Search "${term}" on Shopee`;
   LAST_TERM = term;
   $('goLazada').textContent = `Search "${term}" on Lazada`;
+  $('goLazada').hidden = !LAZADA_LINKS;
   $('elsewhereHead').textContent = hits.length ? 'Want a different size or brand?' : '';
   if(sb && USER){ sb.from('searches').insert({ user_id: USER.id, term, results: hits.length }).then(()=>{}); }
   show('results');
@@ -576,6 +577,8 @@ $('q').addEventListener('paste', e => { const t = (e.clipboardData || window.cli
 
 // Every Shopee link goes through our affiliate redirect, tagged with the user (sub_id) so orders can be matched for cash back.
 const SHOPEE_AFF = '12111910001';
+// Shopee affiliate terms 6.2(e): no links to other shops next to Shopee affiliate links. Lazada prices are shown as information only until a network (e.g. Involve Asia) or Shopee allows both.
+const LAZADA_LINKS = false;
 function subId(){ return USER ? USER.id.replace(/-/g,'').slice(0,12) : 'guest'; }
 function shopeeAff(url){ return 'https://shope.ee/an_redir?origin_link=' + encodeURIComponent(url) + '&affiliate_id=' + SHOPEE_AFF + '&sub_id=' + subId(); }
 function buyUrl(p, it, o){
@@ -607,8 +610,8 @@ function openCompare(it){
     d.className = 'offer' + (i===0?' win':'');
     d.innerHTML = `<div class="head"><b><span class="plat ${o.p}" style="font-size:13px">${o.p}</span>${o.note?` <span class="muted" style="font-weight:500;font-size:13px">· ${o.note}</span>`:''}</b>${i===0?'<span class="badge" style="background:var(--gold);color:#0A2A66">Cheapest</span>':''}</div>
       <div class="head"><span class="price num">${rm(o.price)}</span><span class="unit num">${rm(perUnit(o))} ${unitLabel(it.unit)}</span></div>
-      <a class="btn ${o.p} ${i===0?'primary':'ghost'}" href="${buyUrl(o.p,it,o)}" target="_blank" rel="noopener">Buy on ${o.p}</a>`;
-    d.querySelector('a').addEventListener('click', () => {
+      ${(o.p==='Lazada' && !LAZADA_LINKS) ? `<p class="fine">${i===0?'Cheapest here. ':''}Price shown for comparison. To buy, open the Lazada app yourself and search this item.</p>` : `<a class="btn ${o.p} ${i===0?'primary':'ghost'}" href="${buyUrl(o.p,it,o)}" target="_blank" rel="noopener">Buy on ${o.p}</a>`}`;
+    if(d.querySelector('a')) d.querySelector('a').addEventListener('click', () => {
       const s2 = (i===0) ? saving : 0;
       if(sb && USER && o.lid){ sb.from('clicks').insert({ user_id: USER.id, listing_id: o.lid, saving_rm: Number(s2.toFixed(2)), price_rm: o.price }).then(()=>loadMySavings()); }
       toast(s2>0 ? `Tracked. Your ${rm(s2)} saving counts once ${o.p} confirms your order.` : 'Tracked. No saving on this choice.');
