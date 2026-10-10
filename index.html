@@ -152,8 +152,8 @@ body.no-tabs .tabbar{display:none}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .seeall{color:var(--gold)}}
 :root[data-theme="dark"] .seeall{color:var(--gold)}
 /* Admin + privacy */
-.seg{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;background:var(--soft);border-radius:14px;padding:4px}
-.seg button{border:none;border-radius:10px;height:40px;background:transparent;color:var(--fg);font-weight:700;font-size:14px}
+.seg{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;background:var(--soft);border-radius:14px;padding:4px}
+.seg button{border:none;border-radius:10px;height:40px;background:transparent;color:var(--fg);font-weight:700;font-size:13px;padding:0 2px}
 .seg button.on{background:var(--surface);box-shadow:0 1px 2px rgba(0,0,0,.08)}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:8px}
 .card .r1{display:flex;justify-content:space-between;gap:8px;font-size:14px}
@@ -167,6 +167,28 @@ body.no-tabs .tabbar{display:none}
 .filebox{border:2px dashed var(--line);border-radius:14px;padding:18px;text-align:center;display:flex;flex-direction:column;gap:8px;align-items:center}
 .legal h2{font-size:16px;margin-top:6px} .legal p,.legal li{font-size:14px;line-height:1.55} .legal ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px}
 .checked{font-size:12px;color:var(--muted)}
+/* Admin stats charts. Series colours: slot 1 blue = Lazada / single series, slot 2 orange = Shopee (validated light + dark). */
+.viz{--s1:#2a78d6;--s2:#eb6834;--grid:#ECE7DA;--axis:#545C70}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .viz{--s1:#3987e5;--s2:#d95926;--grid:#26324A;--axis:#A7B1C2}}
+:root[data-theme="dark"] .viz{--s1:#3987e5;--s2:#d95926;--grid:#26324A;--axis:#A7B1C2}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.kpi b{font-family:var(--display);font-size:22px;font-variant-numeric:tabular-nums}
+.kpi span{font-size:12px;color:var(--muted)}
+.chart{position:relative}
+.chart svg{display:block;width:100%;height:auto;overflow:visible;touch-action:pan-y}
+.chart text{font-size:10px;fill:var(--axis);font-family:var(--body);font-variant-numeric:tabular-nums}
+.chart .tip{position:absolute;pointer-events:none;background:var(--fg);color:var(--bg);font-size:12px;line-height:1.4;padding:6px 8px;border-radius:8px;white-space:nowrap;transform:translate(-50%,-100%);display:none;z-index:2}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--muted);flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.card details summary{font-size:12px;color:var(--muted);cursor:pointer}
+.card table{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums}
+.card td,.card th{padding:3px 4px;border-bottom:1px solid var(--line);text-align:right}
+.card td:first-child,.card th:first-child{text-align:left}
+.capbar{height:10px;border-radius:999px;background:var(--soft);overflow:hidden}
+.capbar i{display:block;height:100%;background:var(--navy);border-radius:999px}
+.hrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 8px;font-size:13px}
+.hrow .bar{grid-column:1/-1;height:8px;border-radius:0 4px 4px 0;background:var(--s1)}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
@@ -255,7 +277,7 @@ body.no-tabs .tabbar{display:none}
       </div>
     </div>
 
-    <div class="note warn" style="line-height:1.5"><b>How cash back works:</b> buy through our Buy buttons. When Shopee or Lazada confirm your order (about 30 days after delivery), 40% of our commission is yours. We pay it by DuitNow at month end, then your balance clears.</div>
+    <div class="note warn" style="line-height:1.5"><b>How cash back works:</b> buy through our Buy buttons. When Shopee or Lazada confirm your order, 40% of our commission is yours. We pay it by DuitNow once Shopee or Lazada pay us (usually 1–2 months after delivery), then your balance clears.</div>
   </section>
 
   <!-- ME -->
@@ -288,7 +310,7 @@ body.no-tabs .tabbar{display:none}
   <section id="admin" class="view" hidden style="flex-direction:column;gap:14px">
     <button class="back" type="button" data-go="me">‹ Back</button>
     <h1 style="font-size:24px">Admin</h1>
-    <div class="seg" role="tablist"><button type="button" id="segPrices" class="on">Upload prices</button><button type="button" id="segCash">Cash back</button><button type="button" id="segRep">Reported</button></div>
+    <div class="seg" role="tablist"><button type="button" id="segPrices" class="on">Prices</button><button type="button" id="segCash">Cash back</button><button type="button" id="segRep">Reported</button><button type="button" id="segStats">Stats</button></div>
     <div id="admPrices" style="display:flex;flex-direction:column;gap:12px">
       <div class="filebox">
         <b>Upload the price sheet (Excel)</b>
@@ -303,11 +325,19 @@ body.no-tabs .tabbar{display:none}
       <div id="repList" style="display:flex;flex-direction:column;gap:8px"></div>
     </div>
     <div id="admCash" hidden style="display:flex;flex-direction:column;gap:12px">
-      <p class="fine">1) Check the Shopee / Lazada conversion report. 2) Confirm the taps that became orders, with the commission from the report. 3) Pay members by DuitNow and mark them paid.</p>
-      <h2 style="font-size:16px">Ready to pay</h2>
-      <div id="payList" style="display:flex;flex-direction:column;gap:8px"></div>
-      <h2 style="font-size:16px">Waiting for confirmation</h2>
+      <p class="fine">1) Order completed: check the Shopee / Lazada conversion report and confirm the taps that became orders, with the commission. 2) Commission received: when Shopee / Lazada pay us, mark it received. 3) Pay members their 40% by DuitNow and mark them paid. We only pay members money we have received.</p>
+      <h2 style="font-size:16px">1 · Waiting for order confirmation</h2>
       <div id="tapList" style="display:flex;flex-direction:column;gap:8px"></div>
+      <h2 style="font-size:16px">2 · Waiting for Shopee / Lazada to pay us</h2>
+      <div id="rcvList" style="display:flex;flex-direction:column;gap:8px"></div>
+      <h2 style="font-size:16px">3 · Ready to pay members</h2>
+      <div id="payList" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+    <div id="admStats" class="viz" hidden style="display:flex;flex-direction:column;gap:12px">
+      <div class="seg" id="period" role="group" aria-label="Period"><button type="button" data-days="7">7 days</button><button type="button" data-days="30" class="on">30 days</button><button type="button" data-days="60">60 days</button><button type="button" data-days="90">90 days</button></div>
+      <div class="card" id="capCard"></div>
+      <div id="kpis" class="kpis"></div>
+      <div id="charts" style="display:flex;flex-direction:column;gap:12px"></div>
     </div>
   </section>
 
@@ -575,14 +605,14 @@ async function loadMySavings(){
   if(!data) return;
   const m0 = new Date(); m0.setDate(1); m0.setHours(0,0,0,0);
   const week = Date.now() - 7*24*3600*1000;
-  const conf = data.filter(c=>c.status==='confirmed' || c.status==='paid');
+  const conf = data.filter(c=>c.status==='confirmed' || c.status==='received' || c.status==='paid');
   const wait = data.filter(c=>c.status==='waiting' && new Date(c.clicked_at).getTime() > week && Number(c.saving_rm) > 0);
   state.saved = conf.filter(c=>new Date(c.confirmed_at||c.clicked_at)>=m0).reduce((a,c)=>a+Number(c.saving_rm||0),0);
   state.allSaved = conf.reduce((a,c)=>a+Number(c.saving_rm||0),0);
   state.buys = conf.length;
   // Customer gets 40% of our commission (NBN keeps 60%). Use the real commission from the affiliate report once entered; until then estimate at 4% of price.
   const share = c => (c.commission_rm != null ? Number(c.commission_rm) : Number(c.price_rm||0)*0.04) * CUSTOMER_SHARE;
-  state.ret = conf.filter(c=>c.status==='confirmed').reduce((a,c)=>a+share(c),0);
+  state.ret = conf.filter(c=>c.status==='confirmed' || c.status==='received').reduce((a,c)=>a+share(c),0);
   state.paidOut = conf.filter(c=>c.status==='paid').reduce((a,c)=>a+share(c),0);
   renderHome();
   $('orders').textContent = rm(state.allSaved) + ' since joining · ' + conf.length + (conf.length===1?' order':' orders');
@@ -616,7 +646,9 @@ $('joinForm').addEventListener('submit', async e => {
     const email = $('email').value.trim();
     if(!email){ msg.textContent = 'Enter your email.'; return; }
     const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: location.origin + location.pathname } });
-    msg.textContent = error ? ('Could not send the email: ' + error.message) : ('Link sent to ' + email + '. Open your email on this phone and tap the link.');
+    msg.textContent = !error ? ('Link sent to ' + email + '. Open your email on this phone and tap the link.')
+      : /pilot_full|database error saving new user/i.test(error.message) ? 'Sorry, the NBN pilot is full right now. Please try again later.'
+      : ('Could not send the email: ' + error.message);
   } finally { btn.disabled = false; }
 });
 
@@ -704,11 +736,11 @@ $('privBack').onclick = () => show(USER || !sb ? (LASTVIEW || 'me') : 'join');
 
 // ---- Admin: upload price sheet + cash back ----
 const esc = t => String(t ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function seg(which){ $('segPrices').classList.toggle('on', which==='prices'); $('segCash').classList.toggle('on', which==='cash'); $('segRep').classList.toggle('on', which==='rep');
-  $('admPrices').hidden = which!=='prices'; $('admCash').hidden = which!=='cash'; $('admRep').hidden = which!=='rep';
-  if(which==='cash') loadCash(); if(which==='rep') loadReported(); }
+function seg(which){ $('segPrices').classList.toggle('on', which==='prices'); $('segCash').classList.toggle('on', which==='cash'); $('segRep').classList.toggle('on', which==='rep'); $('segStats').classList.toggle('on', which==='stats');
+  $('admPrices').hidden = which!=='prices'; $('admCash').hidden = which!=='cash'; $('admRep').hidden = which!=='rep'; $('admStats').hidden = which!=='stats';
+  if(which==='cash') loadCash(); if(which==='rep') loadReported(); if(which==='stats') loadStats(); }
 $('adminBtn').onclick = () => { show('admin'); seg('prices'); };
-$('segPrices').onclick = () => seg('prices'); $('segCash').onclick = () => seg('cash'); $('segRep').onclick = () => seg('rep');
+$('segPrices').onclick = () => seg('prices'); $('segCash').onclick = () => seg('cash'); $('segRep').onclick = () => seg('rep'); $('segStats').onclick = () => seg('stats');
 function loadXLSX(){ return window.XLSX ? Promise.resolve(window.XLSX) : new Promise((ok, bad) => { const sc = document.createElement('script');
   sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'; sc.onload = () => ok(window.XLSX); sc.onerror = () => bad(new Error('Could not load the Excel reader. Check your internet.')); document.head.appendChild(sc); }); }
 let SHEET = null;
@@ -762,14 +794,22 @@ async function loadReported(){
     box.appendChild(c); });
 }
 async function loadCash(){
-  const pay = $('payList'), taps = $('tapList');
-  pay.innerHTML = taps.innerHTML = '<span class="fine">Loading…</span>';
-  const [{ data: due, error: e1 }, { data: wait, error: e2 }] = await Promise.all([sb.rpc('admin_payouts'), sb.rpc('admin_clicks', { p_status: 'waiting' })]);
-  if(e1 || e2){ pay.innerHTML = '<div class="note bad">' + esc((e1||e2).message) + '</div>'; taps.innerHTML = ''; return; }
-  pay.innerHTML = due.length ? '' : '<span class="fine">Nobody to pay right now.</span>';
+  const pay = $('payList'), taps = $('tapList'), rcv = $('rcvList');
+  pay.innerHTML = taps.innerHTML = rcv.innerHTML = '<span class="fine">Loading…</span>';
+  const [{ data: due, error: e1 }, { data: wait, error: e2 }, { data: unr, error: e3 }] = await Promise.all([sb.rpc('admin_payouts'), sb.rpc('admin_clicks', { p_status: 'waiting' }), sb.rpc('admin_unreceived')]);
+  if(e1 || e2 || e3){ pay.innerHTML = '<div class="note bad">' + esc((e1||e2||e3).message) + '</div>'; taps.innerHTML = rcv.innerHTML = ''; return; }
+  rcv.innerHTML = unr.length ? '' : '<span class="fine">Nothing waiting. Confirmed orders show here until Shopee / Lazada pay us.</span>';
+  unr.forEach(u => { const c = document.createElement('div'); c.className = 'card'; const P = u.platform==='shopee' ? 'Shopee' : 'Lazada';
+    c.innerHTML = `<div class="r1"><span class="plat ${P}">${P}</span><b class="num">${rm(Number(u.commission_rm))}</b></div>
+      <div class="r2">${u.orders} completed order${u.orders===1?'':'s'} · oldest confirmed ${new Date(u.oldest).toLocaleDateString('en-MY',{day:'numeric',month:'short'})} · members get 40% after we receive this</div>
+      <div class="acts"><input placeholder="${P} payment reference" aria-label="${P} payment reference"><button class="sbtn" type="button">Mark received</button></div>`;
+    c.querySelector('button').onclick = async () => { const ref = c.querySelector('input').value.trim(); if(!ref){ toast('Type the payment reference from ' + P + ' first.'); return; }
+      const { data: n, error } = await sb.rpc('admin_mark_received', { p_platform: u.platform, p_ref: ref }); if(error){ toast(error.message); return; } toast(n + ' order' + (n===1?'':'s') + ' marked received'); loadCash(); };
+    rcv.appendChild(c); });
+  pay.innerHTML = due.length ? '' : '<span class="fine">Nobody to pay right now. Members show here once their commission is received.</span>';
   due.forEach(d => { const c = document.createElement('div'); c.className = 'card';
     c.innerHTML = `<div class="r1"><b>${esc(d.email)}</b><b class="num">${rm(Number(d.due_rm))}</b></div>
-      <div class="r2">${d.orders} confirmed order${d.orders===1?'':'s'} · our commission ${rm(Number(d.commission_rm))} · 40% to member</div>
+      <div class="r2">${d.orders} order${d.orders===1?'':'s'} received · our commission ${rm(Number(d.commission_rm))} · 40% to member</div>
       <div class="acts"><input placeholder="DuitNow reference" aria-label="Payment reference"><button class="sbtn" type="button">Mark paid</button></div>`;
     c.querySelector('button').onclick = async () => { const ref = c.querySelector('input').value.trim(); if(!ref){ toast('Type the DuitNow reference first.'); return; }
       const { error } = await sb.rpc('admin_pay_user', { p_user: d.user_id, p_ref: ref }); if(error){ toast(error.message); return; } toast('Marked paid'); loadCash(); };
@@ -783,6 +823,100 @@ async function loadCash(){
       const { error } = await sb.rpc('admin_set_click', { p_id: t.id, p_status: 'confirmed', p_commission: v }); if(error){ toast(error.message); return; } toast('Confirmed'); loadCash(); };
     c.querySelector('[data-a="no"]').onclick = async () => { const { error } = await sb.rpc('admin_set_click', { p_id: t.id, p_status: 'expired' }); if(error){ toast(error.message); return; } toast('Marked no order'); loadCash(); };
     taps.appendChild(c); });
+}
+
+// ---- Admin: Stats (graphs from admin_stats) ----
+let STAT_DAYS = 30;
+const nf = n => Number(n||0).toLocaleString('en-MY');
+const dlabel = d => new Date(d + 'T00:00:00').toLocaleDateString('en-MY', { day:'numeric', month:'short' });
+document.querySelectorAll('#period button').forEach(b => b.onclick = () => { STAT_DAYS = Number(b.dataset.days);
+  document.querySelectorAll('#period button').forEach(x => x.classList.toggle('on', x===b)); loadStats(); });
+function niceMax(v){ if(!(v > 0)) return 1; const e = Math.pow(10, Math.floor(Math.log10(v))); const m = v / e; return (m<=1?1:m<=2?2:m<=5?5:10) * e; }
+function tableHTML(head, rows){ return `<details><summary>Show as table</summary><table><tr>${head.map(h=>`<th>${esc(h)}</th>`).join('')}</tr>${rows.map(r=>`<tr>${r.map(c=>`<td>${esc(c)}</td>`).join('')}</tr>`).join('')}</table></details>`; }
+// Line or bar chart over x labels. series: [{name, color (css var), values}]. kind: 'line' | 'bar'. ref: {value, label}
+function chartCard(title, sub, { x, series, kind='line', fmt=nf, ref=null, xfmt=dlabel }){
+  const card = document.createElement('div'); card.className = 'card';
+  const W = 340, H = 150, L = 34, R = 8, T = 10, B = 20, iw = W - L - R, ih = H - T - B, n = x.length;
+  const maxV = niceMax(Math.max(...series.flatMap(s => s.values), ref ? ref.value : 0));
+  const X = i => kind==='bar' ? L + (i + 0.5) * iw / n : L + (n<2 ? iw/2 : i * iw / (n - 1));
+  const Y = v => T + ih - (v / maxV) * ih;
+  let g = '';
+  const m = maxV / Math.pow(10, Math.floor(Math.log10(maxV))), nt = m===2 ? 4 : 5;
+  for(let k=0;k<=nt;k++){ const v = maxV*k/nt, y = Y(v); g += `<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="var(--grid)" stroke-width="1"/><text x="${L-5}" y="${y+3}" text-anchor="end">${esc(fmt(v))}</text>`; }
+  const step = Math.max(1, Math.ceil(n / 5));
+  for(let i=0;i<n;i+=step) g += `<text x="${X(i)}" y="${H-5}" text-anchor="middle">${esc(xfmt(x[i]))}</text>`;
+  if(ref) g += `<line x1="${L}" x2="${W-R}" y1="${Y(ref.value)}" y2="${Y(ref.value)}" stroke="var(--fg)" stroke-width="1" stroke-dasharray="4 4"/><text x="${W-R}" y="${Y(ref.value)-4}" text-anchor="end" style="fill:var(--fg)">${esc(ref.label)}</text>`;
+  if(kind==='bar'){
+    const slot = iw / n, bw = Math.max(2, Math.min(14, slot / series.length - 2));
+    series.forEach((s, si) => s.values.forEach((v, i) => { if(!(v > 0)) return;
+      const cx = X(i) + (si - (series.length-1)/2) * (bw + 2), y = Y(v), h = T + ih - y, r = Math.min(4, bw/2, h);
+      g += `<path d="M${cx-bw/2},${T+ih} V${y+r} Q${cx-bw/2},${y} ${cx-bw/2+r},${y} H${cx+bw/2-r} Q${cx+bw/2},${y} ${cx+bw/2},${y+r} V${T+ih} Z" fill="${s.color}"/>`; }));
+  } else {
+    series.forEach(s => { g += `<polyline fill="none" stroke="${s.color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" points="${s.values.map((v,i)=>X(i)+','+Y(v)).join(' ')}"/>`; });
+  }
+  g += `<line class="xh" x1="0" x2="0" y1="${T}" y2="${T+ih}" stroke="var(--axis)" stroke-width="1" visibility="hidden"/>`;
+  g += `<rect x="${L}" y="0" width="${iw}" height="${H}" fill="transparent" class="hit"/>`;
+  const legend = series.length > 1 ? `<div class="legend">${series.map(s=>`<span><i style="background:${s.color}"></i>${esc(s.name)}</span>`).join('')}</div>` : '';
+  card.innerHTML = `<div class="r1"><b>${esc(title)}</b></div>${sub ? `<div class="r2">${sub}</div>` : ''}${legend}
+    <div class="chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(title)}">${g}</svg><div class="tip"></div></div>
+    ${tableHTML(['Date', ...series.map(s=>s.name)], x.map((d,i)=>[xfmt(d), ...series.map(s=>fmt(s.values[i]))]).filter((r,i)=>series.some(s=>s.values[i])).reverse())}`;
+  const svg = card.querySelector('svg'), tip = card.querySelector('.tip'), xh = card.querySelector('.xh');
+  const move = e => { const rc = svg.getBoundingClientRect(), sx = (e.clientX - rc.left) * W / rc.width;
+    let i = kind==='bar' ? Math.floor((sx - L) / (iw / n)) : Math.round((sx - L) / (iw / Math.max(1, n - 1)));
+    i = Math.max(0, Math.min(n - 1, i));
+    xh.setAttribute('x1', X(i)); xh.setAttribute('x2', X(i)); xh.setAttribute('visibility', 'visible');
+    tip.innerHTML = `<b>${esc(xfmt(x[i]))}</b><br>` + series.map(s => `${series.length>1 ? `<span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${s.color};margin-right:4px"></span>${esc(s.name)}: ` : ''}${esc(fmt(s.values[i]))}`).join('<br>');
+    tip.style.display = 'block'; const px = X(i) * rc.width / W; tip.style.left = Math.max(60, Math.min(rc.width - 60, px)) + 'px'; tip.style.top = '0px'; };
+  const hit = card.querySelector('.hit');
+  hit.addEventListener('pointermove', move); hit.addEventListener('pointerdown', move);
+  hit.addEventListener('pointerleave', () => { tip.style.display = 'none'; xh.setAttribute('visibility', 'hidden'); });
+  return card;
+}
+function kpi(label, value){ return `<div class="kpi"><b>${esc(value)}</b><span>${esc(label)}</span></div>`; }
+async function loadStats(){
+  const box = $('charts'); box.innerHTML = '<span class="fine">Loading…</span>';
+  const { data: S, error } = await sb.rpc('admin_stats', { p_days: STAT_DAYS });
+  if(error){ box.innerHTML = '<div class="note bad">' + esc(error.message) + '</div>'; return; }
+  // Sign-up cap
+  const cap = S.cap || 0, pct = cap ? Math.min(100, Math.round(S.members * 100 / cap)) : 0;
+  $('capCard').innerHTML = `<div class="r1"><b>Pilot members</b><b class="num">${S.members} of ${cap}</b></div>
+    <div class="capbar" role="progressbar" aria-valuenow="${S.members}" aria-valuemax="${cap}"><i style="width:${pct}%"></i></div>
+    <div class="r2">${S.members >= cap ? 'Full: new sign-ups are blocked. Existing members can still log in.' : (cap - S.members) + ' places left. Admins are not counted.'}</div>
+    <div class="acts"><input id="capInput" inputmode="numeric" value="${cap}" aria-label="Sign-up limit" style="max-width:110px"><button class="sbtn" type="button" id="capSave">Save limit</button></div>`;
+  $('capSave').onclick = async () => { const v = parseInt($('capInput').value, 10); if(!(v > 0)){ toast('Type a number.'); return; }
+    if(v < S.members && !confirm(`Only ${v}? You already have ${S.members} members. No one is removed; new sign-ups stay blocked.`)) return;
+    const { error } = await sb.rpc('admin_set_cap', { p_cap: v }); if(error){ toast(error.message); return; } toast('Limit set to ' + v); loadStats(); };
+  // Headline numbers
+  const D = S.daily || [], Wk = S.weekly || [], st = S.stages || {}, t = S.totals || {};
+  const lastWeek = Wk.length ? Wk[Wk.length-1].active : 0;
+  const owed = Number((st.confirmed||{}).commission_rm||0), rcvd = Number((st.received||{}).commission_rm||0), paid = Number((st.paid||{}).commission_rm||0);
+  $('kpis').innerHTML = kpi('Active members this week', `${lastWeek} of ${S.members}`) + kpi(`Buy taps (${STAT_DAYS} days)`, nf(t.taps))
+    + kpi(`Tapped value (${STAT_DAYS} days)`, rm(Number(t.tapped_rm||0))) + kpi(`Searches (${STAT_DAYS} days)`, nf(Number(t.searches||0) + Number(t.photo||0)))
+    + kpi('Commission still to receive', rm(owed)) + kpi('Commission received (all time)', rm(rcvd + paid));
+  box.innerHTML = '';
+  const xs = D.map(r => r.d), col = k => D.map(r => Number(r[k]||0));
+  box.appendChild(chartCard('Members', 'Total members by day, against the sign-up limit', { x: xs, series: [{ name: 'Members', color: 'var(--s1)', values: col('members') }], ref: { value: cap, label: 'Limit ' + cap } }));
+  box.appendChild(chartCard('Active members per week', 'Searched or tapped Buy at least once that week', { x: Wk.map(w=>w.w), xfmt: d => 'wk ' + dlabel(d), kind: 'bar', series: [{ name: 'Active', color: 'var(--s1)', values: Wk.map(w=>Number(w.active)) }] }));
+  box.appendChild(chartCard('Searches per day', '', { x: xs, series: [{ name: 'Typed', color: 'var(--s1)', values: col('searches') }, { name: 'Photo', color: 'var(--s2)', values: col('photo') }] }));
+  box.appendChild(chartCard('Buy taps per day', 'Taps on our Buy buttons (not yet confirmed orders)', { x: xs, kind: 'bar', series: [{ name: 'Lazada', color: 'var(--s1)', values: col('lazada') }, { name: 'Shopee', color: 'var(--s2)', values: col('shopee') }] }));
+  box.appendChild(chartCard('Tapped value per day (RM)', 'Price shown when members tapped Buy. Real spend is confirmed from the Shopee / Lazada report.', { x: xs, kind: 'bar', fmt: v => 'RM' + Math.round(v), series: [{ name: 'RM', color: 'var(--s1)', values: col('tapped_rm') }] }));
+  box.appendChild(chartCard('Orders confirmed per week', 'Commission confirmed from the reports', { x: Wk.map(w=>w.w), xfmt: d => 'wk ' + dlabel(d), kind: 'bar', fmt: v => 'RM' + (Number(v) % 1 ? Number(v).toFixed(2) : Number(v)), series: [{ name: 'Commission RM', color: 'var(--s1)', values: Wk.map(w=>Number(w.commission_rm)) }] }));
+  // Cash back pipeline
+  const pipe = document.createElement('div'); pipe.className = 'card';
+  const stg = [['waiting','Tapped, waiting for order'],['confirmed','Order completed, to receive'],['received','Received, to pay members'],['paid','Paid to members'],['expired','No order']];
+  pipe.innerHTML = `<div class="r1"><b>Cash back pipeline (all time)</b></div><table><tr><th>Stage</th><th>Taps</th><th>Commission</th><th>Members' 40%</th></tr>${stg.map(([k,l]) => { const v = st[k]||{n:0,commission_rm:0};
+    return `<tr><td>${l}</td><td>${nf(v.n)}</td><td>${k==='waiting'||k==='expired' ? '–' : rm(Number(v.commission_rm))}</td><td>${k==='waiting'||k==='expired' ? '–' : rm(Number(v.commission_rm)*0.40)}</td></tr>`; }).join('')}</table>`;
+  box.appendChild(pipe);
+  // Categories
+  const cats = S.categories || [], cmax = Math.max(1, ...cats.map(c => Number(c.tapped_rm)));
+  const cc = document.createElement('div'); cc.className = 'card';
+  cc.innerHTML = `<div class="r1"><b>Tapped value by category</b></div><div class="r2">Last ${STAT_DAYS} days</div>` + (cats.length ? cats.map(c => `<div class="hrow" title="${esc(c.category)}: ${nf(c.taps)} taps, ${rm(Number(c.tapped_rm))}"><span>${esc(c.category)}</span><span class="num">${rm(Number(c.tapped_rm))} · ${nf(c.taps)} taps</span><i class="bar" style="width:${Math.max(1, Number(c.tapped_rm)*100/cmax)}%"></i></div>`).join('') : '<span class="fine">No taps yet.</span>');
+  box.appendChild(cc);
+  // Not found
+  const nfL = S.not_found || [], nfc = document.createElement('div'); nfc.className = 'card';
+  nfc.innerHTML = `<div class="r1"><b>Searched but not on our list</b></div><div class="r2">Add these to the price sheet first (last ${STAT_DAYS} days)</div>` + (nfL.length ? `<table><tr><th>Search</th><th>Times</th><th>Members</th></tr>${nfL.map(r=>`<tr><td>${esc(r.term)}</td><td>${nf(r.n)}</td><td>${nf(r.users)}</td></tr>`).join('')}</table>` : '<span class="fine">Nothing missing yet.</span>');
+  box.appendChild(nfc);
+  box.appendChild(chartCard('Price database', `${nf(t.products_live)} products live · ${nf(t.reports_waiting)} reported prices waiting for review`, { x: xs, series: [{ name: 'Prices recorded', color: 'var(--s1)', values: col('prices') }] }));
 }
 
 renderHome(); boot().catch(()=>show('home'));
