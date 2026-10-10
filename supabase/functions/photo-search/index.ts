@@ -6,7 +6,7 @@ const FREE_PER_MONTH = 3;      // every member
 const BONUS_PER_MONTH = 10;    // extra if they bought through NBN this month
 const BONUS_MIN_SPEND = 20;    // RM spent through NBN links this month to unlock the bonus
 const PILOT_UNLIMITED = true;  // pilot: no limit, but every photo is still counted
-const MODEL = "gemini-2.5-flash";
+const MODEL = "gemini-3.8-flash";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
