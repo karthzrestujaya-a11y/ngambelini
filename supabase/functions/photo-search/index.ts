@@ -41,7 +41,12 @@ Deno.serve(async (req) => {
     if (image.length > 2_800_000) return json({ error: "image too big" }, 413);
 
     const prompt = `You identify products in photos or screenshots for a Malaysian price-comparison app (Shopee and Lazada).
-Return ONLY JSON: {"query": string, "brand": string, "product": string, "variant": string, "confidence": "high"|"medium"|"low"}.
+Return ONLY JSON: {"query": string, "brand": string, "product": string, "variant": string, "confidence": "high"|"medium"|"low",
+ "is_listing": boolean, "platform": "shopee"|"lazada"|"other"|"", "price_rm": number|null, "price_note": string, "shop": string, "pack": string}.
+"is_listing" is true only if the image is a screenshot of an online shop product page or search result.
+If it is a listing: "platform" is the shop app shown, "price_rm" is the main price shown for the product in RM (number only),
+"price_note" says if that price is "after voucher", "flash sale", a price range, or "" if it is the normal price,
+"shop" is the seller/shop name if visible, "pack" is the pack size or variant (e.g. "2kg", "L 40pcs"). Otherwise use false, "", null, "", "", "".
 "query" is the best short search phrase a shopper would type on Shopee, e.g. "Casio MTP-1374D", "Dynamo detergent 3.9kg", "Milo 2kg refill".
 Include model numbers and pack size when visible. If it is a book, use the title and author. If you cannot tell, use your best guess and confidence "low".`;
     const g = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`, {
@@ -63,7 +68,16 @@ Include model numbers and pack size when visible. If it is a book, use the title
     try { out = JSON.parse(text); } catch { out = { query: "", confidence: "low" }; }
     const query = String(out.query || "").slice(0, 120);
 
-    await admin.from("photo_searches").insert({ user_id: user.id, query, confidence: out.confidence ?? null });
+    const o = out as Record<string, unknown>;
+    const plat = String(o.platform ?? "").toLowerCase();
+    const price = typeof o.price_rm === "number" && o.price_rm > 0 && o.price_rm < 100000 ? Math.round(o.price_rm * 100) / 100 : null;
+    const listing = o.is_listing === true && (plat === "shopee" || plat === "lazada") && price !== null;
+    await admin.from("photo_searches").insert({
+      user_id: user.id, query, confidence: out.confidence ?? null,
+      is_listing: listing, platform: listing ? plat : null, price_rm: listing ? price : null,
+      price_note: listing ? String(o.price_note ?? "").slice(0, 60) : null,
+      shop: listing ? String(o.shop ?? "").slice(0, 80) : null, pack: String(o.pack ?? "").slice(0, 40) || null,
+    });
     return json({ ...out, query, used: (used ?? 0) + 1, limit: PILOT_UNLIMITED ? null : limit });
   } catch (e) {
     return json({ error: "server", detail: String(e).slice(0, 200) }, 500);
