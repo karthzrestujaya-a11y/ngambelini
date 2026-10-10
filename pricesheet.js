@@ -1,5 +1,5 @@
 // Reads the NBN price sheet (Excel) into rows for admin_import_prices. Shared by the app and the test script.
-const SHEET_CODES = {'Milk & Formula':'MILK','Baby & Diapers':'BABY','Laundry & Cleaning':'WASH','Drinks':'DRINK','Groceries & Pantry':'FOOD','Personal Care':'CARE','Household':'HOME'};
+const SHEET_CODES = {'Milk & Formula':'MILK','Baby & Diapers':'BABY','Laundry & Cleaning':'WASH','Drinks':'DRINK','Groceries & Pantry':'FOOD','Personal Care':'CARE','Household':'HOME','Toys & Kids':'TOYS'};
 function priceSheetRows(XLSX, wb){
   const ws = wb.Sheets['Price List'];
   if(!ws) throw new Error('This file has no "Price List" tab. Use the NBN price sheet.');

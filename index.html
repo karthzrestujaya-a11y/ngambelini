@@ -384,7 +384,7 @@ let SOURCE = 'built-in list';
 // Live data from our Supabase database (publishable key is safe in a browser: tables are read-only by RLS)
 const SB_URL = 'https://okotkpoagvnrktpsftap.supabase.co';
 const SB_KEY = 'sb_publishable_Ipx8aDVVWev3uP3SV1ljaw_VL5gkkxJ';
-const TAGS = {'Milk & Formula':'MILK','Baby & Diapers':'BABY','Laundry & Cleaning':'WASH','Drinks':'DRINK','Groceries & Pantry':'FOOD','Personal Care':'CARE','Household':'HOME','Family milk':'MILK','Kids milk':'KIDS','Laundry':'WASH','Baby diapers':'BABY','Baby wipes':'BABY','Softener':'WASH','Dishwash':'WASH'};
+const TAGS = {'Milk & Formula':'MILK','Baby & Diapers':'BABY','Laundry & Cleaning':'WASH','Drinks':'DRINK','Groceries & Pantry':'FOOD','Personal Care':'CARE','Household':'HOME','Toys & Kids':'TOYS','Family milk':'MILK','Kids milk':'KIDS','Laundry':'WASH','Baby diapers':'BABY','Baby wipes':'BABY','Softener':'WASH','Dishwash':'WASH'};
 async function loadLive(){
   const h = {apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY};
   const [prods, prices] = await Promise.all([
@@ -738,7 +738,7 @@ async function uploadSheet(){
   b.textContent = 'Done'; toast(`Uploaded: ${data.products} products, ${data.prices} prices`);
   try{ await loadLive(); renderHome(); }catch(e){}
 }
-const REP_CATS = ['Milk & Formula','Baby & Diapers','Laundry & Cleaning','Drinks','Groceries & Pantry','Personal Care','Household'];
+const REP_CATS = ['Milk & Formula','Baby & Diapers','Laundry & Cleaning','Drinks','Groceries & Pantry','Personal Care','Household','Toys & Kids'];
 async function loadReported(){
   const box = $('repList'); box.innerHTML = '<span class="fine">Loading…</span>';
   const { data, error } = await sb.rpc('admin_reported', { p_review: 'new' });
