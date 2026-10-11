@@ -235,7 +235,10 @@ body.no-tabs .tabbar{display:none}
       <input id="code" type="hidden" value="">
       <div class="field" id="emailField"><label for="email">Email</label><input id="email" type="email" autocomplete="email" placeholder="you@example.com"></div>
       <button class="btn-wide" id="joinBtn" type="submit">Log in</button>
-      <p class="fine" id="joinMsg">We email you a link. Tap it on this phone to log in. No password needed.</p>
+      <div class="field" id="otpField" hidden><label for="otp">Code from your email</label><input id="otp" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="8-digit code" style="font-size:22px;letter-spacing:6px;text-align:center"></div>
+      <button class="btn-wide" id="otpBtn" type="button" hidden>Confirm code</button>
+      <p class="fine" id="joinMsg">We email you an 8-digit code. Type it here to log in. No password needed.</p>
+      <button class="link" type="button" id="otpAgain" hidden style="align-self:flex-start">Use a different email / send again</button>
       <p class="fine">By logging in you agree to our <button class="link" type="button" data-go="privacy" style="font-size:12px">privacy notice</button>.</p>
     </form>
   </section>
@@ -720,11 +723,28 @@ $('joinForm').addEventListener('submit', async e => {
     const email = $('email').value.trim();
     if(!email){ msg.textContent = 'Enter your email.'; return; }
     const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: location.origin + location.pathname } });
-    msg.textContent = !error ? ('Link sent to ' + email + '. Open your email on this phone and tap the link.')
-      : /pilot_full|database error saving new user/i.test(error.message) ? 'Sorry, the NBN pilot is full right now. Please try again later.'
+    if(!error){
+      msg.textContent = 'Code sent to ' + email + '. Check your email (also Spam) and type the code here.';
+      $('emailField').hidden = true; btn.hidden = true;
+      $('otpField').hidden = false; $('otpBtn').hidden = false; $('otpAgain').hidden = false; $('otp').value = ''; $('otp').focus();
+    } else msg.textContent = /pilot_full|database error saving new user/i.test(error.message) ? 'Sorry, the NBN pilot is full right now. Please try again later.'
+      : /seconds/i.test(error.message) ? 'Please wait a minute, then try again. (Check your email first: the code may already be there.)'
       : ('Could not send the email: ' + error.message);
   } finally { btn.disabled = false; }
 });
+async function confirmOtp(){
+  const email = $('email').value.trim(), token = $('otp').value.replace(/\D/g,''), msg = $('joinMsg'), b = $('otpBtn');
+  if(token.length < 6){ msg.textContent = 'Type the 8-digit code from the email.'; return; }
+  b.disabled = true; msg.textContent = 'Checking…';
+  try{
+    const { data, error } = await sb.auth.verifyOtp({ email, token, type: 'email' });
+    if(error){ msg.textContent = /expired|invalid/i.test(error.message) ? 'Wrong or expired code. Check the latest email, or send again.' : ('Could not log in: ' + error.message); return; }
+    USER = data.user || (data.session && data.session.user); await afterLogin();
+  } finally { b.disabled = false; }
+}
+$('otpBtn').onclick = confirmOtp;
+$('otp').addEventListener('input', e => { const v = e.target.value.replace(/\D/g,''); if(v.length === 8) confirmOtp(); });
+$('otpAgain').onclick = () => { $('emailField').hidden = false; $('joinBtn').hidden = false; $('otpField').hidden = true; $('otpBtn').hidden = true; $('otpAgain').hidden = true; $('joinMsg').textContent = 'We email you an 8-digit code. Type it here to log in. No password needed.'; };
 
 // ---- Barcode scan (on the phone; only the number is used) ----
 let scanner = null;
