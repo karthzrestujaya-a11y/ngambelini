@@ -1,0 +1,39 @@
+# Builds the NBN Android app (unsigned) whenever android/ changes.
+# Outputs are pushed to the "android-build" branch; signing is done offline with the private upload key.
+name: Android build
+on:
+  push:
+    branches: [main]
+    paths: ['android/**', '.github/workflows/android.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '17' }
+      - name: Build release bundle and APK
+        working-directory: android
+        run: ./gradlew --no-daemon bundleRelease assembleRelease > ../build.log 2>&1 || (tail -80 ../build.log; exit 1)
+      - name: Collect outputs
+        if: always()
+        run: |
+          mkdir -p out
+          cp build.log out/ || true
+          find android/app/build/outputs -name "*.aab" -exec cp {} out/ \; || true
+          find android/app/build/outputs -name "*.apk" -exec cp {} out/ \; || true
+          BT=$(ls -d $ANDROID_HOME/build-tools/* | sort -V | tail -1)
+          mkdir -p out/tools && cp $BT/lib/apksigner.jar out/tools/ && cp $BT/zipalign out/tools/ && cp -r $BT/lib64 out/tools/ 2>/dev/null || true
+          echo "$(git rev-parse --short HEAD) $(date -u +%FT%TZ) $BT" > out/BUILD_INFO.txt
+          ls -la out
+      - name: Push outputs to android-build branch
+        if: always()
+        run: |
+          cd out
+          git init -q -b android-build
+          git config user.name "nbn-build"; git config user.email "build@ngambelini.com"
+          git add -A && git commit -qm "Android build $(cat BUILD_INFO.txt)"
+          git push -qf "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" android-build

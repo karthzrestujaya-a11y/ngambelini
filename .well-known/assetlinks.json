@@ -1,0 +1,10 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.ngambelini.app",
+    "sha256_cert_fingerprints": [
+      "0E:5D:7B:0A:D4:D2:86:BA:7C:FF:1E:DB:54:D4:56:1B:4E:F6:E8:60:55:30:63:9D:1C:2F:58:68:D6:A2:02:47"
+    ]
+  }
+}]
