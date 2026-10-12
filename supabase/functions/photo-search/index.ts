@@ -58,7 +58,7 @@ Include model numbers and pack size when visible. If it is a book, use the title
       headers: { "Content-Type": "application/json", "x-goog-api-key": Deno.env.get("GEMINI_API_KEY")! },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: "image/jpeg", data: image } }] }],
-        generationConfig: { responseMimeType: "application/json", temperature: 0.1, maxOutputTokens: 400,
+        generationConfig: { responseMimeType: "application/json", temperature: 0.1,
           ...(fast ? { thinkingConfig: { thinkingLevel: "minimal" } } : {}) },
       }),
     });
@@ -70,9 +70,15 @@ Include model numbers and pack size when visible. If it is a book, use the title
       return json({ error: "ai", status: g.status, detail: body.slice(0, 200) }, 502);
     }
     const gj = await g.json();
-    const text = gj?.candidates?.[0]?.content?.parts?.[0]?.text ?? "{}";
+    const parts = gj?.candidates?.[0]?.content?.parts ?? [];
+    const text = parts.map((p: { text?: string; thought?: boolean }) => p.thought ? "" : (p.text ?? "")).join("") || "{}";
     let out: Record<string, string> = {};
-    try { out = JSON.parse(text); } catch { out = { query: "", confidence: "low" }; }
+    try { out = JSON.parse(text); }
+    catch {
+      const m = text.match(/\{[\s\S]*\}/);
+      try { out = m ? JSON.parse(m[0]) : {}; } catch { out = {}; }
+      if (!out.query) { console.error("photo-search parse failed", gj?.candidates?.[0]?.finishReason, text.slice(0, 300)); out = { query: "", confidence: "low" }; }
+    }
     const query = String(out.query || "").slice(0, 120);
 
     const o = out as Record<string, unknown>;
