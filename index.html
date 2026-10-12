@@ -542,9 +542,9 @@ function renderHome(){
   const add = x => { if(x && picks.length<2 && !pickIds.has(x.it.id)){ picks.push(x); pickIds.add(x.it.id); } };
   const shopeeFirst = !LAZADA_LINKS;
   if(shopeeFirst){
-    withSave.filter(x=>x.best.p==='shopee' && x.save>0).forEach(add);
-    POPULAR.forEach(id=>add(withSave.find(w=>w.it.id===id && w.best.p==='shopee')));
-    withSave.filter(x=>x.best.p==='shopee').forEach(add);
+    withSave.filter(x=>String(x.best.p).toLowerCase()==='shopee' && x.save>0).forEach(add);
+    POPULAR.forEach(id=>add(withSave.find(w=>w.it.id===id && String(w.best.p).toLowerCase()==='shopee')));
+    withSave.filter(x=>String(x.best.p).toLowerCase()==='shopee').forEach(add);
   }
   withSave.filter(x=>x.save>0).forEach(add);
   POPULAR.forEach(id=>add(withSave.find(w=>w.it.id===id)));
