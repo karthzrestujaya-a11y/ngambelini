@@ -11,7 +11,7 @@
 <meta name="theme-color" content="#0A2A66">
 <style>body{margin:0}[hidden]{display:none!important}</style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
 <style>
 /* Layout: one phone-width column, three views (home, results, compare) swapped in place. */
 :root{
@@ -212,8 +212,8 @@ body.no-tabs .tabbar{display:none}
 .hrow .bar{grid-column:1/-1;height:8px;border-radius:0 4px 4px 0;background:var(--s1)}
 </style>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="/vendor/supabase.js"></script>
+<script src="/vendor/html5-qrcode.min.js" defer></script>
 <script src="pricesheet.js"></script>
 </head><body>
 <div class="app">
