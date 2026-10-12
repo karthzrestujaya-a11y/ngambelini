@@ -817,7 +817,7 @@ async function shrink(file){
   return c.toDataURL('image/jpeg', 0.75).split(',')[1];
 }
 // Progress card: an estimate that keeps moving so people wait; real steps push it forward.
-const PHOTO_LIMIT_MS = 10000;
+const PHOTO_LIMIT_MS = 25000;   // AI reading can take 10-20s on a cold start or slow data; keep the bar moving
 let P = { pct:0, target:0, timer:null, run:0, file:null };
 function pSet(label, target){ if(label) $('pLbl').textContent = label; P.target = Math.max(P.target, target); }
 function pTick(){ if(P.pct < P.target) P.pct += Math.max(0.5, (P.target-P.pct)*0.15); else P.pct += (95-P.pct)*0.012; P.pct = Math.min(P.pct, 95); $('pFill').style.width = P.pct.toFixed(1)+'%'; $('pPct').textContent = Math.round(P.pct)+'%'; }
@@ -840,13 +840,13 @@ async function photoSearch(f){
     const res = await call; pSet('Reading the product…', 90); return res;
   })();
   let res;
-  try{ res = await Promise.race([work, limit]); }catch(err){ if(!late()) pFail('Photo search failed. Try again or type the name.'); return; }
+  try{ res = await Promise.race([work, limit]); }catch(err){ if(!late()) pFail('Photo search failed (' + String(err && err.message || err).slice(0,60) + '). Try again or type the name.'); return; }
   if(late()) return;
-  if(res === 'timeout'){ P.run++; pFail('Taking too long. Try a screenshot, or type the name.'); return; }
+  if(res === 'timeout'){ P.run++; pFail('Taking too long (over 25s). Check your internet and try again, or type the name.'); return; }
   const { data, error } = res || {};
   if(error){ const st = error.context && error.context.status;
-    pFail(st === 402 ? 'You have used your free photo searches this month.' : 'Photo search is not available right now. Try typing the name.'); return; }
-  if(!data || !data.query){ pFail('Could not recognise that. Try a clearer photo or type the name.'); return; }
+    pFail(st === 402 ? 'You have used your free photo searches this month.' : st === 401 ? 'Please log in again, then retry.' : 'Photo search is not available right now (error ' + (st || 'network') + '). Try again or type the name.'); return; }
+  if(!data || !data.query){ pFail('Could not recognise that (no product name found). Try again or type the name.'); return; }
   await pDone(); P.file = null;
   $('q').value = data.query; search(data.query);
   const secs = ((Date.now()-t0)/1000).toFixed(1);
