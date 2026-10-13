@@ -78,18 +78,37 @@ Include model numbers and pack size when visible. If it is a book, use the title
           ...(fast ? { thinkingConfig: thinkFor(model) } : {}) },
       }),
     });
-    let g: Response = new Response("no model tried", { status: 503 }); let usedModel = "";
+    // Hedged requests: start the main model; if it has not answered in HEDGE_MS (or fails), start the next one too.
+    // The first good answer wins, so one busy model never makes the user wait long.
     const chain: string[] = selfTest && Array.isArray(body.models) ? body.models.map(String) : MODELS;   // admin tests can pick models
-    for (const model of chain) {
+    const one = async (model: string): Promise<{ model: string; res: Response }> => {
+      let r: Response;
       try {
-        g = await ask(model, true);
-        if (g.status === 400) { const t = await g.text(); console.warn("thinking setting rejected", model, t.slice(0, 160)); g = await ask(model, false); }
-      } catch (e) { console.warn("model timeout/network", model, String(e).slice(0, 120)); g = new Response(String(e), { status: 504 }); }
-      if (g.ok) { usedModel = model; if (model !== chain[0]) console.log("used backup model", model); break; }
-      if (![404, 429, 500, 503, 504].includes(g.status)) break;          // a real error: stop, don't hide it
-      const t = await g.text(); console.warn("model failed, trying next", model, g.status, t.slice(0, 400));
-      g = new Response(t, { status: g.status });
-    }
+        r = await ask(model, true);
+        if (r.status === 400) { const t = await r.text(); console.warn("thinking setting rejected", model, t.slice(0, 160)); r = await ask(model, false); }
+      } catch (e) { console.warn("model timeout/network", model, String(e).slice(0, 120)); r = new Response(String(e), { status: 504 }); }
+      if (!r.ok) { const t = await r.text(); console.warn("model failed", model, r.status, t.slice(0, 300)); r = new Response(t, { status: r.status }); }
+      return { model, res: r };
+    };
+    const HEDGE_MS = 5000;
+    let g: Response = new Response("no model tried", { status: 503 }); let usedModel = "";
+    await new Promise<void>((done) => {
+      let next = 0, running = 0, finished = false, timer: number | undefined;
+      const launch = () => {
+        if (finished || next >= chain.length) { if (!finished && running === 0) { finished = true; done(); } return; }
+        const model = chain[next++]; running++;
+        clearTimeout(timer); timer = setTimeout(launch, HEDGE_MS);
+        one(model).then(({ model, res }) => {
+          running--;
+          if (finished) return;
+          if (res.ok) { finished = true; clearTimeout(timer); g = res; usedModel = model; if (model !== chain[0]) console.log("used backup model", model); done(); return; }
+          g = res;
+          if (![404, 429, 500, 503, 504].includes(res.status)) { finished = true; clearTimeout(timer); done(); return; }  // real error: report it
+          launch();
+        });
+      };
+      launch();
+    });
     if (!g.ok) {
       const body = (await g.text()).slice(0, 500);
       console.error("gemini error", g.status, body);
