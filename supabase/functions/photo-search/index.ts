@@ -79,12 +79,13 @@ Include model numbers and pack size when visible. If it is a book, use the title
       }),
     });
     let g: Response = new Response("no model tried", { status: 503 }); let usedModel = "";
-    for (const model of MODELS) {
+    const chain: string[] = selfTest && Array.isArray(body.models) ? body.models.map(String) : MODELS;   // admin tests can pick models
+    for (const model of chain) {
       try {
         g = await ask(model, true);
         if (g.status === 400) { const t = await g.text(); console.warn("thinking setting rejected", model, t.slice(0, 160)); g = await ask(model, false); }
       } catch (e) { console.warn("model timeout/network", model, String(e).slice(0, 120)); g = new Response(String(e), { status: 504 }); }
-      if (g.ok) { usedModel = model; if (model !== MODELS[0]) console.log("used backup model", model); break; }
+      if (g.ok) { usedModel = model; if (model !== chain[0]) console.log("used backup model", model); break; }
       if (![404, 429, 500, 503, 504].includes(g.status)) break;          // a real error: stop, don't hide it
       const t = await g.text(); console.warn("model failed, trying next", model, g.status, t.slice(0, 400));
       g = new Response(t, { status: g.status });
