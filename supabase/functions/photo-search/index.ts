@@ -27,10 +27,15 @@ Deno.serve(async (req) => {
     // and without counting a search. The gateway has already verified the JWT signature.
     let role = "";
     try { role = JSON.parse(atob(auth.replace(/^Bearer\s+/i, "").split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))).role ?? ""; } catch { /* no token */ }
-    const selfTest = body && body.selftest === true && role === "service_role";
+    // New-style secret keys (sb_secret_...) are not JWTs: accept them only if they match this project's own secret keys.
+    const presented = [auth.replace(/^Bearer\s+/i, ""), req.headers.get("apikey") ?? ""].filter(Boolean);
+    const secrets: string[] = [Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""];
+    try { const sk = JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS") ?? "{}"); secrets.push(...Object.values(sk).map(String)); } catch { /* none */ }
+    const isAdminKey = presented.some(k => k.length > 20 && secrets.includes(k));
+    const selfTest = body && body.selftest === true && (role === "service_role" || isAdminKey);
     const userClient = createClient(url, Deno.env.get("SUPABASE_ANON_KEY")!, { global: { headers: { Authorization: auth } } });
     const { data: { user } } = selfTest ? { data: { user: { id: "selftest" } } } : await userClient.auth.getUser();
-    if (!user) return json({ error: "login", role }, 401);
+    if (!user) return json({ error: "login", ...(body && body.selftest ? { role, keyKinds: presented.map(k => k.slice(0, 7)) } : {}) }, 401);
     const admin = createClient(url, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
     // Usage this calendar month (Malaysia time is close enough to UTC month start for a counter)
