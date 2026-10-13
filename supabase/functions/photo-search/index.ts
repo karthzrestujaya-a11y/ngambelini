@@ -23,20 +23,18 @@ Deno.serve(async (req) => {
     if (body && body.warm) return json({ ok: true, warm: true });   // app pings this on login so the first photo search is fast
     const url = Deno.env.get("SUPABASE_URL")!;
     const auth = req.headers.get("Authorization") ?? "";
-    // Admin self-test (Supabase dashboard "Test" button, service role only): runs the AI step without a member login
-    // and without counting a search. The gateway has already verified the JWT signature.
-    let role = "";
-    try { role = JSON.parse(atob(auth.replace(/^Bearer\s+/i, "").split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))).role ?? ""; } catch { /* no token */ }
-    // New-style secret keys (sb_secret_...) are not JWTs: accept them only if they match this project's own secret keys.
-    const presented = [auth.replace(/^Bearer\s+/i, ""), req.headers.get("apikey") ?? ""].filter(Boolean);
-    const secrets: string[] = [Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""];
-    try { const sk = JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS") ?? "{}"); secrets.push(...Object.values(sk).map(String)); } catch { /* none */ }
-    const isAdminKey = presented.some(k => k.length > 20 && secrets.includes(k));
-    const selfTest = body && body.selftest === true && (role === "service_role" || isAdminKey);
     const userClient = createClient(url, Deno.env.get("SUPABASE_ANON_KEY")!, { global: { headers: { Authorization: auth } } });
-    const { data: { user } } = selfTest ? { data: { user: { id: "selftest" } } } : await userClient.auth.getUser();
-    if (!user) return json({ error: "login", ...(body && body.selftest ? { role, keyKinds: presented.map(k => k.slice(0, 7)) } : {}) }, 401);
+    // Admin self-test: a one-time ticket that only an admin can create (row in public.selftests via the SQL editor).
+    // Lets the AI step be tested end-to-end without a member login; nothing is counted or stored.
     const admin = createClient(url, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+    let selfTest = false;
+    if (body && typeof body.selftest_id === "string") {
+      const since = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+      const { data: t } = await admin.from("selftests").select("id").eq("id", body.selftest_id).gte("created_at", since).maybeSingle();
+      selfTest = !!t;
+    }
+    const { data: { user } } = selfTest ? { data: { user: { id: "selftest" } } } : await userClient.auth.getUser();
+    if (!user) return json({ error: "login" }, 401);
 
     // Usage this calendar month (Malaysia time is close enough to UTC month start for a counter)
     const m0 = new Date(); m0.setUTCDate(1); m0.setUTCHours(0, 0, 0, 0);
