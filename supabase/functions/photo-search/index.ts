@@ -6,7 +6,7 @@ const FREE_PER_MONTH = 3;      // every member
 const BONUS_PER_MONTH = 10;    // extra if they bought through NBN this month
 const BONUS_MIN_SPEND = 20;    // RM spent through NBN links this month to unlock the bonus
 const PILOT_UNLIMITED = true;  // pilot: no limit, but every photo is still counted
-const MODELS = ["gemini-2.5-flash", "gemini-3.8-flash", "gemini-flash-latest"]; // fast stable model first (no thinking), then backups when busy
+const MODELS = ["gemini-3.1-flash-lite", "gemini-3.8-flash", "gemini-flash-lite-latest", "gemini-3.5-flash"]; // tested 13 Oct: 3.1-flash-lite answers in ~8s; the others are often busy (503)
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -71,7 +71,7 @@ Include model numbers and pack size when visible. If it is a book, use the title
     const ask = (model: string, fast: boolean) => fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-goog-api-key": Deno.env.get("GEMINI_API_KEY")! },
-      signal: AbortSignal.timeout(12000),
+      signal: AbortSignal.timeout(11000),
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: "image/jpeg", data: image } }] }],
         generationConfig: { responseMimeType: "application/json", temperature: 0.1,
