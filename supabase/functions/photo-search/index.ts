@@ -6,7 +6,7 @@ const FREE_PER_MONTH = 3;      // every member
 const BONUS_PER_MONTH = 10;    // extra if they bought through NBN this month
 const BONUS_MIN_SPEND = 20;    // RM spent through NBN links this month to unlock the bonus
 const PILOT_UNLIMITED = true;  // pilot: no limit, but every photo is still counted
-const MODELS = ["gemini-3.1-flash-lite", "gemini-3.8-flash", "gemini-flash-lite-latest", "gemini-3.5-flash"]; // tested 13 Oct: 3.1-flash-lite answers in ~8s; the others are often busy (503)
+const MODELS = ["gemini-3.1-flash-lite", "gemini-3.1-flash-lite-preview", "gemini-3.5-flash", "gemini-3.1-flash-lite", "gemini-3.8-flash"]; // tested 13 Oct: 3.1-flash-lite ~3-9s; others often busy (503). Main model retried once.
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -107,6 +107,7 @@ Include model numbers and pack size when visible. If it is a book, use the title
           launch();
         });
       };
+      setTimeout(() => { if (!finished) { finished = true; clearTimeout(timer); g = new Response("All AI models busy, gave up after 24s", { status: 503 }); done(); } }, 24000);
       launch();
     });
     if (!g.ok) {
