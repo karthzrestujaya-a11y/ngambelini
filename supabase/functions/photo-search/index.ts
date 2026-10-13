@@ -23,17 +23,22 @@ Deno.serve(async (req) => {
     if (body && body.warm) return json({ ok: true, warm: true });   // app pings this on login so the first photo search is fast
     const url = Deno.env.get("SUPABASE_URL")!;
     const auth = req.headers.get("Authorization") ?? "";
+    // Admin self-test (Supabase dashboard "Test" button, service role only): runs the AI step without a member login
+    // and without counting a search. The gateway has already verified the JWT signature.
+    let role = "";
+    try { role = JSON.parse(atob(auth.replace(/^Bearer\s+/i, "").split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))).role ?? ""; } catch { /* no token */ }
+    const selfTest = body && body.selftest === true && role === "service_role";
     const userClient = createClient(url, Deno.env.get("SUPABASE_ANON_KEY")!, { global: { headers: { Authorization: auth } } });
-    const { data: { user } } = await userClient.auth.getUser();
-    if (!user) return json({ error: "login" }, 401);
+    const { data: { user } } = selfTest ? { data: { user: { id: "selftest" } } } : await userClient.auth.getUser();
+    if (!user) return json({ error: "login", role }, 401);
     const admin = createClient(url, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
     // Usage this calendar month (Malaysia time is close enough to UTC month start for a counter)
     const m0 = new Date(); m0.setUTCDate(1); m0.setUTCHours(0, 0, 0, 0);
     const tStart = Date.now();
-    const { count: used } = await admin.from("photo_searches").select("id", { count: "exact", head: true })
+    const { count: used } = selfTest ? { count: 0 } : await admin.from("photo_searches").select("id", { count: "exact", head: true })
       .eq("user_id", user.id).gte("created_at", m0.toISOString());
-    const { data: buys } = await admin.from("clicks").select("price_rm, status")
+    const { data: buys } = selfTest ? { data: [] } : await admin.from("clicks").select("price_rm, status")
       .eq("user_id", user.id).gte("clicked_at", m0.toISOString()).in("status", ["confirmed", "paid"]);
     const spent = (buys ?? []).reduce((a, c) => a + Number(c.price_rm || 0), 0);
     const limit = FREE_PER_MONTH + (spent >= BONUS_MIN_SPEND ? BONUS_PER_MONTH : 0);
@@ -65,13 +70,13 @@ Include model numbers and pack size when visible. If it is a book, use the title
           ...(fast ? { thinkingConfig: thinkFor(model) } : {}) },
       }),
     });
-    let g: Response = new Response("no model tried", { status: 503 });
+    let g: Response = new Response("no model tried", { status: 503 }); let usedModel = "";
     for (const model of MODELS) {
       try {
         g = await ask(model, true);
         if (g.status === 400) { const t = await g.text(); console.warn("thinking setting rejected", model, t.slice(0, 160)); g = await ask(model, false); }
       } catch (e) { console.warn("model timeout/network", model, String(e).slice(0, 120)); g = new Response(String(e), { status: 504 }); }
-      if (g.ok) { if (model !== MODELS[0]) console.log("used backup model", model); break; }
+      if (g.ok) { usedModel = model; if (model !== MODELS[0]) console.log("used backup model", model); break; }
       if (![404, 429, 500, 503, 504].includes(g.status)) break;          // a real error: stop, don't hide it
       const t = await g.text(); console.warn("model failed, trying next", model, g.status, t.slice(0, 160));
       g = new Response(t, { status: g.status });
@@ -97,14 +102,14 @@ Include model numbers and pack size when visible. If it is a book, use the title
     const plat = String(o.platform ?? "").toLowerCase();
     const price = typeof o.price_rm === "number" && o.price_rm > 0 && o.price_rm < 100000 ? Math.round(o.price_rm * 100) / 100 : null;
     const listing = o.is_listing === true && (plat === "shopee" || plat === "lazada") && price !== null;
-    await admin.from("photo_searches").insert({
+    if (!selfTest) await admin.from("photo_searches").insert({
       user_id: user.id, query, confidence: out.confidence ?? null,
       is_listing: listing, platform: listing ? plat : null, price_rm: listing ? price : null,
       price_note: listing ? String(o.price_note ?? "").slice(0, 60) : null,
       shop: listing ? String(o.shop ?? "").slice(0, 80) : null, pack: String(o.pack ?? "").slice(0, 40) || null,
     });
     console.log("photo-search ms", Date.now() - tStart);
-    return json({ ...out, query, used: (used ?? 0) + 1, limit: PILOT_UNLIMITED ? null : limit });
+    return json({ ...out, query, used: (used ?? 0) + 1, limit: PILOT_UNLIMITED ? null : limit, ms: Date.now() - tStart, model: usedModel });
   } catch (e) {
     return json({ error: "server", detail: String(e).slice(0, 200) }, 500);
   }
