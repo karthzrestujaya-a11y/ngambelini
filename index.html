@@ -845,6 +845,8 @@ async function photoSearch(f){
   if(res === 'timeout'){ P.run++; pFail('Taking too long (over 25s). Check your internet and try again, or type the name.'); return; }
   const { data, error } = res || {};
   if(error){ const st = error.context && error.context.status;
+    let why = ''; try{ const b = await error.context.json(); why = b && (b.status ? ' / AI ' + b.status : '') + (b.detail ? ': ' + String(b.detail).replace(/\s+/g,' ').slice(0,90) : ''); }catch(e){}
+    if(st === 502 && why){ pFail('Photo search is not available right now (error 502' + why + '). Please send this screen to NBN.'); return; }
     pFail(st === 402 ? 'You have used your free photo searches this month.' : st === 401 ? 'Please log in again, then retry.' : 'Photo search is not available right now (error ' + (st || 'network') + '). Try again or type the name.'); return; }
   if(!data || !data.query){ pFail('Could not recognise that (no product name found). Try again or type the name.'); return; }
   await pDone(); P.file = null;
