@@ -47,6 +47,11 @@ Deno.serve(async (req) => {
     const limit = FREE_PER_MONTH + (spent >= BONUS_MIN_SPEND ? BONUS_PER_MONTH : 0);
     if (!PILOT_UNLIMITED && (used ?? 0) >= limit) return json({ error: "limit", used, limit, spent }, 402);
 
+    if (selfTest && body.list_models) {   // admin only: which Gemini models this key can use
+      const lm = await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=200", { headers: { "x-goog-api-key": Deno.env.get("GEMINI_API_KEY")! } });
+      const lj = await lm.json();
+      return json({ models: (lj.models ?? []).filter((m: { supportedGenerationMethods?: string[] }) => (m.supportedGenerationMethods ?? []).includes("generateContent")).map((m: { name: string }) => m.name) });
+    }
     const { image } = body as { image?: string };
     if (typeof image !== "string" || image.length < 100) return json({ error: "no image" }, 400);
     if (image.length > 2_800_000) return json({ error: "image too big" }, 413);
@@ -81,7 +86,7 @@ Include model numbers and pack size when visible. If it is a book, use the title
       } catch (e) { console.warn("model timeout/network", model, String(e).slice(0, 120)); g = new Response(String(e), { status: 504 }); }
       if (g.ok) { usedModel = model; if (model !== MODELS[0]) console.log("used backup model", model); break; }
       if (![404, 429, 500, 503, 504].includes(g.status)) break;          // a real error: stop, don't hide it
-      const t = await g.text(); console.warn("model failed, trying next", model, g.status, t.slice(0, 160));
+      const t = await g.text(); console.warn("model failed, trying next", model, g.status, t.slice(0, 400));
       g = new Response(t, { status: g.status });
     }
     if (!g.ok) {
