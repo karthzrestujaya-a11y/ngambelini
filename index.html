@@ -817,7 +817,7 @@ async function shrink(file){
   return c.toDataURL('image/jpeg', 0.75).split(',')[1];
 }
 // Progress card: an estimate that keeps moving so people wait; real steps push it forward.
-const PHOTO_LIMIT_MS = 25000;   // AI reading can take 10-20s on a cold start or slow data; keep the bar moving
+const PHOTO_LIMIT_MS = 30000;   // AI reading can take 10-20s on a cold start or slow data; keep the bar moving
 let P = { pct:0, target:0, timer:null, run:0, file:null };
 function pSet(label, target){ if(label) $('pLbl').textContent = label; P.target = Math.max(P.target, target); }
 function pTick(){ if(P.pct < P.target) P.pct += Math.max(0.5, (P.target-P.pct)*0.15); else P.pct += (95-P.pct)*0.012; P.pct = Math.min(P.pct, 95); $('pFill').style.width = P.pct.toFixed(1)+'%'; $('pPct').textContent = Math.round(P.pct)+'%'; }
@@ -842,7 +842,7 @@ async function photoSearch(f){
   let res;
   try{ res = await Promise.race([work, limit]); }catch(err){ if(!late()) pFail('Photo search failed (' + String(err && err.message || err).slice(0,60) + '). Try again or type the name.'); return; }
   if(late()) return;
-  if(res === 'timeout'){ P.run++; pFail('Taking too long (over 25s). Check your internet and try again, or type the name.'); return; }
+  if(res === 'timeout'){ P.run++; pFail('Taking too long (over 30s). Check your internet and try again, or type the name.'); return; }
   const { data, error } = res || {};
   if(error){ const st = error.context && error.context.status;
     let why = ''; try{ const b = await error.context.json(); why = b && (b.status ? ' / AI ' + b.status : '') + (b.detail ? ': ' + String(b.detail).replace(/\s+/g,' ').slice(0,90) : ''); }catch(e){}

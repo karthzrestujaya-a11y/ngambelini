@@ -6,8 +6,7 @@ const FREE_PER_MONTH = 3;      // every member
 const BONUS_PER_MONTH = 10;    // extra if they bought through NBN this month
 const BONUS_MIN_SPEND = 20;    // RM spent through NBN links this month to unlock the bonus
 const PILOT_UNLIMITED = true;  // pilot: no limit, but every photo is still counted
-const MODEL = "gemini-3.8-flash";
-const BACKUP_MODEL = "gemini-2.5-flash"; // used only if the main model errors (busy/quota/not found)
+const MODELS = ["gemini-2.5-flash", "gemini-3.8-flash", "gemini-flash-latest"]; // fast stable model first (no thinking), then backups when busy
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -53,22 +52,29 @@ If it is a listing: "platform" is the shop app shown, "price_rm" is the main pri
 "shop" is the seller/shop name if visible, "pack" is the pack size or variant (e.g. "2kg", "L 40pcs"). Otherwise use false, "", null, "", "", "".
 "query" is the best short search phrase a shopper would type on Shopee, e.g. "Casio MTP-1374D", "Dynamo detergent 3.9kg", "Milo 2kg refill".
 Include model numbers and pack size when visible. If it is a book, use the title and author. If you cannot tell, use your best guess and confidence "low".`;
-    // Speed: no "thinking" step and a short answer. If the model rejects the thinking setting, retry without it.
-    const ask = (fast: boolean, model = MODEL) => fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+    // Model chain: the main model first, then backups if it is busy (503), over quota (429) or unavailable.
+    // Each model gets the fastest thinking setting it accepts; a 400 on that setting retries once without it.
+    const thinkFor = (m: string) => m.startsWith("gemini-2.5") ? { thinkingBudget: 0 } : { thinkingLevel: "low" };
+    const ask = (model: string, fast: boolean) => fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-goog-api-key": Deno.env.get("GEMINI_API_KEY")! },
+      signal: AbortSignal.timeout(12000),
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: "image/jpeg", data: image } }] }],
         generationConfig: { responseMimeType: "application/json", temperature: 0.1,
-          ...(fast ? { thinkingConfig: { thinkingLevel: "minimal" } } : {}) },
+          ...(fast ? { thinkingConfig: thinkFor(model) } : {}) },
       }),
     });
-    let g = await ask(true);
-    if (g.status === 400) { const t = await g.text(); console.warn("fast mode rejected", t.slice(0, 200)); g = await ask(false); }
-    // Main model busy, over quota or unavailable: try the backup model once so the user still gets an answer.
-    if (!g.ok && [404, 429, 500, 503].includes(g.status)) {
-      const t = await g.text(); console.warn("main model failed", g.status, t.slice(0, 200));
-      g = await ask(false, BACKUP_MODEL);
+    let g: Response = new Response("no model tried", { status: 503 });
+    for (const model of MODELS) {
+      try {
+        g = await ask(model, true);
+        if (g.status === 400) { const t = await g.text(); console.warn("thinking setting rejected", model, t.slice(0, 160)); g = await ask(model, false); }
+      } catch (e) { console.warn("model timeout/network", model, String(e).slice(0, 120)); g = new Response(String(e), { status: 504 }); }
+      if (g.ok) { if (model !== MODELS[0]) console.log("used backup model", model); break; }
+      if (![404, 429, 500, 503, 504].includes(g.status)) break;          // a real error: stop, don't hide it
+      const t = await g.text(); console.warn("model failed, trying next", model, g.status, t.slice(0, 160));
+      g = new Response(t, { status: g.status });
     }
     if (!g.ok) {
       const body = (await g.text()).slice(0, 500);
