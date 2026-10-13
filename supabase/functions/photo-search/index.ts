@@ -7,6 +7,7 @@ const BONUS_PER_MONTH = 10;    // extra if they bought through NBN this month
 const BONUS_MIN_SPEND = 20;    // RM spent through NBN links this month to unlock the bonus
 const PILOT_UNLIMITED = true;  // pilot: no limit, but every photo is still counted
 const MODEL = "gemini-3.8-flash";
+const BACKUP_MODEL = "gemini-2.5-flash"; // used only if the main model errors (busy/quota/not found)
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -53,7 +54,7 @@ If it is a listing: "platform" is the shop app shown, "price_rm" is the main pri
 "query" is the best short search phrase a shopper would type on Shopee, e.g. "Casio MTP-1374D", "Dynamo detergent 3.9kg", "Milo 2kg refill".
 Include model numbers and pack size when visible. If it is a book, use the title and author. If you cannot tell, use your best guess and confidence "low".`;
     // Speed: no "thinking" step and a short answer. If the model rejects the thinking setting, retry without it.
-    const ask = (fast: boolean) => fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`, {
+    const ask = (fast: boolean, model = MODEL) => fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-goog-api-key": Deno.env.get("GEMINI_API_KEY")! },
       body: JSON.stringify({
@@ -64,6 +65,11 @@ Include model numbers and pack size when visible. If it is a book, use the title
     });
     let g = await ask(true);
     if (g.status === 400) { const t = await g.text(); console.warn("fast mode rejected", t.slice(0, 200)); g = await ask(false); }
+    // Main model busy, over quota or unavailable: try the backup model once so the user still gets an answer.
+    if (!g.ok && [404, 429, 500, 503].includes(g.status)) {
+      const t = await g.text(); console.warn("main model failed", g.status, t.slice(0, 200));
+      g = await ask(false, BACKUP_MODEL);
+    }
     if (!g.ok) {
       const body = (await g.text()).slice(0, 500);
       console.error("gemini error", g.status, body);
