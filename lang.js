@@ -3,6 +3,7 @@
 // To add or fix a translation, edit the matching key below. Missing keys fall back to English.
 window.NBN_LANGS = {
   en: { name: 'English',
+    comingSoonShops: 'More shops coming soon',
     save: 'Save', sold: 'sold', soldMonth: 'sold/month', hiddenListing: '1 cheaper listing hidden: expired stock',
     tagline1: 'Same item.', tagline2: 'Cheaper price.',
     login: 'Log in', email: 'Email', emailPh: 'you@example.com', code: 'Code from your email', confirmCode: 'Confirm code',
@@ -48,6 +49,7 @@ window.NBN_LANGS = {
     preparingPhoto: 'Preparing photo…', close: 'Close', tryAgain: 'Try again',
   },
   ms: { name: 'Bahasa Melayu',
+    comingSoonShops: 'Kedai lain akan datang',
     save: 'Jimat', sold: 'terjual', soldMonth: 'terjual/bulan', hiddenListing: '1 senarai lebih murah disembunyikan: stok tamat tempoh',
     tagline1: 'Barang sama.', tagline2: 'Harga lebih murah.',
     login: 'Log masuk', email: 'E-mel', emailPh: 'anda@contoh.com', code: 'Kod dari e-mel anda', confirmCode: 'Sahkan kod',
@@ -93,6 +95,7 @@ window.NBN_LANGS = {
     preparingPhoto: 'Menyediakan gambar…', close: 'Tutup', tryAgain: 'Cuba lagi',
   },
   ta: { name: 'தமிழ்',
+    comingSoonShops: 'மேலும் கடைகள் விரைவில்',
     save: 'சேமிப்பு', sold: 'விற்பனை', soldMonth: 'விற்பனை/மாதம்', hiddenListing: '1 மலிவான பட்டியல் மறைக்கப்பட்டது: காலாவதியான பொருள்',
     tagline1: 'அதே பொருள்.', tagline2: 'குறைந்த விலை.',
     login: 'உள்நுழை', email: 'மின்னஞ்சல்', emailPh: 'you@example.com', code: 'மின்னஞ்சலில் வந்த குறியீடு', confirmCode: 'குறியீட்டை உறுதிசெய்',
@@ -138,6 +141,7 @@ window.NBN_LANGS = {
     preparingPhoto: 'புகைப்படம் தயாராகிறது…', close: 'மூடு', tryAgain: 'மீண்டும் முயற்சி',
   },
   zh: { name: '中文',
+    comingSoonShops: '更多商店即将推出',
     save: '省', sold: '已售', soldMonth: '每月已售', hiddenListing: '已隐藏 1 个更便宜的商品：库存已过期',
     tagline1: '同样的商品。', tagline2: '更低的价格。',
     login: '登录', email: '电子邮件', emailPh: 'you@example.com', code: '邮件中的验证码', confirmCode: '确认验证码',
