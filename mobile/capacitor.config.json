@@ -3,7 +3,8 @@
   "appName": "NBN",
   "webDir": "www",
   "ios": {
-    "contentInset": "automatic",
+    "contentInset": "never",
+    "backgroundColor": "#FFCC00",
     "scheme": "NBN"
   }
 }

@@ -12,6 +12,8 @@ let html = fs.readFileSync(path.join(out, 'index.html'), 'utf8');
 const before = html;
 html = html.replace("emailRedirectTo: location.origin + location.pathname", "emailRedirectTo: 'https://ngambelini.com/'");
 html = html.replace("if('serviceWorker' in navigator){", "if(false && 'serviceWorker' in navigator){");
+// iPhone screen fit: keep the yellow header clear of the notch / Dynamic Island, and fill the whole screen with the page colour.
+html = html.replace('</head>', '<style>html{background:var(--bg,#FFF8EC)}body{min-height:100vh}.hero{padding-top:calc(18px + env(safe-area-inset-top,0px))!important}</style></head>');
 if (html === before) { console.error('copy-web: expected patches not applied'); process.exit(1); }
 fs.writeFileSync(path.join(out, 'index.html'), html);
 console.log('copied web app to', out);
