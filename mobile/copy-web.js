@@ -6,7 +6,7 @@ fs.rmSync(out, { recursive: true, force: true }); fs.mkdirSync(out, { recursive:
 const copy = (rel) => { const s = path.join(root, rel), d = path.join(out, rel);
   if (fs.statSync(s).isDirectory()) { fs.mkdirSync(d, { recursive: true }); for (const f of fs.readdirSync(s)) copy(path.join(rel, f)); }
   else fs.copyFileSync(s, d); };
-['index.html', 'pricesheet.js', 'manifest.webmanifest', 'icons', 'vendor'].forEach(copy);
+['index.html', 'pricesheet.js', 'lang.js', 'manifest.webmanifest', 'icons', 'vendor'].forEach(copy);
 // Inside the app there is no web origin: login emails must point back to the website, and no service worker is used.
 let html = fs.readFileSync(path.join(out, 'index.html'), 'utf8');
 const before = html;
