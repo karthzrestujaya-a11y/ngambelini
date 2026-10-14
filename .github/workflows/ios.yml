@@ -1,0 +1,56 @@
+# Builds the NBN iPhone app (unsigned, for the iOS Simulator), launches it and takes screenshots.
+# Proves the app compiles and opens; signing for TestFlight/App Store is added once the Apple Developer account exists.
+# Outputs (build log, screenshots, simulator .app) are pushed to the "ios-build" branch.
+name: iOS build
+on:
+  push:
+    branches: [main, ios-app]
+    paths: ['mobile/**', 'index.html', 'pricesheet.js', 'vendor/**', '.github/workflows/ios.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - name: Prepare web files
+        working-directory: mobile
+        run: npm install --no-audit --no-fund && node copy-web.js && npx cap sync ios
+      - name: Build for simulator
+        working-directory: mobile/ios/App
+        run: |
+          xcodebuild -version
+          xcodebuild -project App.xcodeproj -scheme App -configuration Release -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO build > ../../../build.log 2>&1 || (tail -120 ../../../build.log; exit 1)
+          tail -5 ../../../build.log
+      - name: Launch in simulator and screenshot
+        run: |
+          mkdir -p out
+          APP=$(find mobile/ios/App/build/Build/Products -name "App.app" -maxdepth 3 | head -1)
+          DEV=$(xcrun simctl list devices available | grep -m1 -E "iPhone 1[5-7]" | sed -E 's/.*\(([0-9A-F-]{36})\).*/\1/')
+          echo "device $DEV app $APP"
+          xcrun simctl boot "$DEV"; xcrun simctl bootstatus "$DEV" -b
+          xcrun simctl install "$DEV" "$APP"
+          xcrun simctl launch "$DEV" com.ngambelini.app
+          sleep 12; xcrun simctl io "$DEV" screenshot out/launch.png
+          sleep 10; xcrun simctl io "$DEV" screenshot out/launch2.png
+          (cd "$(dirname "$APP")" && zip -qr "$GITHUB_WORKSPACE/out/NBN-simulator.app.zip" App.app)
+      - name: Collect outputs
+        if: always()
+        run: |
+          mkdir -p out
+          cp build.log out/ || true
+          echo "$(git rev-parse --short HEAD) $(date -u +%FT%TZ)" > out/BUILD_INFO.txt
+          ls -la out
+      - name: Push outputs to ios-build branch
+        if: always()
+        run: |
+          cd out
+          git init -q -b ios-build
+          git config user.name "nbn-build"; git config user.email "build@ngambelini.com"
+          git add -A && git commit -qm "iOS build $(cat BUILD_INFO.txt)"
+          git push -qf "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" ios-build

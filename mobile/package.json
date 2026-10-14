@@ -1,0 +1,16 @@
+{
+  "name": "nbn-mobile",
+  "private": true,
+  "version": "1.0.0",
+  "description": "NBN - Ngam Beli Ni native shell (iOS). Web files are copied from the repo root at build time.",
+  "scripts": {
+    "copy-web": "node copy-web.js"
+  },
+  "dependencies": {
+    "@capacitor/core": "8.5.3",
+    "@capacitor/ios": "8.5.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.5.3"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "appId": "com.ngambelini.app",
+  "appName": "NBN",
+  "webDir": "www",
+  "ios": {
+    "contentInset": "automatic",
+    "scheme": "NBN"
+  }
+}
