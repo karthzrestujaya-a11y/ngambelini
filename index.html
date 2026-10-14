@@ -96,6 +96,7 @@ a.btn.ghost{border:1.5px solid var(--line);color:var(--fg)}
 .note.bad{background:var(--bad-bg);color:var(--bad-fg)}
 .fine{font-size:12px;line-height:1.45;color:var(--muted)}
 .link{border:none;background:transparent;color:var(--muted);text-decoration:underline;font-size:12px;padding:4px 0}
+.langs{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}.langs button{border:1.5px solid var(--line);background:var(--surface);color:var(--fg);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:700;font-family:var(--body)}.langs button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
 .pbox{position:fixed;inset:0;z-index:60;display:grid;place-items:center;background:rgba(10,20,40,.45);padding:16px}
 .pbox .card{background:var(--surface);color:var(--fg);border-radius:16px;padding:20px;width:min(340px,100%);box-shadow:0 10px 30px rgba(0,0,0,.25);text-align:center}
 .pbox .lbl{font-weight:700;font-size:15px;margin-bottom:12px}
@@ -227,6 +228,7 @@ body.no-tabs .tabbar{display:none}
 <script src="/vendor/supabase.js"></script>
 <script src="/vendor/html5-qrcode.min.js" defer></script>
 <script src="pricesheet.js"></script>
+<script src="lang.js"></script>
 </head><body>
 <div class="app">
   <header class="hero">
@@ -237,21 +239,21 @@ body.no-tabs .tabbar{display:none}
     </div>
     <button type="button" class="bell" id="bellBtn" aria-label="Price alerts"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#14563A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></button>
   </div>
-  <h1 class="heroline">Same item.<br>Cheaper price.</h1>
+  <h1 class="heroline"><span data-t="tagline1">Same item.</span><br><span data-t="tagline2">Cheaper price.</span></h1>
   </header>
 
   <!-- JOIN -->
   <section id="join" class="view" hidden style="flex-direction:column;gap:18px">
-    <h1 style="font-size:24px">Log in</h1>
+    <h1 style="font-size:24px" data-t="login">Log in</h1>
     <form id="joinForm" style="display:flex;flex-direction:column;gap:14px">
       <input id="code" type="hidden" value="">
-      <div class="field" id="emailField"><label for="email">Email</label><input id="email" type="email" autocomplete="email" placeholder="you@example.com"></div>
-      <button class="btn-wide" id="joinBtn" type="submit">Log in</button>
-      <div class="field" id="otpField" hidden><label for="otp">Code from your email</label><input id="otp" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="8-digit code" style="font-size:22px;letter-spacing:6px;text-align:center"></div>
+      <div class="field" id="emailField"><label for="email" data-t="email">Email</label><input id="email" type="email" autocomplete="email" placeholder="you@example.com" data-t-ph="emailPh"></div>
+      <button class="btn-wide" id="joinBtn" type="submit" data-t="login">Log in</button>
+      <div class="field" id="otpField" hidden><label for="otp" data-t="code">Code from your email</label><input id="otp" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="8-digit code" style="font-size:22px;letter-spacing:6px;text-align:center"></div>
       <button class="btn-wide" id="otpBtn" type="button" hidden>Confirm code</button>
-      <p class="fine" id="joinMsg">We email you an 8-digit code. Type it here to log in. No password needed.</p>
-      <button class="link" type="button" id="otpAgain" hidden style="align-self:flex-start">Use a different email / send again</button>
-      <p class="fine">By logging in you agree to our <button class="link" type="button" data-go="privacy" style="font-size:12px">privacy notice</button>.</p>
+      <p class="fine" id="joinMsg" data-t="loginHelp">We email you an 8-digit code. Type it here to log in. No password needed.</p>
+      <button class="link" type="button" id="otpAgain" hidden style="align-self:flex-start"><span data-t="otpAgain">Use a different email / send again</span></button>
+      <p class="fine"><span data-t="agree">By logging in you agree to our</span> <button class="link" type="button" data-go="privacy" data-t="privacy" style="font-size:12px">privacy notice</button>.</p>
     </form>
   </section>
 
@@ -260,43 +262,43 @@ body.no-tabs .tabbar{display:none}
     <form id="searchForm" class="search float" role="search">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color:var(--muted)"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
       
-      <input id="q" type="search" aria-label="Search any product" placeholder="Paste link or type name" autocomplete="off">
+      <input id="q" type="search" aria-label="Search any product" placeholder="Paste link or type name" data-t-ph="searchPh" autocomplete="off">
       <button class="scanbtn camb" type="button" id="photoBtn" aria-label="Search by photo or screenshot"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/></svg></button>
       <input type="file" id="photoInput" accept="image/*" hidden>
       <button class="scanbtn" type="button" id="scanBtn" aria-label="Scan a barcode"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 8v8M10 8v8M13 8v8M17 8v8"/></svg></button>
     </form>
-    <p class="fine" id="linkHint" style="margin-top:4px">Best way: in Shopee or Lazada tap <b>Share → Copy link</b>, then paste it here. Photo is optional.</p>
+    <p class="fine" id="linkHint" style="margin-top:4px"><span data-t="hint1">Best way: in Shopee or Lazada tap</span> <b data-t="hint2">Share → Copy link</b><span data-t="hint3">, then paste it here. Photo is optional.</span></p>
     <button type="button" class="minisave" id="miniSave" aria-label="Your savings and cash back">
-      <span class="ms-top"><span class="ms-coin">💰</span><span style="display:flex;flex-direction:column;align-items:flex-start"><span class="ml">You saved this month</span><span class="mv num" id="savedMini">RM0.00</span></span></span>
-      <span class="ms-row"><span class="k">🎁 Cash back reward</span><span class="v num" id="retMini">RM0.00</span></span>
-      <span class="ms-cta">Start saving ›</span>
+      <span class="ms-top"><span class="ms-coin">💰</span><span style="display:flex;flex-direction:column;align-items:flex-start"><span class="ml" data-t="savedMonth">You saved this month</span><span class="mv num" id="savedMini">RM0.00</span></span></span>
+      <span class="ms-row"><span class="k" data-t="cbReward">🎁 Cash back reward</span><span class="v num" id="retMini">RM0.00</span></span>
+      <span class="ms-cta" data-t="startSaving">Start saving ›</span>
     </button>
     <div id="scanner" hidden>
       <div id="reader"></div>
-      <p class="fine" id="scanMsg">Point the camera at the barcode on the pack.</p>
-      <button class="btn-wide" type="button" id="scanStop" style="background:var(--soft);color:var(--fg)">Cancel</button>
+      <p class="fine" id="scanMsg" data-t="scanMsg">Point the camera at the barcode on the pack.</p>
+      <button class="btn-wide" type="button" id="scanStop" style="background:var(--soft);color:var(--fg)" data-t="cancel">Cancel</button>
     </div>
     <div class="install" id="installCard" hidden>
       <img src="/icons/icon-192.png" alt="" width="40" height="40">
-      <div class="t"><b>Get the NBN app</b><span id="installSub">Free. Opens full screen from your home screen.</span></div>
-      <button type="button" id="installBtn">Install</button>
+      <div class="t"><b data-t="getApp">Get the NBN app</b><span id="installSub" data-t="getAppSub">Free. Opens full screen from your home screen.</span></div>
+      <button type="button" id="installBtn" data-t="install">Install</button>
       <button type="button" class="x" id="installX" aria-label="Hide">×</button>
     </div>
     <div class="cats" id="cats"></div>
 
     <div style="display:flex;flex-direction:column;gap:10px">
-      <div class="secthead"><h2>Best deals today</h2><button type="button" class="seeall" id="seeAll">See all</button></div>
+      <div class="secthead"><h2 data-t="bestDeals">Best deals today</h2><button type="button" class="seeall" id="seeAll" data-t="seeAll">See all</button></div>
       <div class="deals" id="deals"></div>
     </div>
 
 
     <div style="display:flex;flex-direction:column;gap:10px">
-      <div class="top"><h2>Popular this week</h2><span class="muted" style="font-size:13px">Household</span></div>
+      <div class="top"><h2 data-t="popular">Popular this week</h2><span class="muted" style="font-size:13px" data-t="household">Household</span></div>
       <div class="list" id="popular"></div>
     </div>
 
     <div id="missedBox" hidden style="display:flex;flex-direction:column;gap:6px">
-      <h2 style="font-size:15px">Searches we couldn't find yet</h2>
+      <h2 style="font-size:15px" data-t="missedH">Searches we couldn't find yet</h2>
       <p class="fine" id="missed"></p>
     </div>
     <p class="fine">Pilot preview. Data: <span id="src">loading…</span>. <span id="checkedNote">Prices checked by hand.</span> Buy buttons open Shopee or Lazada through our partner links. <button class="link" id="reset" type="button">Reset my test data</button></p>
@@ -304,52 +306,53 @@ body.no-tabs .tabbar{display:none}
 
   <!-- SAVINGS -->
   <section id="wallet" class="view" hidden style="flex-direction:column;gap:16px">
-    <h1 style="font-size:24px">Your savings <span id="savMonth" style="font-size:14px;font-weight:600;color:var(--muted)"></span></h1>
+    <h1 style="font-size:24px"><span data-t="yourSavings">Your savings</span> <span id="savMonth" style="font-size:14px;font-weight:600;color:var(--muted)"></span></h1>
     <div class="savings" aria-live="polite"><div class="sv-ico"><svg width="64" height="64" viewBox="0 0 64 64" fill="none" aria-hidden="true"><ellipse cx="33" cy="37" rx="22" ry="16" fill="#F7E08A" stroke="#B8860B" stroke-width="2"/><circle cx="52" cy="35" r="5" fill="#F7E08A" stroke="#B8860B" stroke-width="2"/><circle cx="53" cy="35" r="1.5" fill="#14563A"/><circle cx="24" cy="33" r="2" fill="#14563A"/><rect x="26" y="19" width="14" height="4" rx="2" fill="#14563A"/><path d="M18 50v6M46 50v6" stroke="#B8860B" stroke-width="4" stroke-linecap="round"/><path d="M12 32c-4 0-6-3-5-6" stroke="#B8860B" stroke-width="2" stroke-linecap="round"/><circle cx="33" cy="12" r="7" fill="#E6C35C" stroke="#B8860B" stroke-width="2"/><text x="33" y="16" font-size="10" font-weight="900" text-anchor="middle" fill="#14563A">RM</text></svg></div>
-      <div class="row"><span class="lbl">Savings this month</span><span class="lbl num" id="savedSplit">Confirmed RM0.00 · On the way RM0.00</span></div>
+      <div class="row"><span class="lbl" data-t="savingsMonth">Savings this month</span><span class="lbl num" id="savedSplit">Confirmed RM0.00 · On the way RM0.00</span></div>
       <div class="row">
         <span class="big num" id="saved">RM0.00</span>
         <span class="num" style="font-size:13px;color:var(--navy-muted);text-align:right" id="orders">0 confirmed orders</span>
       </div>
-      <span class="num" style="font-size:13px;color:var(--navy-muted)" id="waiting">Nothing waiting for confirmation</span>
+      <span class="num" style="font-size:13px;color:var(--navy-muted)" id="waiting" data-t="nothingWaiting">Nothing waiting for confirmation</span>
       <div class="return">
         <div style="display:flex;flex-direction:column;gap:2px">
           <span style="font-size:13px;font-weight:700" class="num" id="ret">Return money: RM0.00 pending</span>
           <span style="font-size:12px;color:var(--navy-muted)" id="retPaid">Your cash back reward 🎁</span>
         </div>
-        <span style="font-size:11px;font-weight:700;color:#14563A;background:var(--gold);padding:4px 8px;border-radius:999px">Pilot</span>
+        <span style="font-size:11px;font-weight:700;color:#14563A;background:var(--gold);padding:4px 8px;border-radius:999px" data-t="pilot">Pilot</span>
       </div>
     </div>
 
     <div class="note warn" style="line-height:1.5">
-      <b>Shop smart. Earn cash back! 💰</b>
+      <b data-t="cbTitle">Shop smart. Earn cash back! 💰</b>
       <ol style="margin:6px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:4px">
-        <li>🛒 <b>Tap Buy:</b> shop through NBN, same price, nothing extra</li>
-        <li>✅ <b>Order confirmed:</b> Shopee confirms it, usually in 1–2 months</li>
-        <li>💸 <b>Get paid:</b> your cash back goes straight to your DuitNow (from RM5)</li>
+        <li>🛒 <b data-t="cb1a">Tap Buy:</b> <span data-t="cb1b">shop through NBN, same price, nothing extra</span></li>
+        <li>✅ <b data-t="cb2a">Order confirmed:</b> <span data-t="cb2b">Shopee confirms it, usually in 1–2 months</span></li>
+        <li>💸 <b data-t="cb3a">Get paid:</b> <span data-t="cb3b">your cash back goes straight to your DuitNow (from RM5)</span></li>
       </ol>
-      <p class="fine" style="margin-top:6px"><i>Pilot terms may change.</i> <button type="button" class="link" id="cbMore">More info ›</button></p>
-      <p class="fine" id="cbMoreText" hidden>Savings show as "on the way" right after you tap Buy, and become confirmed when Shopee or Lazada confirm your order. We pay by DuitNow monthly once your cash back reaches RM5 and Shopee or Lazada have paid us (usually 1–2 months after delivery); smaller amounts carry forward.</p>
+      <p class="fine" style="margin-top:6px"><i data-t="pilotTerms">Pilot terms may change.</i> <button type="button" class="link" id="cbMore" data-t="moreInfo">More info ›</button></p>
+      <p class="fine" id="cbMoreText" hidden data-t="cbMore">Savings show as "on the way" right after you tap Buy, and become confirmed when Shopee or Lazada confirm your order. We pay by DuitNow monthly once your cash back reaches RM5 and Shopee or Lazada have paid us (usually 1–2 months after delivery); smaller amounts carry forward.</p>
     </div>
   </section>
 
   <!-- ME -->
   <section id="me" class="view" hidden style="flex-direction:column;gap:14px">
-    <h1 style="font-size:24px">Me</h1>
+    <h1 style="font-size:24px" data-t="me">Me</h1>
     <div class="list">
-      <div class="item" style="cursor:default"><div class="t"><span class="sub">Logged in as</span><span class="name" id="meEmail">Not logged in</span></div></div>
-      <div class="item" style="cursor:default"><div class="t"><span class="sub">Cash back paid to</span><span class="name">DuitNow (we will ask for your DuitNow ID before your first payout)</span></div></div>
+      <div class="item" style="cursor:default"><div class="t"><span class="sub" data-t="loggedInAs">Logged in as</span><span class="name" id="meEmail" data-t="notLoggedIn">Not logged in</span></div></div>
+      <div class="item" style="cursor:default"><div class="t"><span class="sub" data-t="cbPaidTo">Cash back paid to</span><span class="name" data-t="duitnow">DuitNow (we will ask for your DuitNow ID before your first payout)</span></div></div>
+      <div class="item" style="cursor:default"><div class="t"><span class="sub" data-t="language">Language</span><span class="langs" id="langs"></span></div></div>
     </div>
     <button class="btn-wide" type="button" id="adminBtn" hidden>Admin: prices and cash back</button>
-    <button class="btn-wide" type="button" id="loginBtn" hidden>Log in</button>
-    <button class="btn-wide" type="button" id="logoutBtn" style="background:var(--soft);color:var(--fg)">Log out</button>
-    <button class="link" type="button" data-go="privacy" style="align-self:flex-start">Privacy notice</button>
-    <p class="fine">Pilot member. Questions or problems: reply to your invite message.</p>
+    <button class="btn-wide" type="button" id="loginBtn" hidden data-t="login">Log in</button>
+    <button class="btn-wide" type="button" id="logoutBtn" style="background:var(--soft);color:var(--fg)" data-t="logout">Log out</button>
+    <button class="link" type="button" data-go="privacy" style="align-self:flex-start" data-t="privacy">Privacy notice</button>
+    <p class="fine" data-t="pilotMember">Pilot member. Questions or problems: reply to your invite message.</p>
   </section>
 
   <!-- RESULTS -->
   <section id="results" class="view" hidden style="flex-direction:column;gap:14px">
-    <button class="back" type="button" data-go="home">‹ Back to search</button>
+    <button class="back" type="button" data-go="home" data-t="backSearch">‹ Back to search</button>
     <p class="muted" id="resultsHead"></p>
     <div class="list" id="resultsList"></div>
     <div id="notFound" hidden class="note warn"></div>
@@ -433,10 +436,10 @@ body.no-tabs .tabbar{display:none}
   <section id="compare" class="view" hidden style="flex-direction:column;gap:12px"></section>
 </div>
 <nav class="tabbar" aria-label="Main">
-  <button type="button" id="tabHome" class="on"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Home</button>
-  <button type="button" id="tabScan"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 8v8M12 8v8M17 8v8"/></svg>Scan</button>
-  <button type="button" id="tabSave"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>Savings</button>
-  <button type="button" id="tabMe"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Me</button>
+  <button type="button" id="tabHome" class="on"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span data-t="tabHome">Home</span></button>
+  <button type="button" id="tabScan"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 8v8M12 8v8M17 8v8"/></svg><span data-t="tabScan">Scan</span></button>
+  <button type="button" id="tabSave"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg><span data-t="tabSave">Savings</span></button>
+  <button type="button" id="tabMe"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span data-t="tabMe">Me</span></button>
 </nav>
 <div class="toast" id="toast" hidden></div>
 <div class="pbox" id="pbox" hidden role="status" aria-live="polite"><div class="card">
@@ -500,20 +503,30 @@ async function loadLive(){
     SOURCE = 'live database'; }
 }
 const CATS = [
-  {tags:['MILK','KIDS'], label:'Milk', color:'#C7381B', icon:'<path d="M8 2h8l-1 5H9z"/><path d="M9 7h6l2 4v9a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2v-9z"/>'},
-  {tags:['BABY'], label:'Baby', color:'#BE0F6A', icon:'<circle cx="12" cy="8" r="4"/><path d="M6 21v-2a6 6 0 0 1 12 0v2"/>'},
-  {tags:['WASH'], label:'Laundry', color:'#2F62C8', icon:'<rect x="4" y="3" width="16" height="18" rx="2"/><circle cx="12" cy="13" r="4"/><path d="M8 6h.01M11 6h.01"/>'},
-  {tags:['DRINK'], label:'Drinks', color:'#A07A00', icon:'<path d="M17 8h1a4 4 0 0 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z"/><path d="M6 2v2M10 2v2M14 2v2"/>'}
+  {tags:['MILK','KIDS'], label:'Milk', key:'catMilk', color:'#C7381B', icon:'<path d="M8 2h8l-1 5H9z"/><path d="M9 7h6l2 4v9a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2v-9z"/>'},
+  {tags:['BABY'], label:'Baby', key:'catBaby', color:'#BE0F6A', icon:'<circle cx="12" cy="8" r="4"/><path d="M6 21v-2a6 6 0 0 1 12 0v2"/>'},
+  {tags:['WASH'], label:'Laundry', key:'catLaundry', color:'#2F62C8', icon:'<rect x="4" y="3" width="16" height="18" rx="2"/><circle cx="12" cy="13" r="4"/><path d="M8 6h.01M11 6h.01"/>'},
+  {tags:['DRINK'], label:'Drinks', key:'catDrinks', color:'#A07A00', icon:'<path d="M17 8h1a4 4 0 0 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z"/><path d="M6 2v2M10 2v2M14 2v2"/>'}
 ];
 
 const $ = id => document.getElementById(id);
+let LANG = localStorage.getItem('nbn_lang') || 'en';
+function t(k, v){ const d = (window.NBN_LANGS && (NBN_LANGS[LANG] || {})); let x = (d && d[k]) || NBN_LANGS.en[k] || k; if(v) for(const key in v) x = x.split('{'+key+'}').join(v[key]); return x; }
+function applyLang(){
+  document.documentElement.lang = LANG === 'ms' ? 'ms' : LANG === 'ta' ? 'ta' : LANG === 'zh' ? 'zh-CN' : 'en';
+  document.querySelectorAll('[data-t]').forEach(el => { el.textContent = t(el.dataset.t); });
+  document.querySelectorAll('[data-t-ph]').forEach(el => { el.placeholder = t(el.dataset.tPh); });
+  const box = $('langs'); if(box){ box.innerHTML = ''; for(const k in NBN_LANGS){ const b = document.createElement('button'); b.type='button'; b.textContent = NBN_LANGS[k].name; b.className = k===LANG ? 'on' : ''; b.onclick = () => { LANG = k; localStorage.setItem('nbn_lang', k); applyLang(); if(typeof renderHome==='function') renderHome(); }; box.appendChild(b); } }
+  if(typeof renderHome==='function' && window.CATALOGUE){ try{ renderHome(); }catch(e){} }
+  if($('cats')) { $('cats').querySelectorAll('.cat').forEach((b,i) => { const c = CATS[i]; if(c) b.lastChild.textContent = t(c.key); }); }
+}
 const rm = n => 'RM' + n.toFixed(2);
 const perUnit = o => o.price / o.qty;
 const fmtChecked = t => { if(!t) return ''; const d = new Date(t); if(isNaN(d)) return ''; const today = new Date(); const y = new Date(Date.now()-864e5);
   const same = (a,b) => a.toDateString() === b.toDateString();
   const day = same(d,today) ? 'today' : same(d,y) ? 'yesterday' : d.toLocaleDateString('en-MY',{day:'numeric',month:'short'});
   return 'Price checked ' + day + ', ' + d.toLocaleTimeString('en-MY',{hour:'numeric',minute:'2-digit'}); };
-const unitLabel = u => u === 'piece' ? 'per piece' : 'per ' + u;
+const unitLabel = u => u === 'piece' ? t('perPiece') : t('perUnit',{u});
 function sorted(it){ return [...it.offers].sort((a,b)=>perUnit(a)-perUnit(b)); }
 
 // Per-device test data (safe if storage is blocked)
@@ -537,7 +550,7 @@ function row(it){
   btn.className = 'item'; btn.type = 'button';
   btn.innerHTML = `<div class="tag">${it.tag}</div>
     <div class="t"><span class="name">${it.name} ${it.size}</span>
-    <span class="sub num">from <strong class="best">${rm(b.price)}</strong> on <span class="plat ${b.p}">${b.p}</span>${platforms.size<2?' · 1 platform checked':''}</span>${it.checked?`<span class="checked">${fmtChecked(it.checked)}</span>`:''}</div>
+    <span class="sub num">${t('from')} <strong class="best">${rm(b.price)}</strong> ${t('on')} <span class="plat ${b.p}">${b.p}</span>${platforms.size<2?' '+t('onePlatform'):''}</span>${it.checked?`<span class="checked">${fmtChecked(it.checked)}</span>`:''}</div>
     <div class="per num best">${rm(perUnit(b))}<small>${unitLabel(it.unit)}</small></div>`;
   btn.onclick = () => openCompare(it);
   return btn;
@@ -546,17 +559,17 @@ function row(it){
 function renderHome(){
   const total = state.saved + (state.onway||0);
   $('saved').textContent = rm(total);
-  if($('savedSplit')) $('savedSplit').textContent = 'Confirmed ' + rm(state.saved) + ' · On the way ' + rm(state.onway||0);
-  $('orders').textContent = state.buys + (state.buys===1?' confirmed order':' confirmed orders');
-  $('ret').textContent = 'Return money: ' + rm(state.ret) + ' to be paid';
+  if($('savedSplit')) $('savedSplit').textContent = t('confirmedOnway',{a:rm(state.saved),b:rm(state.onway||0)});
+  $('orders').textContent = t('confirmedOrders',{n:state.buys});
+  $('ret').textContent = t('returnMoney',{a:rm(state.ret)});
   $('savedMini').textContent = rm(total); $('retMini').textContent = rm(state.ret);
-  if($('retPaid')) $('retPaid').textContent = state.paidOut ? rm(state.paidOut) + ' already paid to you 🎁' : 'Your cash back reward 🎁';
+  if($('retPaid')) $('retPaid').textContent = state.paidOut ? t('paidAlready',{a:rm(state.paidOut)}) : t('cbRewardLine');
   const pop = $('popular'); pop.innerHTML = '';
   POPULAR.map(id=>CATALOGUE.find(c=>c.id===id)).filter(Boolean).forEach(it => pop.appendChild(row(it)));
   const src=$('src'); if(src) src.textContent = SOURCE;
   const lastChk = CATALOGUE.map(c=>c.checked).filter(Boolean).sort().pop(); if(lastChk && $('checkedNote')) $('checkedNote').textContent = fmtChecked(lastChk).replace('Price checked','Prices last checked') + '.';
   const cats = $('cats'); cats.innerHTML = '';
-  CATS.forEach(c => { const b=document.createElement('button'); b.type='button'; b.className='cat'; b.innerHTML=`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="${c.color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${c.icon}</svg>${c.label}`; b.onclick=()=>browseTag(c); cats.appendChild(b); });
+  CATS.forEach(c => { const b=document.createElement('button'); b.type='button'; b.className='cat'; b.innerHTML=`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="${c.color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${c.icon}</svg>${t(c.key)}`; b.onclick=()=>browseTag(c); cats.appendChild(b); });
   const deals = $('deals'); deals.innerHTML = '';
   const withSave = CATALOGUE.map(it => { const s=sorted(it), o=s.find(x=>x.p!==s[0].p); return {it, best:s[0], save: o ? (perUnit(o)-perUnit(s[0]))*s[0].qty : 0}; });
   withSave.sort((a,b)=>b.save-a.save);
@@ -572,7 +585,7 @@ function renderHome(){
   withSave.filter(x=>x.save>0).forEach(add);
   POPULAR.forEach(id=>add(withSave.find(w=>w.it.id===id)));
   picks.forEach(x => { const d=document.createElement('button'); d.type='button'; d.className='deal';
-    d.innerHTML=`<div class="pic">${x.it.tag}${x.save>0?`<span class="save">Save ${rm(x.save)}</span>`:''}</div><span class="nm">${x.it.name} ${x.it.size}</span><div class="ft"><span class="pr num">${rm(x.best.price)}</span><span class="plat ${x.best.p}">${x.best.p}</span></div>`;
+    d.innerHTML=`<div class="pic">${x.it.tag}${x.save>0?`<span class="save">${t('save')} ${rm(x.save)}</span>`:''}</div><span class="nm">${x.it.name} ${x.it.size}</span><div class="ft"><span class="pr num">${rm(x.best.price)}</span><span class="plat ${x.best.p}">${x.best.p}</span></div>`;
     d.onclick=()=>openCompare(x.it); deals.appendChild(d); });
   $('missedBox').hidden = !state.missed.length;
   $('missed').textContent = state.missed.join(' · ');
@@ -593,14 +606,14 @@ async function searchLink(link){
   const m = String(link).match(/https?:\/\/\S+/i); if(!m) return false;
   const url = m[0];
   let host = ''; try{ host = new URL(url).hostname; }catch(e){ return false; }
-  if(!/shopee\.com\.my|shope\.ee|shp\.ee|lazada\.com\.my/i.test(host)){ toast('Paste a Shopee or Lazada link.'); return true; }
+  if(!/shopee\.com\.my|shope\.ee|shp\.ee|lazada\.com\.my/i.test(host)){ toast(t('pasteLink')); return true; }
   let name = nameFromLink(url) || '';
   if(sb && USER){
-    toast('Reading your link…');
+    toast(t('readingLink'));
     try{ const { data } = await sb.functions.invoke('resolve-link', { body: { link: url } }); if(data && data.name) name = data.name; }catch(e){}
   }
-  if(!name){ $('q').value = ''; $('q').placeholder = 'Now type the product name'; $('q').focus(); toast('Link saved, thank you! Now type the product name to compare.'); return true; }
-  $('q').value = name; toast('Searching for: ' + name); search(name, true); return true;
+  if(!name){ $('q').value = ''; $('q').placeholder = t('typeName'); $('q').focus(); toast(t('linkSaved')); return true; }
+  $('q').value = name; toast(t('searchingFor',{q:name})); search(name, true); return true;
 }
 function search(term, fromLinkDone){
   if(!fromLinkDone && /https?:\/\//i.test(term)){ searchLink(term); return; }
@@ -616,22 +629,22 @@ function search(term, fromLinkDone){
   const list = $('resultsList'); list.innerHTML = '';
   hits.forEach(it => list.appendChild(row(it)));
   list.hidden = !hits.length;
-  $('resultsHead').textContent = hits.length ? `${hits.length} match${hits.length>1?'es':''} for "${term}" · cheapest per unit first` : `No match for "${term}"`;
+  $('resultsHead').textContent = hits.length ? t('matches',{n:hits.length,q:term}) : t('noMatch',{q:term});
   const nf = $('notFound');
   if(!hits.length){
     if(!state.missed.includes(term)){ state.missed.push(term); save(); }
-    nf.textContent = `"${term}" is not in our price list yet. We've noted it and will add it. Meanwhile, search it directly:`;
+    nf.textContent = t('notInList',{q:term});
     nf.hidden = false;
   } else nf.hidden = true;
   const enc = encodeURIComponent(term);
   const sid = USER ? USER.id.replace(/-/g,'').slice(0,12) : 'guest';
   $('goShopee').href = shopeeAff('https://shopee.com.my/search?keyword=' + term);
   $('goLazada').href = 'https://www.lazada.com.my/catalog/?q=' + enc;
-  $('goShopee').textContent = `Search "${term}" on Shopee`;
+  $('goShopee').textContent = t('searchOn',{q:term,p:'Shopee'});
   LAST_TERM = term;
-  $('goLazada').textContent = `Search "${term}" on Lazada`;
+  $('goLazada').textContent = t('searchOn',{q:term,p:'Lazada'});
   $('goLazada').hidden = !LAZADA_LINKS;
-  $('elsewhereHead').textContent = hits.length ? 'Want a different size or brand?' : '';
+  $('elsewhereHead').textContent = hits.length ? t('diffSize') : '';
   if(sb && USER){ sb.from('searches').insert({ user_id: USER.id, term, results: hits.length }).then(()=>{}); }
   show('results');
 }
@@ -660,28 +673,28 @@ function openCompare(it){
   const other = s.find(o => o.p !== best.p);
   const saving = other ? (perUnit(other) - perUnit(best)) * best.qty : 0;
   const c = $('compare');
-  c.innerHTML = `<button class="back" type="button" data-go="results">‹ Back</button>
+  c.innerHTML = `<button class="back" type="button" data-go="results">${t('back')}</button>
     <div style="display:flex;gap:14px;align-items:center">
       <div class="tag" style="width:58px;height:58px">${it.tag}</div>
       <div style="display:flex;flex-direction:column;gap:3px;min-width:0"><h1 style="font-size:20px">${it.name}</h1><span class="muted">${it.size}</span></div>
     </div>
-    ${other ? `<div class="verdict"><b>Cheapest now: ${best.p}</b><span class="num">You save ${rm(saving)} vs ${other.p} on this pack</span></div>`
-            : `<div class="note warn">Only ${best.p} checked so far for this item. No saving shown until we have a second platform.</div>`}
-    ${it.checked ? `<p class="checked">${fmtChecked(it.checked)}. Prices can change on Shopee and Lazada; you always pay the price shown there.</p>` : ''}
+    ${other ? `<div class="verdict"><b>${t('cheapestNow',{p:best.p})}</b><span class="num">${t('youSave',{a:rm(saving),p:other.p})}</span></div>`
+            : `<div class="note warn">${t('onlyChecked',{p:best.p})}</div>`}
+    ${it.checked ? `<p class="checked">${fmtChecked(it.checked)}. ${t('pricesChange')}</p>` : ''}
     <div id="offers" style="display:flex;flex-direction:column;gap:10px"></div>
-    ${it.hidden ? `<div class="note bad">${it.hidden}</div>` : ''}
-    <p class="fine">We may earn a small commission when you buy through our links. You never pay extra, and we always show the cheapest first.</p>`;
+    ${it.hidden ? `<div class="note bad">${LANG==='en'?it.hidden:t('hiddenListing')}</div>` : ''}
+    <p class="fine">${t('commissionNote')}</p>`;
   const box = c.querySelector('#offers');
   s.forEach((o,i) => {
     const d = document.createElement('div');
     d.className = 'offer' + (i===0?' win':'');
-    d.innerHTML = `<div class="head"><b><span class="plat ${o.p}" style="font-size:13px">${o.p}</span>${o.note?` <span class="muted" style="font-weight:500;font-size:13px">· ${o.note}</span>`:''}</b>${i===0?'<span class="badge" style="background:var(--gold);color:#14563A">Cheapest</span>':''}</div>
+    d.innerHTML = `<div class="head"><b><span class="plat ${o.p}" style="font-size:13px">${o.p}</span>${o.note?` <span class="muted" style="font-weight:500;font-size:13px">· ${o.note.replace(/sold\/month/,t('soldMonth')).replace(/\bsold\b/,t('sold'))}</span>`:''}</b>${i===0?`<span class="badge" style="background:var(--gold);color:#14563A">${t('cheapest')}</span>`:''}</div>
       <div class="head"><span class="price num">${rm(o.price)}</span><span class="unit num">${rm(perUnit(o))} ${unitLabel(it.unit)}</span></div>
-      ${(o.p==='Lazada' && !LAZADA_LINKS) ? `<p class="fine">${i===0?'Cheapest here. ':''}Price shown for comparison. To buy, open the Lazada app yourself and search this item.</p>` : `<a class="btn ${o.p} ${i===0?'primary':'ghost'}" href="${buyUrl(o.p,it,o)}" target="_blank" rel="noopener">Buy on ${o.p}</a>`}`;
+      ${(o.p==='Lazada' && !LAZADA_LINKS) ? `<p class="fine">${i===0?t('cheapestHere'):''}${t('lazadaNoLink')}</p>` : `<a class="btn ${o.p} ${i===0?'primary':'ghost'}" href="${buyUrl(o.p,it,o)}" target="_blank" rel="noopener">${t('buyOn',{p:o.p})}</a>`}`;
     if(d.querySelector('a')) d.querySelector('a').addEventListener('click', () => {
       const s2 = (i===0) ? saving : 0;
       if(sb && USER && o.lid){ sb.from('clicks').insert({ user_id: USER.id, listing_id: o.lid, saving_rm: Number(s2.toFixed(2)), price_rm: o.price }).then(()=>loadMySavings()); }
-      toast(s2>0 ? `Tracked. Your ${rm(s2)} saving counts once ${o.p} confirms your order.` : 'Tracked. No saving on this choice.');
+      toast(s2>0 ? t('tracked',{a:rm(s2),p:o.p}) : t('trackedNone'));
     });
     box.appendChild(d);
   });
@@ -717,7 +730,7 @@ async function loadMySavings(){
   renderHome();
   $('orders').textContent = rm(state.allSaved) + ' since joining · ' + conf.length + (conf.length===1?' order':' orders');
   const w = wait.reduce((a,c)=>a+Number(c.saving_rm||0),0);
-  $('waiting').textContent = wait.length ? rm(w) + ' waiting for order confirmation (' + wait.length + (wait.length===1?' item)':' items)') : 'Nothing waiting for confirmation';
+  $('waiting').removeAttribute('data-t'); $('waiting').textContent = wait.length ? t('waiting',{a:rm(w)}) + ' (' + wait.length + ')' : t('nothingWaiting');
 }
 async function afterLogin(){
   let { data: prof, error: pe } = await sb.from('profiles').select('invite_code, is_admin').eq('id', USER.id).maybeSingle();
@@ -744,10 +757,10 @@ $('joinForm').addEventListener('submit', async e => {
   try{
     if(USER){ show('home'); loadMySavings(); return; }
     const email = $('email').value.trim();
-    if(!email){ msg.textContent = 'Enter your email.'; return; }
+    if(!email){ msg.textContent = t('enterEmail'); return; }
     const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: location.origin + location.pathname } });
     if(!error){
-      msg.textContent = 'Code sent to ' + email + '. Check your email (also Spam) and type the code here.';
+      msg.textContent = t('codeSent',{e:email});
       $('emailField').hidden = true; btn.hidden = true;
       $('otpField').hidden = false; $('otpBtn').hidden = false; $('otpAgain').hidden = false; $('otp').value = ''; $('otp').focus();
     } else msg.textContent = /pilot_full|database error saving new user/i.test(error.message) ? 'Sorry, the NBN pilot is full right now. Please try again later.'
@@ -757,8 +770,8 @@ $('joinForm').addEventListener('submit', async e => {
 });
 async function confirmOtp(){
   const email = $('email').value.trim(), token = $('otp').value.replace(/\D/g,''), msg = $('joinMsg'), b = $('otpBtn');
-  if(token.length < 6){ msg.textContent = 'Type the 8-digit code from the email.'; return; }
-  b.disabled = true; msg.textContent = 'Checking…';
+  if(token.length < 6){ msg.textContent = t('typeCode'); return; }
+  b.disabled = true; msg.textContent = t('checking');
   try{
     const { data, error } = await sb.auth.verifyOtp({ email, token, type: 'email' });
     if(error){ msg.textContent = /expired|invalid/i.test(error.message) ? 'Wrong or expired code. Check the latest email, or send again.' : ('Could not log in: ' + error.message); return; }
@@ -767,7 +780,7 @@ async function confirmOtp(){
 }
 $('otpBtn').onclick = confirmOtp;
 $('otp').addEventListener('input', e => { const v = e.target.value.replace(/\D/g,''); if(v.length === 8) confirmOtp(); });
-$('otpAgain').onclick = () => { $('emailField').hidden = false; $('joinBtn').hidden = false; $('otpField').hidden = true; $('otpBtn').hidden = true; $('otpAgain').hidden = true; $('joinMsg').textContent = 'We email you an 8-digit code. Type it here to log in. No password needed.'; };
+$('otpAgain').onclick = () => { $('emailField').hidden = false; $('joinBtn').hidden = false; $('otpField').hidden = true; $('otpBtn').hidden = true; $('otpAgain').hidden = true; $('joinMsg').textContent = t('loginHelp'); };
 
 // ---- Barcode scan (on the phone; only the number is used) ----
 let scanner = null;
@@ -776,7 +789,7 @@ async function lookupBarcode(code){
   // Stop the camera at once so people see something happened, then look it up.
   try{ if(navigator.vibrate) navigator.vibrate(60); }catch(e){}
   await stopScan();
-  toast('Barcode ' + code + ' found. Looking it up…');
+  toast(t('barcodeFound',{c:code}));
   // 1) our own catalogue
   try{
     const { data } = sb ? await sb.from('products').select('id').eq('barcode', code).limit(1) : { data: null };
@@ -793,25 +806,25 @@ async function lookupBarcode(code){
   }catch(e){}
   await stopScan();
   if(sb && USER) sb.from('searches').insert({ user_id: USER.id, term: 'barcode:' + code + (name ? ' ' + name : ''), results: 0 }).then(()=>{});
-  if(name){ $('q').value = name; search(name.split(' ').slice(0,3).join(' ')); toast('Scanned: ' + name); }
-  else { $('q').value = ''; toast('We could not identify barcode ' + code + '. Type the product name, or tap the camera button to search by photo.'); $('q').focus(); }
+  if(name){ $('q').value = name; search(name.split(' ').slice(0,3).join(' ')); toast(t('scanned',{q:name})); }
+  else { $('q').value = ''; toast(t('barcodeUnknown',{c:code})); $('q').focus(); }
 }
 $('scanBtn').addEventListener('click', async () => {
-  if(!window.Html5Qrcode){ toast('Scanner could not load. Please type the product name.'); return; }
-  $('scanner').hidden = false; $('scanMsg').textContent = 'Point the camera at the barcode on the pack.';
+  if(!window.Html5Qrcode){ toast(t('scannerFail')); return; }
+  $('scanner').hidden = false; $('scanMsg').textContent = t('scanMsg');
   try{
     scanner = new Html5Qrcode('reader', { formatsToSupport: [ Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.EAN_8, Html5QrcodeSupportedFormats.UPC_A, Html5QrcodeSupportedFormats.UPC_E, Html5QrcodeSupportedFormats.CODE_128 ] });
     let done = false;
     await scanner.start({ facingMode: 'environment' }, { fps: 10, qrbox: { width: 260, height: 120 } }, txt => { if(done) return; done = true; lookupBarcode(txt.trim()); }, () => {});
-  }catch(e){ $('scanMsg').textContent = 'Camera not available. Allow camera access in your browser settings, or type the product name.'; }
+  }catch(e){ $('scanMsg').textContent = t('cameraFail'); }
 });
 $('scanStop').addEventListener('click', stopScan);
 
 function browseTag(c){
   const hits = CATALOGUE.filter(it => c.tags.includes(it.tag)).sort((a,b)=>perUnit(sorted(a)[0])-perUnit(sorted(b)[0]));
   const list = $('resultsList'); list.innerHTML = ''; hits.forEach(it => list.appendChild(row(it))); list.hidden = !hits.length;
-  $('resultsHead').textContent = hits.length ? `${c.label} · ${hits.length} item${hits.length===1?'':'s'} · cheapest per unit first` : c.label;
-  $('notFound').hidden = !!hits.length; $('notFound').textContent = `${c.label} coming soon. We are adding more products every week.`; $('elsewhereHead').textContent = '';
+  $('resultsHead').textContent = hits.length ? t('items',{c:t(c.key),n:hits.length}) : t(c.key);
+  $('notFound').hidden = !!hits.length; $('notFound').textContent = t('comingSoon',{c:t(c.key)}); $('elsewhereHead').textContent = '';
   $('elsewhere').hidden = true;
   show('results');
 }
@@ -820,14 +833,15 @@ $('tabHome').onclick = () => { setTab('tabHome'); show('home'); };
 $('tabScan').onclick = () => { setTab('tabScan'); show('home'); $('scanBtn').click(); };
 $('tabSave').onclick = () => { setTab('tabSave'); show('wallet'); };
 $('miniSave').onclick = () => { setTab('tabSave'); show('wallet'); };
-if($('savMonth')) $('savMonth').textContent = '· ' + new Date().toLocaleString('en-MY',{month:'long'});
+if($('savMonth')) $('savMonth').textContent = '· ' + new Date().toLocaleString(LANG==='zh'?'zh-CN':LANG==='ta'?'ta-MY':LANG==='ms'?'ms-MY':'en-MY',{month:'long'});
+applyLang();
 if($('cbMore')) $('cbMore').onclick = () => { $('cbMoreText').hidden = !$('cbMoreText').hidden; };
-$('tabMe').onclick = () => { setTab('tabMe'); $('meEmail').textContent = (USER && USER.email) || 'Not logged in'; $('loginBtn').hidden = !!USER; $('logoutBtn').hidden = !USER; show('me'); };
+$('tabMe').onclick = () => { setTab('tabMe'); $('meEmail').textContent = (USER && USER.email) || t('notLoggedIn'); if(USER) $('meEmail').removeAttribute('data-t'); $('loginBtn').hidden = !!USER; $('logoutBtn').hidden = !USER; show('me'); };
 // Send a logged-out person straight to the login screen (email -> 8-digit code).
-function goLogin(why){ setTab('tabHome'); if(!sb){ toast('Cannot reach NBN right now. Check your internet and reopen the app.'); return; } $('emailField').hidden = false; $('joinBtn').hidden = false; $('otpField').hidden = true; $('otpBtn').hidden = true; $('otpAgain').hidden = true; $('joinMsg').textContent = (why ? why + ' ' : '') + 'We email you an 8-digit code. Type it here to log in. No password needed.'; show('join'); setTimeout(()=>{ try{ $('email').focus(); }catch(e){} }, 50); }
+function goLogin(why){ setTab('tabHome'); if(!sb){ toast(t('noReach')); return; } $('emailField').hidden = false; $('joinBtn').hidden = false; $('otpField').hidden = true; $('otpBtn').hidden = true; $('otpAgain').hidden = true; $('joinMsg').textContent = (why ? why + ' ' : '') + 'We email you an 8-digit code. Type it here to log in. No password needed.'; show('join'); setTimeout(()=>{ try{ $('email').focus(); }catch(e){} }, 50); }
 $('loginBtn').onclick = () => goLogin();
-$('logoutBtn').onclick = async () => { if(sb){ await sb.auth.signOut(); } USER = null; setTab('tabHome'); show(sb ? 'join' : 'home'); toast('Logged out'); };
-$('bellBtn').onclick = () => toast('Price-drop alerts are coming soon.');
+$('logoutBtn').onclick = async () => { if(sb){ await sb.auth.signOut(); } USER = null; setTab('tabHome'); show(sb ? 'join' : 'home'); toast(t('loggedOut')); };
+$('bellBtn').onclick = () => toast(t('alertsSoon'));
 $('seeAll').onclick = () => { const hits=[...CATALOGUE].sort((a,b)=>a.name.localeCompare(b.name)); const list=$('resultsList'); list.innerHTML=''; hits.forEach(it=>list.appendChild(row(it))); list.hidden=false; $('resultsHead').textContent = `All ${hits.length} products`; $('notFound').hidden=true; $('elsewhere').hidden=true; show('results'); };
 // Photo search: shrink the photo on the phone, send to our photo-search function, then search the phrase it returns.
 async function shrink(file){
@@ -879,11 +893,11 @@ async function photoSearch(f){
   const left = data.limit ? ` · ${Math.max(0, data.limit - data.used)} photo searches left this month` : '';
   toast(`We think it's: ${data.query}${data.confidence==='low' ? ' (not sure, check it)' : ''} · ${secs}s${left}`);
 }
-$('photoBtn').onclick = () => { if(!sb || !USER){ goLogin('Log in first to use photo search.'); return; } $('photoInput').click(); };
+$('photoBtn').onclick = () => { if(!sb || !USER){ goLogin(t('loginFirst')); return; } $('photoInput').click(); };
 $('photoInput').onchange = (e) => {
   const f = e.target.files && e.target.files[0]; e.target.value = '';
   if(!f) return;
-  if(!sb || !USER){ goLogin('Log in first to use photo search.'); return; }
+  if(!sb || !USER){ goLogin(t('loginFirst')); return; }
   photoSearch(f);
 };
 // Wake the photo server early so the first photo search skips the start-up delay.
@@ -1118,7 +1132,7 @@ async function loadStats(){
   box.appendChild(chartCard('Price database', `${nf(t.products_live)} products live · ${nf(t.reports_waiting)} reported prices waiting for review`, { x: xs, series: [{ name: 'Prices recorded', color: 'var(--s1)', values: col('prices') }] }));
 }
 
-renderHome(); boot().catch(()=>{ if(sb && !USER) goLogin('Please log in again.'); else show('home'); });
+renderHome(); boot().catch(()=>{ if(sb && !USER) goLogin(t('loginAgain')); else show('home'); });
 loadLive().then(renderHome).catch(()=>{ SOURCE='built-in list (database not reachable)'; renderHome(); });
 </script>
 </body></html>
