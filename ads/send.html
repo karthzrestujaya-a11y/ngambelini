@@ -1,0 +1,5 @@
+<!doctype html><meta charset="utf-8"><title>NBN image</title><body style="font-family:sans-serif">Sending…
+<script>
+const f=new URLSearchParams(location.search).get('f')||'ad_ms_square.png';
+fetch(f).then(r=>r.blob()).then(b=>{ if(window.opener){ window.opener.postMessage({nbnimg:b,name:f},'*'); document.body.textContent='Sent '+f+'. You can close this tab.'; } else document.body.textContent='No opener'; });
+</script>
