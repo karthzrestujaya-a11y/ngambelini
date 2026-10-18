@@ -31,14 +31,14 @@ begin
     'target_2', (select value::int from app_settings where key='target_2'),
     'target_2_date', (select value from app_settings where key='target_2_date'),
     'ai_limit', (select value::int from app_settings where key='ai_daily_limit'),
-    'photos_today', (select count(*) from photo_searches where created_at >= d0),
-    'snaps_today', (select count(*) from snaps where created_at >= d0),
-    'taps_today', (select count(*) from clicks where clicked_at >= d0),
+    'photos_today', (select count(*) from photo_searches ps where created_at >= d0 and not exists (select 1 from profiles pa where pa.id = ps.user_id and pa.is_admin)),
+    'snaps_today', (select count(*) from snaps sn where created_at >= d0 and not exists (select 1 from profiles pa where pa.id = sn.user_id and pa.is_admin)),
+    'taps_today', (select count(*) from clicks ck where clicked_at >= d0 and not exists (select 1 from profiles pa where pa.id = ck.user_id and pa.is_admin)),
     'days', (select coalesce(jsonb_agg(x order by x.day), '[]'::jsonb) from (
         select g.day::date as day,
-          (select count(*) from auth.users u where (u.created_at at time zone 'Asia/Kuala_Lumpur')::date = g.day::date) as signups,
-          (select count(*) from photo_searches s where (s.created_at at time zone 'Asia/Kuala_Lumpur')::date = g.day::date) as photos,
-          (select count(*) from clicks c where (c.clicked_at at time zone 'Asia/Kuala_Lumpur')::date = g.day::date) as taps
+          (select count(*) from auth.users u where (u.created_at at time zone 'Asia/Kuala_Lumpur')::date = g.day::date and not exists (select 1 from profiles pa where pa.id = u.id and pa.is_admin)) as signups,
+          (select count(*) from photo_searches s where (s.created_at at time zone 'Asia/Kuala_Lumpur')::date = g.day::date and not exists (select 1 from profiles pa where pa.id = s.user_id and pa.is_admin)) as photos,
+          (select count(*) from clicks c where (c.clicked_at at time zone 'Asia/Kuala_Lumpur')::date = g.day::date and not exists (select 1 from profiles pa where pa.id = c.user_id and pa.is_admin)) as taps
         from generate_series((now() at time zone 'Asia/Kuala_Lumpur')::date - 6, (now() at time zone 'Asia/Kuala_Lumpur')::date, interval '1 day') g(day)) x)
   );
 end $$;
