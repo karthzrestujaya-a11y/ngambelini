@@ -30,6 +30,11 @@ body.has-title .pagetitle{display:block}#wallet>h1,#me>h1{display:none}
 .premium b{color:#F7E08A;font-size:16px;display:block}.pm-sub{font-size:12.5px;opacity:.9}.pm-star{font-size:22px}.premium .pm-soon{margin-left:auto;background:#F7E08A!important;color:#14563A!important;white-space:nowrap}
 .minisave{background:linear-gradient(150deg,#0F5132,#14774A)!important;color:#fff!important;border:2px solid #E6C35C!important}.minisave .mv,.minisave .v{color:#F7E08A!important}.minisave .ml,.minisave .k,.minisave .ms-cta{color:#fff!important}.minisave .ms-row{background:rgba(255,255,255,.12)!important}
 #wSeg{grid-template-columns:1fr 1fr!important;width:100%;background:#F1EBD3;border-radius:12px;padding:4px;gap:4px}#wSeg button{flex:1 1 0!important;justify-content:center;white-space:nowrap;border:0;border-radius:9px;padding:9px 6px;font-weight:700;font-size:14px;background:transparent;color:#5D6B62}#wSeg button.on{background:#fff;color:#14563A;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.admseg{grid-template-columns:repeat(3,1fr)!important}
+.gr-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.gr-kpi{background:#fff;border:1.5px solid #ecdca5;border-radius:14px;padding:10px 6px;text-align:center;display:flex;flex-direction:column;gap:2px}.gr-kpi b{font-family:var(--display);font-size:20px;color:#14563A}.gr-kpi small{font-size:11px;color:var(--muted)}.gr-kpi .i{font-size:18px}.gr-kpi.warn{border-color:#C8102E;background:#FDECEC}
+.gr-alarm{background:#FDECEC;border:1.5px solid #C8102E;color:#8a0f22;border-radius:12px;padding:10px;font-weight:700;font-size:13.5px}
+.gr-t{display:flex;flex-direction:column;gap:4px;margin-top:8px;font-size:13.5px}.gr-bar{height:12px;background:#F1EBD3;border-radius:999px;overflow:hidden}.gr-bar i{display:block;height:100%;background:linear-gradient(90deg,#14774A,#C9A227);border-radius:999px}
+.gr-chart{display:flex;gap:6px;align-items:flex-end;height:120px;margin-top:8px}.gr-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}.gr-bars{display:flex;gap:2px;align-items:flex-end;height:96px}.gr-bars i{width:7px;border-radius:3px 3px 0 0}.gr-bars .s{background:#14774A}.gr-bars .p{background:#C9A227}.gr-bars .t{background:#EE4D2D}.gr-col small{font-size:10.5px;color:var(--muted)}
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
@@ -424,8 +429,15 @@ body.no-tabs .tabbar{display:none}
   <section id="admin" class="view" hidden style="flex-direction:column;gap:14px">
     <button class="back" type="button" data-go="me">‹ Back</button>
     <h1 style="font-size:24px">Admin</h1>
-    <div class="seg" role="tablist"><button type="button" id="segPrices" class="on">Prices</button><button type="button" id="segCash">Cash back</button><button type="button" id="segRep">Reported</button><button type="button" id="segStats">Stats</button><button type="button" id="segSnap">Snaps</button></div>
-    <div id="admPrices" style="display:flex;flex-direction:column;gap:12px">
+    <div class="seg admseg" role="tablist"><button type="button" id="segGrowth" class="on">📈 Growth</button><button type="button" id="segPrices">Prices</button><button type="button" id="segCash">Cash back</button><button type="button" id="segRep">Reported</button><button type="button" id="segStats">Stats</button><button type="button" id="segSnap">Snaps</button></div>
+    <div id="admGrowth" style="display:flex;flex-direction:column;gap:10px">
+      <div id="grAlarm" class="gr-alarm" hidden></div>
+      <div class="gr-kpis" id="grKpis"></div>
+      <div class="card" id="grTargets"></div>
+      <div class="card"><b>Last 7 days</b><div id="grChart" class="gr-chart"></div><p class="fine" style="margin:4px 0 0"><span style="color:#14774A">■</span> new sign-ups &nbsp; <span style="color:#C9A227">■</span> photo searches &nbsp; <span style="color:#EE4D2D">■</span> Shopee taps</p></div>
+      <button type="button" class="sbtn" id="grRefresh">↻ Refresh</button>
+    </div>
+    <div id="admPrices" hidden style="display:flex;flex-direction:column;gap:12px">
       <div class="filebox">
         <b>Upload the price sheet (Excel)</b>
         <span class="fine">Use the NBN price sheet. Only rows with a price and a product link update the app.</span>
@@ -811,7 +823,7 @@ async function afterLogin(){
   let { data: prof, error: pe } = await sb.from('profiles').select('invite_code, is_admin').eq('id', USER.id).maybeSingle();
   if(pe){ ({ data: prof } = await sb.from('profiles').select('invite_code').eq('id', USER.id).maybeSingle()); }
   $('adminBtn').hidden = !(prof && prof.is_admin);
-  show('home'); loadMySavings(); try{ warmPhoto(); }catch(e){} return;
+  show('home'); loadMySavings(); try{ warmPhoto(); }catch(e){} seen(); return;
   const code = lsGet('nbn-code');
   if(code){ const { data: ok } = await sb.rpc('redeem_invite', { p_code: code }); if(ok){ show('home'); loadMySavings(); return; } }
   // logged in but no valid code yet
@@ -980,6 +992,7 @@ $('photoInput').onchange = (e) => {
 };
 // Wake the photo server early so the first photo search skips the start-up delay.
 let WARMED = false;
+function seen(){ if(!sb || !USER) return; sb.rpc('touch_seen').then(()=>{}, ()=>{}); if(!window.__seenT) window.__seenT = setInterval(() => { if(!document.hidden && USER) sb.rpc('touch_seen').then(()=>{}, ()=>{}); }, 5*60*1000); }
 function warmPhoto(){ if(WARMED || !sb || !USER) return; WARMED = true; sb.functions.invoke('photo-search', { body: { warm: true } }).catch(()=>{}); }
 // ---- Install as app ----
 const IS_APP = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true || document.referrer.startsWith('android-app://');
@@ -1003,7 +1016,7 @@ $('privBack').onclick = () => show(USER || !sb ? (LASTVIEW || 'me') : 'join');
 
 // ---- Admin: upload price sheet + cash back ----
 const esc = t => String(t ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function seg(which){ $('segPrices').classList.toggle('on', which==='prices'); $('segCash').classList.toggle('on', which==='cash'); $('segRep').classList.toggle('on', which==='rep'); $('segStats').classList.toggle('on', which==='stats'); $('segSnap').classList.toggle('on', which==='snap'); $('admSnap').hidden = which!=='snap'; if(which==='snap') loadSnapAdmin();
+function seg(which){ $('segGrowth').classList.toggle('on', which==='growth'); $('admGrowth').hidden = which!=='growth'; if(which==='growth') loadGrowth(); $('segPrices').classList.toggle('on', which==='prices'); $('segCash').classList.toggle('on', which==='cash'); $('segRep').classList.toggle('on', which==='rep'); $('segStats').classList.toggle('on', which==='stats'); $('segSnap').classList.toggle('on', which==='snap'); $('admSnap').hidden = which!=='snap'; if(which==='snap') loadSnapAdmin();
   $('admPrices').hidden = which!=='prices'; $('admCash').hidden = which!=='cash'; $('admRep').hidden = which!=='rep'; $('admStats').hidden = which!=='stats';
   if(which==='cash') loadCash(); if(which==='rep'){ loadReported(); loadLinks(); } if(which==='stats') loadStats(); }
 
@@ -1078,8 +1091,31 @@ $('snapPayBuild').onclick = async () => {
 
 // Barcode scan is a Premium feature (coming soon): show the Premium card instead of the scanner.
 $('scanBtn').onclick = () => { toast(t('premBarcode')); const c=$('premCard'); c.classList.add('pulse'); c.scrollIntoView({behavior:'smooth', block:'center'}); setTimeout(()=>c.classList.remove('pulse'), 1600); };
-$('adminBtn').onclick = () => { show('admin'); seg('prices'); };
-$('segPrices').onclick = () => seg('prices'); $('segCash').onclick = () => seg('cash'); $('segRep').onclick = () => seg('rep'); $('segStats').onclick = () => seg('stats'); $('segSnap').onclick = () => seg('snap');
+
+// ===== Growth (admins) =====
+async function loadGrowth(){
+  const { data: g, error } = await sb.rpc('admin_growth'); const K = $('grKpis'); K.innerHTML = '';
+  if(error || !g){ K.appendChild(el('p', error ? error.message : 'No data', 'fine')); return; }
+  const kpi = (ico, v, l, warn) => { const d = el('div', null, 'gr-kpi' + (warn ? ' warn' : '')); d.appendChild(el('span', ico, 'i')); d.appendChild(el('b', String(v))); d.appendChild(el('small', l)); K.appendChild(d); };
+  const aiUsed = g.photos_today + g.snaps_today, aiPct = Math.round(aiUsed * 100 / (g.ai_limit || 1000));
+  kpi('🟢', g.online_now, 'online now'); kpi('👥', g.users_today, 'users today'); kpi('🆕', '+' + g.signups_today, 'sign-ups today');
+  kpi('📸', aiUsed + ' / ' + g.ai_limit, 'AI photos today (' + aiPct + '%)', aiPct >= 70); kpi('🛒', g.taps_today, 'Shopee taps today'); kpi('🎟️', g.members + ' / ' + g.cap, 'members / sign-up cap', g.members >= g.cap * 0.9);
+  const al = []; if(aiPct >= 70) al.push('⚠️ AI photo searches at ' + aiPct + '% of the free daily limit — switch Google AI to pay-as-you-go.');
+  if(g.members >= g.cap * 0.9) al.push('⚠️ Members ' + g.members + ' of ' + g.cap + ' — sign-ups stop at the cap. Raise it below.');
+  $('grAlarm').hidden = !al.length; $('grAlarm').textContent = al.join('  ');
+  const T = $('grTargets'); T.innerHTML = '';
+  const bar = (label, n, tgt) => { const w = el('div', null, 'gr-t'); const pct = Math.min(100, Math.round(n * 100 / tgt)); w.appendChild(el('span', `${label}: ${n.toLocaleString()} / ${tgt.toLocaleString()} (${pct}%)`)); const b = el('div', null, 'gr-bar'); const f = el('i'); f.style.width = pct + '%'; b.appendChild(f); w.appendChild(b); T.appendChild(w); };
+  T.appendChild(el('b', '🎯 Targets')); bar('Target 1', g.members, g.target_1); bar('Target 2 by ' + new Date(g.target_2_date).toLocaleDateString('en-MY', {day:'numeric', month:'short'}), g.members, g.target_2);
+  const cap = el('div'); cap.style.cssText = 'display:flex;gap:6px;margin-top:6px'; const ci = el('input'); ci.type = 'number'; ci.value = g.cap; ci.style.cssText = 'flex:1;padding:8px;border:1.5px solid #d9cfa8;border-radius:10px'; const cb = el('button', 'Set sign-up cap', 'sbtn');
+  cb.onclick = async () => { const { error: e } = await sb.rpc('admin_set_cap', { p_cap: Number(ci.value) }); toast(e ? e.message : 'Cap updated'); loadGrowth(); }; cap.appendChild(ci); cap.appendChild(cb); T.appendChild(cap);
+  const C = $('grChart'); C.innerHTML = ''; const mx = Math.max(1, ...g.days.map(d => Math.max(d.signups, d.photos, d.taps)));
+  g.days.forEach(d => { const col = el('div', null, 'gr-col'); const bars = el('div', null, 'gr-bars');
+    [['s', d.signups], ['p', d.photos], ['t', d.taps]].forEach(([c, v]) => { const b = el('i', null, c); b.style.height = Math.max(2, Math.round(v * 90 / mx)) + 'px'; b.title = v; bars.appendChild(b); });
+    col.appendChild(bars); col.appendChild(el('small', new Date(d.day).toLocaleDateString('en-MY', {weekday:'short'}))); C.appendChild(col); });
+}
+$('grRefresh').onclick = loadGrowth;
+$('adminBtn').onclick = () => { show('admin'); seg('growth'); };
+$('segGrowth').onclick = () => seg('growth'); $('segPrices').onclick = () => seg('prices'); $('segCash').onclick = () => seg('cash'); $('segRep').onclick = () => seg('rep'); $('segStats').onclick = () => seg('stats'); $('segSnap').onclick = () => seg('snap');
 function loadXLSX(){ return window.XLSX ? Promise.resolve(window.XLSX) : new Promise((ok, bad) => { const sc = document.createElement('script');
   sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'; sc.onload = () => ok(window.XLSX); sc.onerror = () => bad(new Error('Could not load the Excel reader. Check your internet.')); document.head.appendChild(sc); }); }
 let SHEET = null;
