@@ -16,6 +16,7 @@ h1{color:var(--gd);font-size:24px;margin:20px 0 4px}.sub{color:var(--mut);margin
 .ic{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:26px;padding:0 6px;border-radius:7px;background:#eef6f1;border:1px solid #cfe5d8;font-weight:800;color:var(--gd);vertical-align:middle}
 .go{display:block;text-align:center;background:var(--g);color:#fff;text-decoration:none;font-weight:800;padding:14px;border-radius:14px;margin:16px 0 8px;font-size:16px}
 .note{background:#fff7dd;border-radius:12px;padding:10px 12px;font-size:13.5px;color:#5b4a12}
+.pdf{display:block;text-align:center;border:1.5px solid var(--g);color:var(--g);text-decoration:none;font-weight:700;padding:12px;border-radius:14px;margin:0 0 10px;font-size:15px;background:#fff}
 .soon{text-align:center;color:var(--mut);font-size:13px;margin-top:14px}
 [hidden]{display:none!important}
 </style></head><body><div class="wrap">
@@ -42,12 +43,14 @@ h1{color:var(--gd);font-size:24px;margin:20px 0 4px}.sub{color:var(--mut);margin
 </div>
 
 <a class="go" href="https://ngambelini.com/" data-ms="Buka ngambelini.com →" data-en="Open ngambelini.com →"></a>
+<a class="pdf" id="pdf" href="../howto/NBN_guide_ms.pdf" target="_blank" data-ms="📄 Muat turun panduan cara guna (PDF)" data-en="📄 Download the how-to-use guide (PDF)"></a>
+<a class="pdf" href="../howto/NBN_howto_ms.mp4" id="vid" target="_blank" data-ms="▶️ Tonton video cara guna (1 minit)" data-en="▶️ Watch the how-to video (1 min)"></a>
 <div class="note" data-ms="💡 Buka dari TikTok/Facebook? Tekan ⋯ dan pilih “Buka dalam pelayar” (Chrome / Safari) dulu." data-en="💡 Came from TikTok/Facebook? Tap ⋯ and choose “Open in browser” (Chrome / Safari) first."></div>
 <p class="soon" data-ms="📱 App Google Play &amp; App Store: akan datang 🔜" data-en="📱 Google Play &amp; App Store app: coming soon 🔜"></p>
 </div>
 <script>
 const qs=new URLSearchParams(location.search);
-function setL(l){document.documentElement.lang=l;document.querySelectorAll('[data-'+l+']').forEach(e=>e.innerHTML=e.getAttribute('data-'+l));document.querySelectorAll('.lang button').forEach(b=>b.classList.toggle('on',b.dataset.l===l));try{localStorage.setItem('nbn-pasang-l',l)}catch(e){}}
+function setL(l){document.documentElement.lang=l;document.querySelectorAll('[data-'+l+']').forEach(e=>e.innerHTML=e.getAttribute('data-'+l));document.querySelectorAll('.lang button').forEach(b=>b.classList.toggle('on',b.dataset.l===l));try{localStorage.setItem('nbn-pasang-l',l)}catch(e){}document.getElementById('pdf').href='../howto/NBN_guide_'+l+'.pdf';document.getElementById('vid').href='../howto/NBN_howto_'+l+'.mp4';}
 function setOS(o){document.getElementById('and').hidden=o!=='and';document.getElementById('ios').hidden=o!=='ios';document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.os===o))}
 document.querySelectorAll('.lang button').forEach(b=>b.onclick=()=>setL(b.dataset.l));
 document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>setOS(b.dataset.os));
