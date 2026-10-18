@@ -1,0 +1,7 @@
+Starting: Intent { cmp=com.ngambelini.app/.LauncherActivity }
+Status: ok
+LaunchState: COLD
+Activity: com.ngambelini.app/.LauncherActivity
+TotalTime: 1792
+WaitTime: 1807
+Complete
