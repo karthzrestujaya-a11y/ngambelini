@@ -22,23 +22,23 @@ declare d0 timestamptz := date_trunc('day', now() at time zone 'Asia/Kuala_Lumpu
 begin
   if not public.is_admin() then raise exception 'Admins only'; end if;
   return jsonb_build_object(
-    'online_now', (select count(*) from profiles where last_seen > now() - interval '15 minutes' and not is_admin),
-    'users_today', (select count(*) from profiles where last_seen >= d0 and not is_admin),
-    'signups_today', (select count(*) from auth.users u where u.created_at >= d0 and not exists (select 1 from profiles p where p.id=u.id and p.is_admin)),
+    'online_now', (select count(*) from profiles where last_seen > now() - interval '15 minutes' and not (is_admin or is_test)),
+    'users_today', (select count(*) from profiles where last_seen >= d0 and not (is_admin or is_test)),
+    'signups_today', (select count(*) from auth.users u where u.created_at >= d0 and not exists (select 1 from profiles p where p.id=u.id and (p.is_admin or p.is_test))),
     'members', public.member_count(),
     'cap', (select value::int from app_settings where key='signup_cap'),
     'target_1', (select value::int from app_settings where key='target_1'),
     'target_2', (select value::int from app_settings where key='target_2'),
     'target_2_date', (select value from app_settings where key='target_2_date'),
     'ai_limit', (select value::int from app_settings where key='ai_daily_limit'),
-    'photos_today', (select count(*) from photo_searches ps where created_at >= d0 and not exists (select 1 from profiles pa where pa.id = ps.user_id and pa.is_admin)),
-    'snaps_today', (select count(*) from snaps sn where created_at >= d0 and not exists (select 1 from profiles pa where pa.id = sn.user_id and pa.is_admin)),
-    'taps_today', (select count(*) from clicks ck where clicked_at >= d0 and not exists (select 1 from profiles pa where pa.id = ck.user_id and pa.is_admin)),
+    'photos_today', (select count(*) from photo_searches ps where created_at >= d0 and not exists (select 1 from profiles pa where pa.id = ps.user_id and (pa.is_admin or pa.is_test))),
+    'snaps_today', (select count(*) from snaps sn where created_at >= d0 and not exists (select 1 from profiles pa where pa.id = sn.user_id and (pa.is_admin or pa.is_test))),
+    'taps_today', (select count(*) from clicks ck where clicked_at >= d0 and not exists (select 1 from profiles pa where pa.id = ck.user_id and (pa.is_admin or pa.is_test))),
     'days', (select coalesce(jsonb_agg(x order by x.day), '[]'::jsonb) from (
         select g.day::date as day,
-          (select count(*) from auth.users u where (u.created_at at time zone 'Asia/Kuala_Lumpur')::date = g.day::date and not exists (select 1 from profiles pa where pa.id = u.id and pa.is_admin)) as signups,
-          (select count(*) from photo_searches s where (s.created_at at time zone 'Asia/Kuala_Lumpur')::date = g.day::date and not exists (select 1 from profiles pa where pa.id = s.user_id and pa.is_admin)) as photos,
-          (select count(*) from clicks c where (c.clicked_at at time zone 'Asia/Kuala_Lumpur')::date = g.day::date and not exists (select 1 from profiles pa where pa.id = c.user_id and pa.is_admin)) as taps
+          (select count(*) from auth.users u where (u.created_at at time zone 'Asia/Kuala_Lumpur')::date = g.day::date and not exists (select 1 from profiles pa where pa.id = u.id and (pa.is_admin or pa.is_test))) as signups,
+          (select count(*) from photo_searches s where (s.created_at at time zone 'Asia/Kuala_Lumpur')::date = g.day::date and not exists (select 1 from profiles pa where pa.id = s.user_id and (pa.is_admin or pa.is_test))) as photos,
+          (select count(*) from clicks c where (c.clicked_at at time zone 'Asia/Kuala_Lumpur')::date = g.day::date and not exists (select 1 from profiles pa where pa.id = c.user_id and (pa.is_admin or pa.is_test))) as taps
         from generate_series((now() at time zone 'Asia/Kuala_Lumpur')::date - 6, (now() at time zone 'Asia/Kuala_Lumpur')::date, interval '1 day') g(day)) x)
   );
 end $$;
