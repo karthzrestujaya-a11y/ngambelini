@@ -26,12 +26,12 @@ def twaManifest = [
     launchUrl: '/?source=android', // The start path for the TWA. Must be relative to the domain.
     name: 'NBN – Ngam Beli Ni', // The application name.
     launcherName: 'NBN', // The name shown on the Android Launcher.
-    themeColor: '#0A2A66', // The color used for the status bar.
-    themeColorDark: '#0A2A66', // The color used for the dark status bar.
-    navigationColor: '#0A2A66', // The color used for the navigation bar.
-    navigationColorDark: '#0A2A66', // The color used for the dark navbar.
-    navigationDividerColor: '#0A2A66', // The navbar divider color.
-    navigationDividerColorDark: '#0A2A66', // The dark navbar divider color.
+    themeColor: '#14774A', // The color used for the status bar.
+    themeColorDark: '#14774A', // The color used for the dark status bar.
+    navigationColor: '#14774A', // The color used for the navigation bar.
+    navigationColorDark: '#14774A', // The color used for the dark navbar.
+    navigationDividerColor: '#14774A', // The navbar divider color.
+    navigationDividerColorDark: '#14774A', // The dark navbar divider color.
     backgroundColor: '#FFF9EC', // The color used for the splash screen background.
     enableNotifications: false, // Set to true to enable notification delegation.
     // Every shortcut must include the following fields:
