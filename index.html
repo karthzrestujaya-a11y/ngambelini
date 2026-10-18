@@ -9,7 +9,13 @@
 <meta name="apple-mobile-web-app-title" content="NBN">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#14774A">
-<style>body{margin:0}[hidden]{display:none!important}</style>
+<style>body{margin:0}[hidden]{display:none!important}.snapcard{background:#fff;border:1.5px solid var(--gold);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.sc-head{display:flex;align-items:center;gap:8px;font-size:17px}.sc-cat{background:#FFF7DD;border-radius:10px;padding:8px 10px;font-size:14px}
+.sc-stats{display:flex;gap:8px}.sc-stats div{flex:1;background:#F1F7F3;border-radius:10px;padding:8px;text-align:center;display:flex;flex-direction:column}.sc-stats .num{font-weight:800;font-size:17px;color:#14563A}.sc-stats small{font-size:11px;color:var(--muted)}
+.sc-dn input,#snapCatIn,#snapMonth{flex:1;padding:9px 10px;border:1.5px solid #d9cfa8;border-radius:10px;font-size:15px}
+.sc-recent{display:flex;flex-direction:column;gap:4px;font-size:13px}.sc-recent div{display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid #f0ead2;padding:3px 0}
+.snaprow{background:#fff;border:1px solid #e8dfbf;border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:6px;font-size:13.5px}.snaprow img{max-width:100%;border-radius:8px}
+</style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
 <style>
@@ -328,6 +334,18 @@ body.no-tabs .tabbar{display:none}
   <!-- SAVINGS -->
   <section id="wallet" class="view" hidden style="flex-direction:column;gap:16px">
     <h1 style="font-size:24px"><span data-t="yourSavings">Your savings</span> <span id="savMonth" style="font-size:14px;font-weight:600;color:var(--muted)"></span></h1>
+    <div class="snapcard" id="snapCard" hidden>
+      <div class="sc-head"><b>📸 Snap &amp; Earn</b><i class="betatag">BETA</i></div>
+      <p class="fine" style="margin:0">Snap shelf price tags in shops. <b>10 pts</b> per approved photo · 1,000 pts = RM1 · paid by DuitNow by the 14th.</p>
+      <div class="sc-cat">This week: <b id="snapCat">–</b></div>
+      <div class="sc-stats"><div><span class="num" id="snapPts">0</span><small>pts this month</small></div><div><span class="num" id="snapRm">RM0.00</span><small>to be paid</small></div><div><span class="num" id="snapToday">0/30</span><small>today</small></div></div>
+      <input type="file" id="snapInput" accept="image/*" capture="environment" hidden>
+      <button type="button" class="btn-wide" id="snapBtn">📸 Snap a price tag</button>
+      <p class="fine" id="snapMsg" style="margin:0" hidden></p>
+      <div class="sc-dn" id="snapDn" hidden><span class="fine">DuitNow phone number for payouts:</span><div style="display:flex;gap:6px"><input id="snapDnIn" inputmode="tel" placeholder="012xxxxxxx"><button type="button" class="sbtn" id="snapDnSave">Save</button></div></div>
+      <div class="sc-recent" id="snapRecent"></div>
+      <p class="fine" style="margin:0">Rules: real shop photos only (no screenshots) · max 30/day, RM20/month · need at least 1 Shopee order via NBN that month and RM5+ to be paid. <a href="/snap-terms.html" target="_blank">Full terms</a></p>
+    </div>
     <div class="savings" aria-live="polite"><div class="sv-ico"><svg width="68" height="68" viewBox="0 0 68 68" fill="none" aria-hidden="true"><ellipse cx="22" cy="56" rx="14" ry="5" fill="#B8860B"/><ellipse cx="22" cy="52" rx="14" ry="5" fill="#E6C35C" stroke="#B8860B" stroke-width="1.2"/><ellipse cx="22" cy="46" rx="14" ry="5" fill="#B8860B"/><ellipse cx="22" cy="42" rx="14" ry="5" fill="#F7E08A" stroke="#B8860B" stroke-width="1.2"/><ellipse cx="22" cy="36" rx="14" ry="5" fill="#B8860B"/><ellipse cx="22" cy="32" rx="14" ry="5" fill="#E6C35C" stroke="#B8860B" stroke-width="1.2"/><path d="M50 58V20" stroke="#fff" stroke-width="4" stroke-linecap="round"/><path d="M42 28l8-9 8 9" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M36 12h28" stroke="#C8102E" stroke-width="3" stroke-dasharray="3 2"/><rect x="38" y="2" width="26" height="11" rx="5.5" fill="#C8102E"/><text x="51" y="10.5" font-size="8" font-weight="900" text-anchor="middle" fill="#fff" font-family="Arial">RM5</text></svg></div>
       <div class="row"><span class="lbl" data-t="savingsMonth">Savings this month</span><span class="lbl num" id="savedSplit">Confirmed RM0.00 · On the way RM0.00</span></div>
       <div class="row">
@@ -389,7 +407,7 @@ body.no-tabs .tabbar{display:none}
   <section id="admin" class="view" hidden style="flex-direction:column;gap:14px">
     <button class="back" type="button" data-go="me">‹ Back</button>
     <h1 style="font-size:24px">Admin</h1>
-    <div class="seg" role="tablist"><button type="button" id="segPrices" class="on">Prices</button><button type="button" id="segCash">Cash back</button><button type="button" id="segRep">Reported</button><button type="button" id="segStats">Stats</button></div>
+    <div class="seg" role="tablist"><button type="button" id="segPrices" class="on">Prices</button><button type="button" id="segCash">Cash back</button><button type="button" id="segRep">Reported</button><button type="button" id="segStats">Stats</button><button type="button" id="segSnap">Snaps</button></div>
     <div id="admPrices" style="display:flex;flex-direction:column;gap:12px">
       <div class="filebox">
         <b>Upload the price sheet (Excel)</b>
@@ -414,6 +432,17 @@ body.no-tabs .tabbar{display:none}
       <div id="rcvList" style="display:flex;flex-direction:column;gap:8px"></div>
       <h2 style="font-size:16px">3 · Ready to pay members</h2>
       <div id="payList" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+    <div id="admSnap" hidden style="display:flex;flex-direction:column;gap:10px">
+      <div class="card" style="display:flex;flex-direction:column;gap:8px">
+        <b>Snap &amp; Earn settings</b><span class="fine" id="snapSet">–</span>
+        <div style="display:flex;gap:6px;flex-wrap:wrap"><input id="snapCatIn" placeholder="This week's category" style="flex:1;min-width:140px"><button type="button" class="sbtn" id="snapCatSave">Set category</button><button type="button" class="sbtn" id="snapToggle">Turn on</button></div>
+      </div>
+      <h2 style="font-size:16px">Photos to check</h2><div class="seg" id="snapFilt"><button type="button" data-s="review" class="on">To check</button><button type="button" data-s="approved">Approved</button><button type="button" data-s="rejected">Rejected</button></div>
+      <div id="snapList" style="display:flex;flex-direction:column;gap:8px"></div>
+      <h2 style="font-size:16px">Monthly payout (pay by the 14th)</h2>
+      <div style="display:flex;gap:6px"><input type="month" id="snapMonth"><button type="button" class="sbtn" id="snapPayBuild">Build list</button></div>
+      <div id="snapPayList" style="display:flex;flex-direction:column;gap:8px"></div>
     </div>
     <div id="admStats" class="viz" hidden style="display:flex;flex-direction:column;gap:12px">
       <div class="seg" id="period" role="group" aria-label="Period"><button type="button" data-days="7">7 days</button><button type="button" data-days="30" class="on">30 days</button><button type="button" data-days="60">60 days</button><button type="button" data-days="90">90 days</button></div>
@@ -862,8 +891,8 @@ $('sfType').onclick = () => { $('scanFail').hidden = true; $('q').focus(); };
 // Hide the 'coming soon' store badge inside the installed app (store/TWA or home-screen app).
 if(window.matchMedia && matchMedia('(display-mode: standalone)').matches || document.referrer.startsWith('android-app://')) document.querySelectorAll('.storesoon').forEach(e=>e.hidden=true);
 $('tabScan').onclick = () => { setTab('tabScan'); show('home'); $('scanBtn').click(); };
-$('tabSave').onclick = () => { setTab('tabSave'); show('wallet'); };
-$('miniSave').onclick = () => { setTab('tabSave'); show('wallet'); };
+$('tabSave').onclick = () => { setTab('tabSave'); show('wallet'); loadSnap(); };
+$('miniSave').onclick = () => { setTab('tabSave'); show('wallet'); loadSnap(); };
 if($('savMonth')) $('savMonth').textContent = '· ' + new Date().toLocaleString(LANG==='zh'?'zh-CN':LANG==='ta'?'ta-MY':LANG==='ms'?'ms-MY':'en-MY',{month:'long'});
 applyLang();
 if($('cbMore')) $('cbMore').onclick = () => { $('cbMoreText').hidden = !$('cbMoreText').hidden; };
@@ -956,11 +985,76 @@ $('privBack').onclick = () => show(USER || !sb ? (LASTVIEW || 'me') : 'join');
 
 // ---- Admin: upload price sheet + cash back ----
 const esc = t => String(t ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function seg(which){ $('segPrices').classList.toggle('on', which==='prices'); $('segCash').classList.toggle('on', which==='cash'); $('segRep').classList.toggle('on', which==='rep'); $('segStats').classList.toggle('on', which==='stats');
+function seg(which){ $('segPrices').classList.toggle('on', which==='prices'); $('segCash').classList.toggle('on', which==='cash'); $('segRep').classList.toggle('on', which==='rep'); $('segStats').classList.toggle('on', which==='stats'); $('segSnap').classList.toggle('on', which==='snap'); $('admSnap').hidden = which!=='snap'; if(which==='snap') loadSnapAdmin();
   $('admPrices').hidden = which!=='prices'; $('admCash').hidden = which!=='cash'; $('admRep').hidden = which!=='rep'; $('admStats').hidden = which!=='stats';
   if(which==='cash') loadCash(); if(which==='rep'){ loadReported(); loadLinks(); } if(which==='stats') loadStats(); }
+
+// ===== Snap & Earn (beta) =====
+const el = (tag, txt, cls) => { const e = document.createElement(tag); if(txt != null) e.textContent = txt; if(cls) e.className = cls; return e; };
+let SNAP = null;
+async function loadSnap(){
+  if(!sb || !USER) { $('snapCard').hidden = true; return; }
+  const { data, error } = await sb.rpc('snap_wallet'); if(error || !data){ $('snapCard').hidden = true; return; }
+  SNAP = data; const adm = !$('adminBtn').hidden;
+  $('snapCard').hidden = !(data.enabled || adm);
+  $('snapCat').textContent = data.category || '–';
+  $('snapPts').textContent = Number(data.month_points||0).toLocaleString();
+  $('snapRm').textContent = 'RM' + (Number(data.unpaid_points||0)/1000).toFixed(2);
+  $('snapToday').textContent = `${data.today||0}/${data.day_limit||30}`;
+  $('snapDn').hidden = !!data.duitnow;
+  const rec = $('snapRecent'); rec.innerHTML = '';
+  (data.recent||[]).forEach(r => { const d = el('div'); d.appendChild(el('span', `${r.item || 'Photo'}${r.price_rm ? ' · RM'+Number(r.price_rm).toFixed(2) : ''}`));
+    d.appendChild(el('b', r.status==='approved' ? `+${r.points} pts ✅` : r.status==='review' ? 'Checking ⏳' : `✗ ${r.reason||'Rejected'}`)); rec.appendChild(d); });
+}
+$('snapBtn').onclick = () => { if(!USER){ goLogin(); return; } $('snapInput').value=''; $('snapInput').click(); };
+$('snapInput').onchange = async () => {
+  const f = $('snapInput').files[0]; if(!f) return;
+  const m = $('snapMsg'); m.hidden = false; m.textContent = 'Reading the price tag…'; $('snapBtn').disabled = true;
+  try{
+    const image = await shrink(f);
+    const { data, error } = await sb.functions.invoke('snap', { body: { image } });
+    let r = data; if(error){ try{ r = await error.context.json(); }catch(e){ r = { error: 'server' }; } }
+    if(r && r.status){ m.textContent = r.status==='approved' ? `✅ +${r.points} pts — ${r.item||''}${r.price_rm ? ' RM'+r.price_rm.toFixed(2) : ''}` : r.status==='review' ? `⏳ ${r.reason || 'We will check it within 48 hours.'}` : `✗ ${r.reason || 'Not accepted'}`; }
+    else m.textContent = ({ duplicate:'This photo was already sent.', day_limit:'Daily limit reached (30). Try again tomorrow.', off:'Snap & Earn is not open yet.', login:'Please log in again.' })[r && r.error] || 'Could not send the photo. Please try again.';
+  }catch(e){ m.textContent = 'Could not send the photo. Please try again.'; }
+  $('snapBtn').disabled = false; loadSnap();
+};
+$('snapDnSave').onclick = async () => { const { error } = await sb.rpc('set_duitnow', { p_id: $('snapDnIn').value }); toast(error ? (error.message || 'Check the number') : 'DuitNow saved'); if(!error) loadSnap(); };
+
+// Admin
+let SNAPF = 'review';
+async function loadSnapAdmin(){
+  const { data: st } = await sb.rpc('admin_snap_settings');
+  if(st){ $('snapSet').textContent = `Status: ${st.enabled==='true' ? 'ON' : 'OFF (only admins can snap)'} · Category: ${st.category} · Spent RM${Number(st.spent_rm).toFixed(2)} of RM${st.budget_rm}`; $('snapToggle').textContent = st.enabled==='true' ? 'Turn off' : 'Turn on'; $('snapToggle').dataset.on = st.enabled; }
+  const { data, error } = await sb.rpc('admin_snaps', { p_status: SNAPF }); const L = $('snapList'); L.innerHTML = '';
+  if(error){ L.appendChild(el('p', error.message, 'fine')); return; }
+  if(!data.length) L.appendChild(el('p', 'Nothing here.', 'fine'));
+  data.forEach(r => { const c = el('div', null, 'snaprow');
+    c.appendChild(el('b', `${r.item || '?'} ${r.pack||''} — ${r.price_rm ? 'RM'+Number(r.price_rm).toFixed(2) : 'no price'}`));
+    c.appendChild(el('span', `${r.shop || 'shop ?'} · ${r.category||''} · ${r.email||''} · ${new Date(r.created_at).toLocaleString()}${r.reason ? ' · '+r.reason : ''}`, 'fine'));
+    const acts = el('div'); acts.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap';
+    if(r.photo_path){ const v = el('button', 'View photo', 'sbtn'); v.onclick = async () => { const { data: u } = await sb.functions.invoke('snap', { body: { action:'photo', path: r.photo_path } }); if(u && u.url){ const im = el('img'); im.src = u.url; c.appendChild(im); v.remove(); } }; acts.appendChild(v); }
+    if(r.status !== 'approved'){ const a = el('button', 'Approve', 'sbtn'); a.onclick = async () => { await sb.rpc('admin_review_snap', { p_id: r.id, p_action: 'approve' }); loadSnapAdmin(); }; acts.appendChild(a); }
+    if(r.status !== 'rejected'){ const x = el('button', 'Reject', 'sbtn'); x.onclick = async () => { const why = prompt('Reason (shown to member):', 'Not clear'); if(why === null) return; await sb.rpc('admin_review_snap', { p_id: r.id, p_action: 'reject', p_reason: why }); loadSnapAdmin(); }; acts.appendChild(x); }
+    c.appendChild(acts); L.appendChild(c); });
+}
+document.querySelectorAll('#snapFilt button').forEach(b => b.onclick = () => { SNAPF = b.dataset.s; document.querySelectorAll('#snapFilt button').forEach(x => x.classList.toggle('on', x===b)); loadSnapAdmin(); });
+$('snapToggle').onclick = async () => { await sb.rpc('admin_snap_settings', { p_enabled: $('snapToggle').dataset.on !== 'true' }); loadSnapAdmin(); };
+$('snapCatSave').onclick = async () => { await sb.rpc('admin_snap_settings', { p_category: $('snapCatIn').value }); $('snapCatIn').value=''; loadSnapAdmin(); };
+(() => { const d = new Date(); d.setMonth(d.getMonth()-1); $('snapMonth').value = d.toISOString().slice(0,7); })();
+$('snapPayBuild').onclick = async () => {
+  const { data, error } = await sb.rpc('admin_snap_payout_list', { p_month: $('snapMonth').value + '-01' }); const L = $('snapPayList'); L.innerHTML = '';
+  if(error){ L.appendChild(el('p', error.message, 'fine')); return; }
+  if(!data.length) L.appendChild(el('p', 'No one qualifies for this month (needs RM5+ and 1 Shopee order via NBN).', 'fine'));
+  data.forEach(p => { const c = el('div', null, 'snaprow'); c.appendChild(el('b', `RM${Number(p.amount_rm).toFixed(2)} → DuitNow ${p.duitnow || '(no number yet)'}`));
+    c.appendChild(el('span', `${p.email} · ${p.points} pts · ${p.orders} order(s) · ${p.status==='paid' ? 'Dibayar ✅' : 'Due'}`, 'fine'));
+    if(p.status !== 'paid'){ const b = el('button', 'Mark paid + email receipt', 'sbtn'); b.onclick = async () => { const ref = prompt('DuitNow reference no.:'); if(!ref) return;
+      const { error: e } = await sb.rpc('admin_snap_mark_paid', { p_id: p.payout_id, p_ref: ref }); if(e){ toast(e.message); return; }
+      const { data: r } = await sb.functions.invoke('snap', { body: { action:'receipt', payout_id: p.payout_id } }); toast(r && r.ok ? 'Paid. Receipt emailed.' : 'Paid. (Receipt email not sent — email the member yourself.)'); $('snapPayBuild').click(); }; c.appendChild(b); }
+    L.appendChild(c); });
+};
 $('adminBtn').onclick = () => { show('admin'); seg('prices'); };
-$('segPrices').onclick = () => seg('prices'); $('segCash').onclick = () => seg('cash'); $('segRep').onclick = () => seg('rep'); $('segStats').onclick = () => seg('stats');
+$('segPrices').onclick = () => seg('prices'); $('segCash').onclick = () => seg('cash'); $('segRep').onclick = () => seg('rep'); $('segStats').onclick = () => seg('stats'); $('segSnap').onclick = () => seg('snap');
 function loadXLSX(){ return window.XLSX ? Promise.resolve(window.XLSX) : new Promise((ok, bad) => { const sc = document.createElement('script');
   sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'; sc.onload = () => ok(window.XLSX); sc.onerror = () => bad(new Error('Could not load the Excel reader. Check your internet.')); document.head.appendChild(sc); }); }
 let SHEET = null;
