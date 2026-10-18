@@ -34,6 +34,7 @@ body.has-title .pagetitle{display:block}#wallet>h1,#me>h1{display:none}
 .gr-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.gr-kpi{background:#fff;border:1.5px solid #ecdca5;border-radius:14px;padding:10px 6px;text-align:center;display:flex;flex-direction:column;gap:2px}.gr-kpi b{font-family:var(--display);font-size:20px;color:#14563A}.gr-kpi small{font-size:11px;color:var(--muted)}.gr-kpi .i{font-size:18px}.gr-kpi.warn{border-color:#C8102E;background:#FDECEC}
 .gr-alarm{background:#FDECEC;border:1.5px solid #C8102E;color:#8a0f22;border-radius:12px;padding:10px;font-weight:700;font-size:13.5px}
 .gr-t{display:flex;flex-direction:column;gap:4px;margin-top:8px;font-size:13.5px}.gr-bar{height:12px;background:#F1EBD3;border-radius:999px;overflow:hidden}.gr-bar i{display:block;height:100%;background:linear-gradient(90deg,#14774A,#C9A227);border-radius:999px}
+.mo-row{display:flex;justify-content:space-between;align-items:center;background:#fff;border:1.5px solid #ecdca5;border-radius:12px;padding:8px 10px;font-size:13.5px}.mo-row b{font-family:var(--display);color:#14563A}#moSocial input{padding:8px;border:1.5px solid #d9cfa8;border-radius:10px;font-size:14px;min-width:0}
 .gr-chart{display:flex;gap:6px;align-items:flex-end;height:120px;margin-top:8px}.gr-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}.gr-bars{display:flex;gap:2px;align-items:flex-end;height:96px}.gr-bars i{width:7px;border-radius:3px 3px 0 0}.gr-bars .s{background:#14774A}.gr-bars .p{background:#C9A227}.gr-bars .t{background:#EE4D2D}.gr-col small{font-size:10.5px;color:var(--muted)}
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -436,6 +437,9 @@ body.no-tabs .tabbar{display:none}
       <div class="card" id="grTargets"></div>
       <div class="card"><b>Last 7 days</b><div id="grChart" class="gr-chart"></div><p class="fine" style="margin:4px 0 0"><span style="color:#14774A">■</span> new sign-ups &nbsp; <span style="color:#C9A227">■</span> photo searches &nbsp; <span style="color:#EE4D2D">■</span> Shopee taps</p></div>
       <div class="card"><b>💰 Earnings (last 30 days)</b><div class="gr-kpis" id="erKpis" style="margin-top:8px"></div><div id="erChart" class="gr-chart"></div><p class="fine" style="margin:4px 0 0"><span style="color:#14774A">■</span> commission confirmed (Shopee report) &nbsp; <span style="color:#C9A227">■</span> money received</p><p class="fine" style="margin:2px 0 0">NBN keeps 60%, members get 40% cash back. Shopee confirms orders 1–2 months after purchase.</p></div>
+      <div class="card" id="moSocial"><b>📣 Facebook &amp; TikTok</b><div class="gr-kpis" id="moSoKpis" style="margin-top:8px"></div><div id="moSoChart" class="gr-chart"></div><p class="fine" style="margin:4px 0 0"><span style="color:#1877F2">■</span> Facebook followers &nbsp; <span style="color:#111">■</span> TikTok followers</p>
+        <details style="margin-top:6px"><summary class="fine">Update today's numbers</summary><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px"><input id="moFbF" type="number" placeholder="FB followers"><input id="moFbV" type="number" placeholder="FB views (total)"><input id="moTtF" type="number" placeholder="TikTok followers"><input id="moTtV" type="number" placeholder="TikTok views (total)"></div><button type="button" class="sbtn" id="moSave" style="margin-top:6px">Save</button></details></div>
+      <div class="card" id="moMoney"><b>💵 Money pipeline</b><div id="moPipe" style="display:flex;flex-direction:column;gap:6px;margin-top:8px"></div><div id="moBatches" style="margin-top:8px"></div><p class="fine" style="margin:4px 0 0">Expected pay dates are estimates (confirmed date + <span id="moPd">45</span> days). Check the Shopee Affiliate dashboard for the exact date.</p></div>
       <button type="button" class="sbtn" id="grRefresh">↻ Refresh</button>
     </div>
     <div id="admPrices" hidden style="display:flex;flex-direction:column;gap:12px">
@@ -1017,7 +1021,7 @@ $('privBack').onclick = () => show(USER || !sb ? (LASTVIEW || 'me') : 'join');
 
 // ---- Admin: upload price sheet + cash back ----
 const esc = t => String(t ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function seg(which){ $('segGrowth').classList.toggle('on', which==='growth'); $('admGrowth').hidden = which!=='growth'; if(which==='growth'){ loadGrowth(); loadEarnings(); } $('segPrices').classList.toggle('on', which==='prices'); $('segCash').classList.toggle('on', which==='cash'); $('segRep').classList.toggle('on', which==='rep'); $('segStats').classList.toggle('on', which==='stats'); $('segSnap').classList.toggle('on', which==='snap'); $('admSnap').hidden = which!=='snap'; if(which==='snap') loadSnapAdmin();
+function seg(which){ $('segGrowth').classList.toggle('on', which==='growth'); $('admGrowth').hidden = which!=='growth'; if(which==='growth'){ loadGrowth(); loadEarnings(); loadMonitor(); } $('segPrices').classList.toggle('on', which==='prices'); $('segCash').classList.toggle('on', which==='cash'); $('segRep').classList.toggle('on', which==='rep'); $('segStats').classList.toggle('on', which==='stats'); $('segSnap').classList.toggle('on', which==='snap'); $('admSnap').hidden = which!=='snap'; if(which==='snap') loadSnapAdmin();
   $('admPrices').hidden = which!=='prices'; $('admCash').hidden = which!=='cash'; $('admRep').hidden = which!=='rep'; $('admStats').hidden = which!=='stats';
   if(which==='cash') loadCash(); if(which==='rep'){ loadReported(); loadLinks(); } if(which==='stats') loadStats(); }
 
@@ -1127,7 +1131,36 @@ async function loadEarnings(){
     [['s', +d.commission], ['p', +d.received]].forEach(([c, v]) => { const b = el('i', null, c); b.style.height = Math.max(2, Math.round(v * 90 / mx)) + 'px'; b.style.width = '4px'; b.title = rm(v); bars.appendChild(b); });
     col.appendChild(bars); col.appendChild(el('small', i % 5 === 4 ? new Date(d.day).getDate() + '/' + (new Date(d.day).getMonth() + 1) : '')); C.appendChild(col); });
 }
-$('grRefresh').onclick = () => { loadGrowth(); loadEarnings(); };
+async function loadMonitor(){
+  const { data: m, error } = await sb.rpc('admin_monitor'); const K = $('moSoKpis'); K.innerHTML = ''; const C = $('moSoChart'); C.innerHTML = ''; const P = $('moPipe'); P.innerHTML = ''; const B = $('moBatches'); B.innerHTML = '';
+  if(error || !m){ K.appendChild(el('p', error ? error.message : 'No data', 'fine')); return; }
+  const rm = v => 'RM' + Number(v||0).toFixed(2), n = v => v == null ? '–' : Number(v).toLocaleString();
+  const so = m.social || [], last = so[so.length - 1] || {}, prev = so[so.length - 2] || {};
+  const d = (a, b) => (a != null && b != null) ? ' (' + (a - b >= 0 ? '+' : '') + (a - b) + ')' : '';
+  const kpi = (v, l) => { const x = el('div', null, 'gr-kpi'); x.appendChild(el('b', v)); x.appendChild(el('small', l)); K.appendChild(x); };
+  kpi(n(last.fb_followers), 'FB followers' + d(last.fb_followers, prev.fb_followers)); kpi(n(last.tt_followers), 'TikTok followers' + d(last.tt_followers, prev.tt_followers));
+  kpi(n((last.fb_views||0) + (last.tt_views||0)), 'total video views');
+  if(!so.length) K.appendChild(el('p', 'No numbers yet — added each morning.', 'fine'));
+  const mx = Math.max(1, ...so.map(x => Math.max(x.fb_followers||0, x.tt_followers||0)));
+  so.forEach(x => { const col = el('div', null, 'gr-col'); const bars = el('div', null, 'gr-bars');
+    [['#1877F2', x.fb_followers||0], ['#111', x.tt_followers||0]].forEach(([c, v]) => { const b = el('i'); b.style.background = c; b.style.height = Math.max(2, Math.round(v * 90 / mx)) + 'px'; b.title = v; bars.appendChild(b); });
+    col.appendChild(bars); col.appendChild(el('small', new Date(x.day).getDate() + '/' + (new Date(x.day).getMonth() + 1))); C.appendChild(col); });
+  const row = (l, v) => { const r = el('div', null, 'mo-row'); r.appendChild(el('span', l)); r.appendChild(el('b', v)); P.appendChild(r); };
+  row('1 · Shopee taps (people went to buy)', n(m.taps_total));
+  row('2 · Waiting for Shopee to confirm the order', n(m.waiting_n) + ' taps');
+  row('3 · Confirmed by Shopee, not yet paid to us', rm(m.confirmed_rm) + ' (' + m.confirmed_n + ')');
+  row('4 · Received from Shopee', rm(m.received_rm));
+  row('   Your 60% of received', rm(m.received_rm * 0.6));
+  row('5 · Cash back owed to members (40%)', rm(m.owed_members_rm));
+  row('   Cash back already paid to members', rm(m.paid_members_rm));
+  $('moPd').textContent = m.pay_days;
+  if((m.batches||[]).length){ B.appendChild(el('b', 'Expected from Shopee')); (m.batches).forEach(b => { const r = el('div', null, 'mo-row'); r.style.marginTop = '6px';
+    r.appendChild(el('span', new Date(b.month).toLocaleDateString('en-MY', {month:'short', year:'numeric'}) + ' · ' + b.n + ' orders')); r.appendChild(el('b', rm(b.rm) + ' ~ ' + new Date(b.expected).toLocaleDateString('en-MY', {day:'numeric', month:'short'}))); B.appendChild(r); }); }
+}
+$('moSave').onclick = async () => { const v = id => $(id).value === '' ? null : Number($(id).value);
+  const { error } = await sb.rpc('admin_social_set', { p_day: null, p_fb_followers: v('moFbF'), p_fb_views: v('moFbV'), p_tt_followers: v('moTtF'), p_tt_views: v('moTtV') });
+  toast(error ? error.message : 'Saved'); if(!error){ ['moFbF','moFbV','moTtF','moTtV'].forEach(i => $(i).value = ''); loadMonitor(); } };
+$('grRefresh').onclick = () => { loadGrowth(); loadEarnings(); loadMonitor(); };
 $('adminBtn').onclick = () => { show('admin'); seg('growth'); };
 $('segGrowth').onclick = () => seg('growth'); $('segPrices').onclick = () => seg('prices'); $('segCash').onclick = () => seg('cash'); $('segRep').onclick = () => seg('rep'); $('segStats').onclick = () => seg('stats'); $('segSnap').onclick = () => seg('snap');
 function loadXLSX(){ return window.XLSX ? Promise.resolve(window.XLSX) : new Promise((ok, bad) => { const sc = document.createElement('script');
