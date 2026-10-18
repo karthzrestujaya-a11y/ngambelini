@@ -122,6 +122,12 @@ a.btn.ghost{border:1.5px solid var(--line);color:var(--fg)}
 .field input{height:52px;border-radius:14px;border:1.5px solid var(--line);background:var(--surface);color:var(--fg);padding:0 14px;font-family:var(--body);font-size:16px}
 .btn-wide{border:none;background:var(--navy);color:var(--navy-fg);font-weight:700;font-size:16px;border-radius:14px;height:52px;width:100%}
 .btn-wide:disabled{opacity:.6}
+.betatag{font-style:normal;font-size:8px;font-weight:800;letter-spacing:.5px;background:var(--gold);color:var(--navy);border-radius:5px;padding:1px 4px;margin-left:3px;vertical-align:top}
+#tabScan{position:relative}
+.scanfail{background:var(--soft);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.scanfail p{margin:0;font-size:14px}
+.sf-acts{display:flex;flex-direction:column;gap:8px}
+.sf-type{background:transparent!important;color:var(--fg)!important;border:1px solid var(--muted)}
 .scanbtn{border:none;background:var(--soft);color:var(--fg);border-radius:10px;height:40px;width:44px;display:grid;place-items:center;flex-shrink:0}
 #scanner{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:10px}
 #reader{width:100%;min-height:200px;border-radius:12px;overflow:hidden;background:#000}
@@ -274,7 +280,7 @@ body.no-tabs .tabbar{display:none}
       <input type="file" id="photoInput" accept="image/*" hidden>
       <button class="scanbtn" type="button" id="scanBtn" aria-label="Scan a barcode"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 8v8M10 8v8M13 8v8M17 8v8"/></svg></button>
     </form>
-    <p class="fine" id="linkHint" style="margin-top:4px"><span data-t="hint1">Best way: in Shopee or Lazada tap</span> <b data-t="hint2">Share → Copy link</b><span data-t="hint3">, then paste it here. Photo is optional.</span></p>
+    <p class="fine" id="linkHint" style="margin-top:4px"><span data-t="hint1">Best way: in Shopee tap</span> <b data-t="hint2">Share → Copy link</b><span data-t="hint3">, then paste it here. Photo is optional.</span></p>
     <button type="button" class="minisave" id="miniSave" aria-label="Your savings and cash back">
       <span class="ms-top"><span class="ms-coin">💰</span><span style="display:flex;flex-direction:column;align-items:flex-start"><span class="ml" data-t="savedMonth">You saved this month</span><span class="mv num" id="savedMini">RM0.00</span></span></span>
       <span class="ms-row"><span class="k" data-t="cbReward">🎁 Cash back reward</span><span class="v num" id="retMini">RM0.00</span></span>
@@ -284,6 +290,11 @@ body.no-tabs .tabbar{display:none}
       <div id="reader"></div>
       <p class="fine" id="scanMsg" data-t="scanMsg">Point the camera at the barcode on the pack.</p>
       <button class="btn-wide" type="button" id="scanStop" style="background:var(--soft);color:var(--fg)" data-t="cancel">Cancel</button>
+    </div>
+    <div id="scanFail" class="scanfail" hidden>
+      <p id="scanFailMsg"></p>
+      <div class="sf-acts"><button type="button" class="btn-wide" id="sfPhoto" data-t="sfPhoto">📷 Search by photo</button>
+      <button type="button" class="btn-wide sf-type" id="sfType" data-t="sfType">Type the name</button></div>
     </div>
     <div class="install" id="installCard" hidden>
       <img src="/icons/icon-192.png" alt="" width="40" height="40">
@@ -308,7 +319,7 @@ body.no-tabs .tabbar{display:none}
       <h2 style="font-size:15px" data-t="missedH">Searches we couldn't find yet</h2>
       <p class="fine" id="missed"></p>
     </div>
-    <p class="fine">Pilot preview. Data: <span id="src">loading…</span>. <span id="checkedNote">Prices checked by hand.</span> Buy buttons open Shopee or Lazada through our partner links. <button class="link" id="reset" type="button">Reset my test data</button></p>
+    <p class="fine">Pilot preview. Data: <span id="src">loading…</span>. <span id="checkedNote">Prices checked by hand.</span> Buy buttons open Shopee through our partner link. <button class="link" id="reset" type="button">Reset my test data</button></p>
   </section>
 
   <!-- SAVINGS -->
@@ -338,7 +349,7 @@ body.no-tabs .tabbar{display:none}
         <li>💸 <b data-t="cb3a">Get paid:</b> <span data-t="cb3b">your cash back goes straight to your DuitNow (from RM5)</span></li>
       </ol>
       <p class="fine" style="margin-top:6px"><i data-t="pilotTerms">Pilot terms may change.</i> <button type="button" class="link" id="cbMore" data-t="moreInfo">More info ›</button></p>
-      <p class="fine" id="cbMoreText" hidden data-t="cbMore">Savings show as "on the way" right after you tap Buy, and become confirmed when Shopee or Lazada confirm your order. We pay by DuitNow monthly once your cash back reaches RM5 and Shopee or Lazada have paid us (usually 1–2 months after delivery); smaller amounts carry forward.</p>
+      <p class="fine" id="cbMoreText" hidden data-t="cbMore">Savings show as "on the way" right after you tap Buy, and become confirmed when Shopee confirms your order. We pay by DuitNow monthly once your cash back reaches RM5 and Shopee or Lazada have paid us (usually 1–2 months after delivery); smaller amounts carry forward.</p>
     </div>
   </section>
 
@@ -367,7 +378,7 @@ body.no-tabs .tabbar{display:none}
       <p class="fine" id="elsewhereHead"></p>
       <a class="btn Shopee primary" id="goShopee" target="_blank" rel="noopener" href="#">Search on Shopee</a>
       <a class="btn Lazada primary" id="goLazada" target="_blank" rel="noopener" href="#">Search on Lazada</a>
-      <div class="soon" id="soonResults"><span data-t="comingSoonShops">More shops coming soon</span><span class="chips"><span class="chip">Lazada</span><span class="chip">TikTok Shop</span></span></div>
+      <div class="soon" id="soonResults"><span data-t="comingSoonShops">🔜 Price comparison across platforms: coming soon (beta)</span></div>
     </div>
   </section>
 
@@ -445,7 +456,7 @@ body.no-tabs .tabbar{display:none}
 </div>
 <nav class="tabbar" aria-label="Main">
   <button type="button" id="tabHome" class="on"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span data-t="tabHome">Home</span></button>
-  <button type="button" id="tabScan"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 8v8M12 8v8M17 8v8"/></svg><span data-t="tabScan">Scan</span></button>
+  <button type="button" id="tabScan"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 8v8M12 8v8M17 8v8"/></svg><span data-t="tabScan">Scan</span><i class="betatag">BETA</i></button>
   <button type="button" id="tabSave"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg><span data-t="tabSave">Savings</span></button>
   <button type="button" id="tabMe"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span data-t="tabMe">Me</span></button>
 </nav>
@@ -483,7 +494,9 @@ const FALLBACK = [
    keys:'dugro dumex kids milk susu budak anak growing up formula',
    offers:[{p:'Shopee', price:33.89, qty:0.85, note:'Shop A'},{p:'Shopee', price:35.38, qty:0.85, note:'Shop B'}]}
 ];
-let CATALOGUE = FALLBACK;
+const SHOW_LAZADA = false;   // pilot: Shopee only; cross-platform comparison is 'coming soon'
+const noLaz = arr => SHOW_LAZADA ? arr : arr.map(it => ({...it, offers: it.offers.filter(o => o.p !== 'Lazada')})).filter(it => it.offers.length);
+let CATALOGUE = noLaz(FALLBACK);
 let POPULAR = ['dynamo','nestle','mp-std','anlene'];
 let SOURCE = 'built-in list';
 // Live data from our Supabase database (publishable key is safe in a browser: tables are read-only by RLS)
@@ -506,7 +519,8 @@ async function loadLive(){
     })),
     checked: prices.filter(x => x.product_id === p.id).map(x=>x.checked_at).sort().pop()
   })).filter(it => it.offers.length);
-  if(cat.length){ CATALOGUE = cat; POPULAR = cat.filter(c=>c.popular).map(c=>c.id).slice(0,4);
+  const cat2 = noLaz(cat);
+  if(cat2.length){ CATALOGUE = cat2; const cat = cat2; POPULAR = cat.filter(c=>c.popular).map(c=>c.id).slice(0,4);
     if(POPULAR.length < 4){ cat.filter(c=>!POPULAR.includes(c.id) && new Set(c.offers.map(o=>o.p)).size > 1).slice(0, 4 - POPULAR.length).forEach(c=>POPULAR.push(c.id)); }
     SOURCE = 'live database'; }
 }
@@ -691,7 +705,7 @@ function openCompare(it){
             : `<div class="note warn">${t('onlyChecked',{p:best.p})}</div>`}
     ${it.checked ? `<p class="checked">${fmtChecked(it.checked)}. ${t('pricesChange')}</p>` : ''}
     <div id="offers" style="display:flex;flex-direction:column;gap:10px"></div>
-    ${LAZADA_LINKS ? '' : `<div class="soon"><span>${t('comingSoonShops')}</span><span class="chips"><span class="chip">Lazada</span><span class="chip">TikTok Shop</span></span></div>`}
+    ${LAZADA_LINKS ? '' : `<div class="soon"><span>${t('comingSoonShops')}</span></div>`}
     ${it.hidden ? `<div class="note bad">${LANG==='en'?it.hidden:t('hiddenListing')}</div>` : ''}
     <p class="fine">${t('commissionNote')}</p>`;
   const box = c.querySelector('#offers');
@@ -817,7 +831,7 @@ async function lookupBarcode(code){
   await stopScan();
   if(sb && USER) sb.from('searches').insert({ user_id: USER.id, term: 'barcode:' + code + (name ? ' ' + name : ''), results: 0 }).then(()=>{});
   if(name){ $('q').value = name; search(name.split(' ').slice(0,3).join(' ')); toast(t('scanned',{q:name})); }
-  else { $('q').value = ''; toast(t('barcodeUnknown',{c:code})); $('q').focus(); }
+  else { $('q').value = ''; $('scanFailMsg').textContent = t('barcodeUnknown',{c:code}); $('scanFail').hidden = false; }
 }
 $('scanBtn').addEventListener('click', async () => {
   if(!window.Html5Qrcode){ toast(t('scannerFail')); return; }
@@ -840,6 +854,8 @@ function browseTag(c){
 }
 function setTab(id){ ['tabHome','tabScan','tabSave','tabMe'].forEach(t=>$(t).classList.toggle('on', t===id)); }
 $('tabHome').onclick = () => { setTab('tabHome'); show('home'); };
+$('sfPhoto').onclick = () => { $('scanFail').hidden = true; $('photoBtn').click(); };
+$('sfType').onclick = () => { $('scanFail').hidden = true; $('q').focus(); };
 $('tabScan').onclick = () => { setTab('tabScan'); show('home'); $('scanBtn').click(); };
 $('tabSave').onclick = () => { setTab('tabSave'); show('wallet'); };
 $('miniSave').onclick = () => { setTab('tabSave'); show('wallet'); };
