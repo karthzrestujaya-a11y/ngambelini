@@ -1,0 +1,1 @@
+89873b6 2026-10-18T09:17:10Z /usr/local/lib/android/sdk/build-tools/37.0.0
