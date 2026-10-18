@@ -40,7 +40,7 @@ begin
         select day, fb_followers, fb_views, tt_followers, tt_views from social_daily
         where day >= (now() at time zone 'Asia/Kuala_Lumpur')::date - 13) s),
     'pay_days', pd,
-    'taps_total',   (select count(*) from clicks),
+    'taps_total',   (select count(*) from clicks ck where not exists (select 1 from profiles pa where pa.id = ck.user_id and (pa.is_admin or pa.is_test))),
     'waiting_n',    (select count(*) from clicks where status = 'waiting'),
     'confirmed_n',  (select count(*) from clicks where status = 'confirmed'),
     'confirmed_rm', (select coalesce(sum(commission_rm),0) from clicks where status = 'confirmed'),
