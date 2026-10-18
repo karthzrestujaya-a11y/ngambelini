@@ -945,7 +945,7 @@ window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); INSTAL
 window.addEventListener('appinstalled', () => { $('installCard').hidden = true; toast('NBN app installed. Open it from your home screen.'); });
 $('installBtn').onclick = async () => {
   if(INSTALL_EVT){ INSTALL_EVT.prompt(); const r = await INSTALL_EVT.userChoice.catch(()=>null); INSTALL_EVT = null; if(r && r.outcome === 'accepted') $('installCard').hidden = true; return; }
-  toast(IS_IOS ? 'Tap the Share button at the bottom, then "Add to Home Screen".' : 'Open the browser menu (⋮), then "Install app" or "Add to Home screen".');
+  location.href = '/pasang/' + (IS_IOS ? '?os=ios' : '?os=and');   // step-by-step install guide
 };
 $('installX').onclick = () => { $('installCard').hidden = true; try{ localStorage.setItem('nbn-install-x','1'); }catch(e){} };
 if(IS_IOS) showInstall();
