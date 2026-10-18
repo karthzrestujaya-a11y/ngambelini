@@ -435,6 +435,7 @@ body.no-tabs .tabbar{display:none}
       <div class="gr-kpis" id="grKpis"></div>
       <div class="card" id="grTargets"></div>
       <div class="card"><b>Last 7 days</b><div id="grChart" class="gr-chart"></div><p class="fine" style="margin:4px 0 0"><span style="color:#14774A">■</span> new sign-ups &nbsp; <span style="color:#C9A227">■</span> photo searches &nbsp; <span style="color:#EE4D2D">■</span> Shopee taps</p></div>
+      <div class="card"><b>💰 Earnings (last 30 days)</b><div class="gr-kpis" id="erKpis" style="margin-top:8px"></div><div id="erChart" class="gr-chart"></div><p class="fine" style="margin:4px 0 0"><span style="color:#14774A">■</span> commission confirmed (Shopee report) &nbsp; <span style="color:#C9A227">■</span> money received</p><p class="fine" style="margin:2px 0 0">NBN keeps 60%, members get 40% cash back. Shopee confirms orders 1–2 months after purchase.</p></div>
       <button type="button" class="sbtn" id="grRefresh">↻ Refresh</button>
     </div>
     <div id="admPrices" hidden style="display:flex;flex-direction:column;gap:12px">
@@ -1016,7 +1017,7 @@ $('privBack').onclick = () => show(USER || !sb ? (LASTVIEW || 'me') : 'join');
 
 // ---- Admin: upload price sheet + cash back ----
 const esc = t => String(t ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function seg(which){ $('segGrowth').classList.toggle('on', which==='growth'); $('admGrowth').hidden = which!=='growth'; if(which==='growth') loadGrowth(); $('segPrices').classList.toggle('on', which==='prices'); $('segCash').classList.toggle('on', which==='cash'); $('segRep').classList.toggle('on', which==='rep'); $('segStats').classList.toggle('on', which==='stats'); $('segSnap').classList.toggle('on', which==='snap'); $('admSnap').hidden = which!=='snap'; if(which==='snap') loadSnapAdmin();
+function seg(which){ $('segGrowth').classList.toggle('on', which==='growth'); $('admGrowth').hidden = which!=='growth'; if(which==='growth'){ loadGrowth(); loadEarnings(); } $('segPrices').classList.toggle('on', which==='prices'); $('segCash').classList.toggle('on', which==='cash'); $('segRep').classList.toggle('on', which==='rep'); $('segStats').classList.toggle('on', which==='stats'); $('segSnap').classList.toggle('on', which==='snap'); $('admSnap').hidden = which!=='snap'; if(which==='snap') loadSnapAdmin();
   $('admPrices').hidden = which!=='prices'; $('admCash').hidden = which!=='cash'; $('admRep').hidden = which!=='rep'; $('admStats').hidden = which!=='stats';
   if(which==='cash') loadCash(); if(which==='rep'){ loadReported(); loadLinks(); } if(which==='stats') loadStats(); }
 
@@ -1113,7 +1114,20 @@ async function loadGrowth(){
     [['s', d.signups], ['p', d.photos], ['t', d.taps]].forEach(([c, v]) => { const b = el('i', null, c); b.style.height = Math.max(2, Math.round(v * 90 / mx)) + 'px'; b.title = v; bars.appendChild(b); });
     col.appendChild(bars); col.appendChild(el('small', new Date(d.day).toLocaleDateString('en-MY', {weekday:'short'}))); C.appendChild(col); });
 }
-$('grRefresh').onclick = loadGrowth;
+
+async function loadEarnings(){
+  const { data: e, error } = await sb.rpc('admin_earnings'); const K = $('erKpis'); K.innerHTML = ''; const C = $('erChart'); C.innerHTML = '';
+  if(error || !e){ K.appendChild(el('p', error ? error.message : 'No data', 'fine')); return; }
+  const rm = v => 'RM' + Number(v||0).toFixed(2);
+  const kpi = (v, l) => { const d = el('div', null, 'gr-kpi'); d.appendChild(el('b', v)); d.appendChild(el('small', l)); K.appendChild(d); };
+  kpi(rm(e.month_commission * 0.6), 'NBN share this month'); kpi(rm(e.month_received), 'received this month'); kpi(rm(e.pending), 'confirmed, not yet paid to us');
+  kpi(rm(e.total_received), 'total received'); kpi(rm(e.snap_cost), 'Snap & Earn cost'); kpi(rm(e.total_received * 0.6 - e.snap_cost), 'net so far');
+  const mx = Math.max(1, ...e.days.map(d => Math.max(+d.commission, +d.received)));
+  e.days.forEach((d, i) => { const col = el('div', null, 'gr-col'); const bars = el('div', null, 'gr-bars');
+    [['s', +d.commission], ['p', +d.received]].forEach(([c, v]) => { const b = el('i', null, c); b.style.height = Math.max(2, Math.round(v * 90 / mx)) + 'px'; b.style.width = '4px'; b.title = rm(v); bars.appendChild(b); });
+    col.appendChild(bars); col.appendChild(el('small', i % 5 === 4 ? new Date(d.day).getDate() + '/' + (new Date(d.day).getMonth() + 1) : '')); C.appendChild(col); });
+}
+$('grRefresh').onclick = () => { loadGrowth(); loadEarnings(); };
 $('adminBtn').onclick = () => { show('admin'); seg('growth'); };
 $('segGrowth').onclick = () => seg('growth'); $('segPrices').onclick = () => seg('prices'); $('segCash').onclick = () => seg('cash'); $('segRep').onclick = () => seg('rep'); $('segStats').onclick = () => seg('stats'); $('segSnap').onclick = () => seg('snap');
 function loadXLSX(){ return window.XLSX ? Promise.resolve(window.XLSX) : new Promise((ok, bad) => { const sc = document.createElement('script');

@@ -47,3 +47,24 @@ grant execute on function public.admin_growth() to authenticated;
 
 -- Open the pilot for the blast: room for the first target
 update public.app_settings set value = '2000', updated_at = now() where key = 'signup_cap' and value::int < 2000;
+
+-- Earnings by day (last 30 days): commission confirmed from Shopee reports, NBN's 60% share, and money actually received
+create or replace function public.admin_earnings()
+returns jsonb language plpgsql security definer set search_path = public stable as $$
+declare t date := (now() at time zone 'Asia/Kuala_Lumpur')::date;
+begin
+  if not public.is_admin() then raise exception 'Admins only'; end if;
+  return jsonb_build_object(
+    'month_commission', (select coalesce(sum(commission_rm),0) from clicks where confirmed_at >= date_trunc('month', t)::timestamp at time zone 'Asia/Kuala_Lumpur'),
+    'month_received', (select coalesce(sum(commission_rm),0) from clicks where received_at >= date_trunc('month', t)::timestamp at time zone 'Asia/Kuala_Lumpur'),
+    'pending', (select coalesce(sum(commission_rm),0) from clicks where status = 'confirmed'),
+    'total_received', (select coalesce(sum(commission_rm),0) from clicks where status in ('received','paid')),
+    'snap_cost', (select coalesce(sum(points),0)/1000.0 from snaps where status = 'approved'),
+    'days', (select coalesce(jsonb_agg(x order by x.day), '[]'::jsonb) from (
+       select g.day::date as day,
+         (select coalesce(sum(commission_rm),0) from clicks c where (c.confirmed_at at time zone 'Asia/Kuala_Lumpur')::date = g.day::date) as commission,
+         (select coalesce(sum(commission_rm),0) from clicks c where (c.received_at at time zone 'Asia/Kuala_Lumpur')::date = g.day::date) as received
+       from generate_series(t - 29, t, interval '1 day') g(day)) x));
+end $$;
+revoke all on function public.admin_earnings() from public;
+grant execute on function public.admin_earnings() to authenticated;
