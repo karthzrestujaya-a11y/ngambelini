@@ -122,6 +122,7 @@ a.btn.ghost{border:1.5px solid var(--line);color:var(--fg)}
 .field input{height:52px;border-radius:14px;border:1.5px solid var(--line);background:var(--surface);color:var(--fg);padding:0 14px;font-family:var(--body);font-size:16px}
 .btn-wide{border:none;background:var(--navy);color:var(--navy-fg);font-weight:700;font-size:16px;border-radius:14px;height:52px;width:100%}
 .btn-wide:disabled{opacity:.6}
+.storesoon{margin:0;align-self:flex-start;font-size:13px;font-weight:700;color:var(--navy);background:var(--soft);border:1px dashed var(--gold);border-radius:999px;padding:6px 12px}
 .betatag{font-style:normal;font-size:8px;font-weight:800;letter-spacing:.5px;background:var(--gold);color:var(--navy);border-radius:5px;padding:1px 4px;margin-left:3px;vertical-align:top}
 #tabScan{position:relative}
 .scanfail{background:var(--soft);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:10px}
@@ -253,6 +254,7 @@ body.no-tabs .tabbar{display:none}
   <!-- JOIN -->
   <section id="join" class="view" hidden style="flex-direction:column;gap:18px">
     <h1 style="font-size:24px" data-t="login">Log in</h1>
+    <p class="storesoon" data-t="storeSoon">📱 Google Play &amp; App Store app: coming soon 🔜 · Use it here now</p>
     <form id="joinForm" style="display:flex;flex-direction:column;gap:14px">
       <input id="code" type="hidden" value="">
       <div class="field" id="emailField"><label for="email" data-t="email">Email</label><input id="email" type="email" autocomplete="email" placeholder="you@example.com" data-t-ph="emailPh"></div>
@@ -281,6 +283,7 @@ body.no-tabs .tabbar{display:none}
       <button class="scanbtn" type="button" id="scanBtn" aria-label="Scan a barcode"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 8v8M10 8v8M13 8v8M17 8v8"/></svg></button>
     </form>
     <p class="fine" id="linkHint" style="margin-top:4px"><span data-t="hint1">Best way: in Shopee tap</span> <b data-t="hint2">Share → Copy link</b><span data-t="hint3">, then paste it here. Photo is optional.</span></p>
+    <p class="storesoon" data-t="storeSoon">📱 Google Play &amp; App Store app: coming soon 🔜 · Use it here now</p>
     <button type="button" class="minisave" id="miniSave" aria-label="Your savings and cash back">
       <span class="ms-top"><span class="ms-coin">💰</span><span style="display:flex;flex-direction:column;align-items:flex-start"><span class="ml" data-t="savedMonth">You saved this month</span><span class="mv num" id="savedMini">RM0.00</span></span></span>
       <span class="ms-row"><span class="k" data-t="cbReward">🎁 Cash back reward</span><span class="v num" id="retMini">RM0.00</span></span>
@@ -856,6 +859,8 @@ function setTab(id){ ['tabHome','tabScan','tabSave','tabMe'].forEach(t=>$(t).cla
 $('tabHome').onclick = () => { setTab('tabHome'); show('home'); };
 $('sfPhoto').onclick = () => { $('scanFail').hidden = true; $('photoBtn').click(); };
 $('sfType').onclick = () => { $('scanFail').hidden = true; $('q').focus(); };
+// Hide the 'coming soon' store badge inside the installed app (store/TWA or home-screen app).
+if(window.matchMedia && matchMedia('(display-mode: standalone)').matches || document.referrer.startsWith('android-app://')) document.querySelectorAll('.storesoon').forEach(e=>e.hidden=true);
 $('tabScan').onclick = () => { setTab('tabScan'); show('home'); $('scanBtn').click(); };
 $('tabSave').onclick = () => { setTab('tabSave'); show('wallet'); };
 $('miniSave').onclick = () => { setTab('tabSave'); show('wallet'); };
