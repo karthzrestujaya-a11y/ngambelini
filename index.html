@@ -439,6 +439,7 @@ body.no-tabs .tabbar{display:none}
       <div id="grAlarm" class="gr-alarm" hidden></div>
       <div class="gr-kpis" id="grKpis"></div>
       <div class="card" id="grTargets"></div>
+      <div class="card" id="fnCard"><b>🚦 Visitor funnel (last 7 days)</b><div class="gr-kpis" id="fnKpis" style="margin-top:8px"></div><div id="fnSrc" style="display:flex;flex-direction:column;gap:4px;margin-top:8px"></div><p class="fine" style="margin:4px 0 0">Unique browsers at each step. Tracking started 20 Oct 2026.</p></div>
       <div class="card"><b>Last 7 days</b><div id="grChart" class="gr-chart"></div><p class="fine" style="margin:4px 0 0"><span style="color:#14774A">■</span> new sign-ups &nbsp; <span style="color:#C9A227">■</span> photo searches &nbsp; <span style="color:#EE4D2D">■</span> Shopee taps</p></div>
       <div class="card"><b>💰 Earnings (last 30 days)</b><div class="gr-kpis" id="erKpis" style="margin-top:8px"></div><div id="erChart" class="gr-chart"></div><p class="fine" style="margin:4px 0 0"><span style="color:#14774A">■</span> commission confirmed (Shopee report) &nbsp; <span style="color:#C9A227">■</span> money received</p><p class="fine" style="margin:2px 0 0">NBN keeps 60%, members get 40% cash back. Shopee confirms orders 1–2 months after purchase.</p></div>
       <div class="card" id="moSocial"><b>📣 Facebook &amp; TikTok</b><div class="gr-kpis" id="moSoKpis" style="margin-top:8px"></div><div id="moSoChart" class="gr-chart"></div><p class="fine" style="margin:4px 0 0"><span style="color:#1877F2">■</span> Facebook followers &nbsp; <span style="color:#111">■</span> TikTok followers</p>
@@ -636,6 +637,7 @@ function show(view){
   $('pageTitle').textContent = PT[view] ? PT[view]() : ''; document.body.classList.toggle('has-title', !!PT[view]);
   document.body.classList.toggle('no-tabs', view==='join' || view==='admin');
   if(view !== 'privacy') LASTVIEW = view;
+  if(view === 'join' && typeof track === 'function') track('join');
   window.scrollTo(0,0);
 }
 document.addEventListener('click', e => { const g = e.target.closest('[data-go]'); if(g) show(g.dataset.go); });
@@ -742,11 +744,12 @@ function search(term, fromLinkDone){
   $('goLazada').hidden = !LAZADA_LINKS; if($('soonResults')) $('soonResults').hidden = LAZADA_LINKS;
   $('elsewhereHead').textContent = hits.length ? t('diffSize') : '';
   if(sb && USER){ sb.from('searches').insert({ user_id: USER.id, term, results: hits.length }).then(()=>{}); }
+  track('search', term);
   show('results');
 }
 let LAST_TERM = '';
 function logSearchTap(platform){ if(sb && USER && LAST_TERM){ sb.from('clicks').insert({ user_id: USER.id, platform, search_term: LAST_TERM.slice(0,120), saving_rm: 0 }).then(()=>{}); } }
-$('goShopee').addEventListener('click', () => logSearchTap('shopee'));
+$('goShopee').addEventListener('click', () => { logSearchTap('shopee'); track('buy', 'Shopee search'); });
 $('goLazada').addEventListener('click', () => logSearchTap('lazada'));
 $('searchForm').addEventListener('submit', e => { e.preventDefault(); search($('q').value); });
 $('q').addEventListener('paste', e => { const t = (e.clipboardData || window.clipboardData)?.getData('text') || ''; if(/https?:\/\//i.test(t)){ e.preventDefault(); $('q').value = t.trim(); searchLink(t); } });
@@ -765,6 +768,7 @@ function buyUrl(p, it, o){
 }
 
 function openCompare(it){
+  track('compare', it.name);
   const s = sorted(it), best = s[0];
   const other = s.find(o => o.p !== best.p);
   const saving = other ? (perUnit(other) - perUnit(best)) * best.qty : 0;
@@ -791,6 +795,7 @@ function openCompare(it){
       ${(o.p==='Lazada' && !LAZADA_LINKS) ? `<p class="fine">${i===0?t('cheapestHere'):''}${t('lazadaNoLink')}</p>` : `<a class="btn ${o.p} ${i===0?'primary':'ghost'}" href="${buyUrl(o.p,it,o)}" target="_blank" rel="noopener">${t('buyOn',{p:o.p})}</a>`}`;
     if(d.querySelector('a')) d.querySelector('a').addEventListener('click', () => {
       const s2 = (i===0) ? saving : 0;
+      track('buy', o.p + ' ' + it.name);
       if(sb && USER && o.lid){ sb.from('clicks').insert({ user_id: USER.id, listing_id: o.lid, saving_rm: Number(s2.toFixed(2)), price_rm: o.price }).then(()=>loadMySavings()); }
       if(sb && !USER){ toast(GUEST_TOAST[LANG]||GUEST_TOAST.en); return; }
       toast(s2>0 ? t('tracked',{a:rm(s2),p:o.p}) : t('trackedNone'));
@@ -807,6 +812,13 @@ $('reset').onclick = () => { state={saved:0,ret:0,buys:0,missed:[]}; save(); ren
 // ---- Login with invite code (Supabase Auth, magic link) ----
 const sb = window.supabase ? window.supabase.createClient(SB_URL, SB_KEY) : null;
 let USER = null;
+// Anonymous visitor funnel (no personal data): random per-browser id + where they came from.
+const SID = (()=>{ try{ let v = localStorage.getItem('nbn-sid'); if(!v){ v = Math.random().toString(36).slice(2) + Date.now().toString(36); localStorage.setItem('nbn-sid', v); } return v; }catch(e){ return 'x' + Math.random().toString(36).slice(2,14); } })();
+const SRC = (()=>{ try{ const p = new URLSearchParams(location.search); let v = p.get('utm_source') || (p.get('fbclid') ? 'facebook' : '') || (p.get('ttclid') ? 'tiktok' : '');
+  if(!v && document.referrer){ const h = new URL(document.referrer).hostname; if(h !== location.hostname) v = h.replace(/^(www|m|l|lm|web)\./,'').split('.')[0]; }
+  return (v || 'direct').toLowerCase().slice(0,30); }catch(e){ return 'direct'; } })();
+function track(ev, detail){ try{ if(!sb) return; sb.from('events').insert({ sid: SID, ev, src: SRC, detail: detail ? String(detail).slice(0,120) : null, user_id: USER ? USER.id : null }).then(()=>{}); }catch(e){} }
+track('visit', location.pathname);
 const GUEST_TXT = { en:'💰 Try it free. Log in only when you want cash back.', ms:'💰 Cuba percuma. Log masuk hanya bila nak duit balik.', ta:'💰 இலவசமாக முயற்சி செய்யுங்கள். பணம் திரும்ப வேண்டுமெனில் மட்டும் உள்நுழையவும்.', zh:'💰 免费试用。要拿回扣时再登录。' };
 const GUEST_CB = { en:'Log in to get cash back on this order', ms:'Log masuk untuk dapat duit balik pesanan ini', ta:'இந்த ஆர்டருக்கு பணம் திரும்பப் பெற உள்நுழையவும்', zh:'登录即可获得此订单回扣' };
 const GUEST_TOAST = { en:'Opening Shopee. Log in next time to get cash back.', ms:'Buka Shopee. Log masuk lain kali untuk dapat duit balik.', ta:'Shopee திறக்கிறது. அடுத்த முறை உள்நுழைந்து பணம் திரும்பப் பெறுங்கள்.', zh:'正在打开 Shopee。下次登录即可拿回扣。' };
@@ -864,7 +876,7 @@ $('joinForm').addEventListener('submit', async e => {
     if(REVIEW_EMAILS.includes(email.toLowerCase())){ $('emailField').hidden = true; btn.hidden = true; $('pwField').hidden = false; $('pwBtn').hidden = false; $('otpAgain').hidden = false; msg.textContent = 'Enter the password for this account.'; $('pw').focus(); return; }
     const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: location.origin + location.pathname } });
     if(!error){
-      msg.textContent = t('codeSent',{e:email});
+      msg.textContent = t('codeSent',{e:email}); track('otp_sent');
       $('emailField').hidden = true; btn.hidden = true;
       $('otpField').hidden = false; $('otpBtn').hidden = false; $('otpAgain').hidden = false; $('otp').value = ''; $('otp').focus();
     } else msg.textContent = /pilot_full|database error saving new user/i.test(error.message) ? 'Sorry, the NBN pilot is full right now. Please try again later.'
@@ -879,7 +891,7 @@ async function confirmOtp(){
   try{
     const { data, error } = await sb.auth.verifyOtp({ email, token, type: 'email' });
     if(error){ msg.textContent = /expired|invalid/i.test(error.message) ? 'Wrong or expired code. Check the latest email, or send again.' : ('Could not log in: ' + error.message); return; }
-    USER = data.user || (data.session && data.session.user); await afterLogin();
+    USER = data.user || (data.session && data.session.user); track('login'); await afterLogin();
   } finally { b.disabled = false; }
 }
 // App-store review account only: password login (reviewers can't receive email codes)
@@ -1049,7 +1061,7 @@ $('privBack').onclick = () => show(LASTVIEW || 'home');
 
 // ---- Admin: upload price sheet + cash back ----
 const esc = t => String(t ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function seg(which){ $('segGrowth').classList.toggle('on', which==='growth'); $('admGrowth').hidden = which!=='growth'; if(which==='growth'){ loadGrowth(); loadEarnings(); loadMonitor(); } $('segPrices').classList.toggle('on', which==='prices'); $('segCash').classList.toggle('on', which==='cash'); $('segRep').classList.toggle('on', which==='rep'); $('segStats').classList.toggle('on', which==='stats'); $('segSnap').classList.toggle('on', which==='snap'); $('admSnap').hidden = which!=='snap'; if(which==='snap') loadSnapAdmin();
+function seg(which){ $('segGrowth').classList.toggle('on', which==='growth'); $('admGrowth').hidden = which!=='growth'; if(which==='growth'){ loadGrowth(); loadEarnings(); loadMonitor(); loadFunnel(); } $('segPrices').classList.toggle('on', which==='prices'); $('segCash').classList.toggle('on', which==='cash'); $('segRep').classList.toggle('on', which==='rep'); $('segStats').classList.toggle('on', which==='stats'); $('segSnap').classList.toggle('on', which==='snap'); $('admSnap').hidden = which!=='snap'; if(which==='snap') loadSnapAdmin();
   $('admPrices').hidden = which!=='prices'; $('admCash').hidden = which!=='cash'; $('admRep').hidden = which!=='rep'; $('admStats').hidden = which!=='stats';
   if(which==='cash') loadCash(); if(which==='rep'){ loadReported(); loadLinks(); } if(which==='stats') loadStats(); }
 
@@ -1188,7 +1200,17 @@ async function loadMonitor(){
 $('moSave').onclick = async () => { const v = id => $(id).value === '' ? null : Number($(id).value);
   const { error } = await sb.rpc('admin_social_set', { p_day: null, p_fb_followers: v('moFbF'), p_fb_views: v('moFbV'), p_tt_followers: v('moTtF'), p_tt_views: v('moTtV') });
   toast(error ? error.message : 'Saved'); if(!error){ ['moFbF','moFbV','moTtF','moTtV'].forEach(i => $(i).value = ''); loadMonitor(); } };
-$('grRefresh').onclick = () => { loadGrowth(); loadEarnings(); loadMonitor(); };
+$('grRefresh').onclick = () => { loadGrowth(); loadEarnings(); loadMonitor(); loadFunnel(); };
+async function loadFunnel(){
+  const K = $('fnKpis'), S = $('fnSrc'); K.innerHTML = ''; S.innerHTML = '';
+  const { data: f, error } = await sb.rpc('admin_funnel', { p_days: 7 });
+  if(error || !f){ K.appendChild(el('p', error ? error.message : 'No data', 'fine')); return; }
+  const st = f.steps || {}, v = st.visit || 0;
+  const pc = n => v ? ' (' + Math.round(n * 100 / v) + '%)' : '';
+  [['visit','visited'],['search','searched'],['compare','opened a compare'],['buy','tapped Buy'],['join','opened log in'],['otp_sent','got email code'],['login','signed up / logged in']]
+    .forEach(([k, l]) => { const n = st[k] || 0; const x = el('div', null, 'gr-kpi'); x.appendChild(el('b', String(n))); x.appendChild(el('small', l + (k === 'visit' ? '' : pc(n)))); K.appendChild(x); });
+  (f.by_src || []).slice(0, 6).forEach(r => S.appendChild(el('div', r.src + ': ' + r.visits + ' visits, ' + r.logins + ' sign-ups', 'fine')));
+}
 $('adminBtn').onclick = () => { show('admin'); seg('growth'); };
 $('segGrowth').onclick = () => seg('growth'); $('segPrices').onclick = () => seg('prices'); $('segCash').onclick = () => seg('cash'); $('segRep').onclick = () => seg('rep'); $('segStats').onclick = () => seg('stats'); $('segSnap').onclick = () => seg('snap');
 function loadXLSX(){ return window.XLSX ? Promise.resolve(window.XLSX) : new Promise((ok, bad) => { const sc = document.createElement('script');
