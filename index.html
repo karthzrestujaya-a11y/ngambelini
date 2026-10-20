@@ -43,6 +43,8 @@ body.has-title .pagetitle{display:block}#wallet>h1,#me>h1{display:none}
 .steps4 .si{font-size:20px;line-height:1}
 .steps4 b{font-size:11px;line-height:1.2;color:#14563A;font-weight:700}
 .steps4 li:last-child{background:#FFF6D6;border-color:#C9A227}
+/* Categories, best deals and popular hidden until the catalogue has depth (20 Oct 2026). Remove this rule to bring them back. */
+.cat-off{display:none!important}
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
@@ -342,15 +344,15 @@ body.no-tabs .tabbar{display:none}
       <div class="sf-acts"><button type="button" class="btn-wide" id="sfPhoto" data-t="sfPhoto">📷 Search by photo</button>
       <button type="button" class="btn-wide sf-type" id="sfType" data-t="sfType">Type the name</button></div>
     </div>
-    <div class="cats" id="cats"></div>
+    <div class="cats cat-off" id="cats"></div>
 
-    <div style="display:flex;flex-direction:column;gap:10px">
+    <div class="cat-off" style="display:flex;flex-direction:column;gap:10px">
       <div class="secthead"><h2 data-t="bestDeals">Best deals today</h2><button type="button" class="seeall" id="seeAll" data-t="seeAll">See all</button></div>
       <div class="deals" id="deals"></div>
     </div>
 
 
-    <div style="display:flex;flex-direction:column;gap:10px">
+    <div class="cat-off" style="display:flex;flex-direction:column;gap:10px">
       <div class="top"><h2 data-t="popular">Popular this week</h2><span class="muted" style="font-size:13px" data-t="household">Household</span></div>
       <div class="list" id="popular"></div>
     </div>
