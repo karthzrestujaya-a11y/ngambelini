@@ -1,0 +1,19 @@
+{
+  "id": "/",
+  "name": "NBN – Ngam Beli Ni",
+  "short_name": "NBN",
+  "description": "Rezeki kita, kita kongsi. Paste a Shopee link, buy as usual, get cash back.",
+  "start_url": "/?source=app",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FFF9EC",
+  "theme_color": "#14774A",
+  "lang": "en-MY",
+  "categories": ["shopping", "finance"],
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
