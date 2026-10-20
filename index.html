@@ -36,6 +36,13 @@ body.has-title .pagetitle{display:block}#wallet>h1,#me>h1{display:none}
 .gr-t{display:flex;flex-direction:column;gap:4px;margin-top:8px;font-size:13.5px}.gr-bar{height:12px;background:#F1EBD3;border-radius:999px;overflow:hidden}.gr-bar i{display:block;height:100%;background:linear-gradient(90deg,#14774A,#C9A227);border-radius:999px}
 .mo-row{display:flex;justify-content:space-between;align-items:center;background:#fff;border:1.5px solid #ecdca5;border-radius:12px;padding:8px 10px;font-size:13.5px}.mo-row b{font-family:var(--display);color:#14563A}#moSocial input{padding:8px;border:1.5px solid #d9cfa8;border-radius:10px;font-size:14px;min-width:0}
 .gr-chart{display:flex;gap:6px;align-items:flex-end;height:120px;margin-top:8px}.gr-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}.gr-bars{display:flex;gap:2px;align-items:flex-end;height:96px}.gr-bars i{width:7px;border-radius:3px 3px 0 0}.gr-bars .s{background:#14774A}.gr-bars .p{background:#C9A227}.gr-bars .t{background:#EE4D2D}.gr-col small{font-size:10.5px;color:var(--muted)}
+.steps4{list-style:none;margin:-4px 0 0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.steps4 li{position:relative;background:rgba(255,255,255,.92);border:1px solid #e8dfbf;border-radius:12px;padding:8px 4px 7px;display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center}
+.steps4 li:not(:last-child)::after{content:'›';position:absolute;right:-6px;top:50%;transform:translateY(-50%);color:#C9A227;font-weight:800;font-size:15px;z-index:1}
+.steps4 i{position:absolute;top:-6px;left:-4px;width:17px;height:17px;border-radius:50%;background:#14774A;color:#fff;font-style:normal;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.steps4 .si{font-size:20px;line-height:1}
+.steps4 b{font-size:11px;line-height:1.2;color:#14563A;font-weight:700}
+.steps4 li:last-child{background:#FFF6D6;border-color:#C9A227}
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
@@ -313,6 +320,12 @@ body.no-tabs .tabbar{display:none}
       <button class="scanbtn lockd" type="button" id="scanBtn" aria-label="Barcode scan: Premium, coming soon"><i class="lk">🔒</i><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 8v8M10 8v8M13 8v8M17 8v8"/></svg></button>
     </form>
     <p class="fine" id="linkHint" style="margin-top:4px"><span data-t="hint1">Best way: in Shopee tap</span> <b data-t="hint2">Share → Copy link</b><span data-t="hint3">, then paste it here. Photo is optional.</span></p>
+    <ol class="steps4" aria-label="How it works">
+      <li><i>1</i><span class="si">📋</span><b data-t="st1">Copy Shopee link</b></li>
+      <li><i>2</i><span class="si">📥</span><b data-t="st2">Paste here</b></li>
+      <li><i>3</i><span class="si">🛒</span><b data-t="st3">Buy cheapest</b></li>
+      <li><span class="si">💰</span><b data-t="st4">Get cash back</b></li>
+    </ol>
     <div id="guestBar" class="note" hidden style="display:flex;align-items:center;gap:10px;justify-content:space-between"><span id="guestTxt">💰 Try it free. Log in only when you want cash back.</span><button class="sbtn" type="button" id="guestLogin">Log in</button></div>
     <button type="button" class="minisave" id="miniSave" aria-label="Your savings and cash back">
       <span class="ms-top"><span class="ms-coin">💰</span><span style="display:flex;flex-direction:column;align-items:flex-start"><span class="ml" data-t="savedMonth">You saved this month</span><span class="mv num" id="savedMini">RM0.00</span></span></span>
@@ -358,7 +371,7 @@ body.no-tabs .tabbar{display:none}
 
   <!-- SAVINGS -->
   <section id="wallet" class="view" hidden style="flex-direction:column;gap:16px">
-    <h1 style="font-size:24px"><span data-t="yourSavings">Your savings</span> <span id="savMonth" style="font-size:14px;font-weight:600;color:var(--muted)"></span></h1>
+    <h1 style="font-size:24px"><span data-t="yourSavings">Your earnings</span> <span id="savMonth" style="font-size:14px;font-weight:600;color:var(--muted)"></span></h1>
     <div class="seg wseg" id="wSeg"><button type="button" id="wsCash" class="on">💸 Cash back</button><button type="button" id="wsSnap" hidden>📸 Snap &amp; Earn</button></div>
     <div class="snapcard" id="snapCard" hidden>
       <div class="sc-head"><b>📸 Snap &amp; Earn</b><i class="betatag">BETA</i></div>
@@ -528,7 +541,7 @@ body.no-tabs .tabbar{display:none}
 <nav class="tabbar" aria-label="Main">
   <button type="button" id="tabHome" class="on"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span data-t="tabHome">Home</span></button>
   
-  <button type="button" id="tabSave"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg><span data-t="tabSave">Savings</span></button>
+  <button type="button" id="tabSave"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg><span data-t="tabSave">Earnings</span></button>
   <button type="button" id="tabMe"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span data-t="tabMe">Me</span></button>
 </nav>
 <div class="toast" id="toast" hidden></div>
