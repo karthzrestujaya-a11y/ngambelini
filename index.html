@@ -292,6 +292,7 @@ body.no-tabs .tabbar{display:none}
       <button class="btn-wide" id="pwBtn" type="button" hidden>Log in</button>
       <p class="fine" id="joinMsg" data-t="loginHelp">We email you an 8-digit code. Type it here to log in. No password needed.</p>
       <button class="link" type="button" id="otpAgain" hidden style="align-self:flex-start"><span data-t="otpAgain">Use a different email / send again</span></button>
+      <button class="link" type="button" id="skipLogin" style="align-self:flex-start">← Not now, just browse</button>
       <p class="fine"><span data-t="agree">By logging in you agree to our</span> <button class="link" type="button" data-go="privacy" data-t="privacy" style="font-size:12px">privacy notice</button>.</p>
     </form>
     <div class="howto" id="howto">
@@ -312,6 +313,7 @@ body.no-tabs .tabbar{display:none}
       <button class="scanbtn lockd" type="button" id="scanBtn" aria-label="Barcode scan: Premium, coming soon"><i class="lk">🔒</i><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 8v8M10 8v8M13 8v8M17 8v8"/></svg></button>
     </form>
     <p class="fine" id="linkHint" style="margin-top:4px"><span data-t="hint1">Best way: in Shopee tap</span> <b data-t="hint2">Share → Copy link</b><span data-t="hint3">, then paste it here. Photo is optional.</span></p>
+    <div id="guestBar" class="note" hidden style="display:flex;align-items:center;gap:10px;justify-content:space-between"><span id="guestTxt">💰 Try it free. Log in only when you want cash back.</span><button class="sbtn" type="button" id="guestLogin">Log in</button></div>
     <button type="button" class="minisave" id="miniSave" aria-label="Your savings and cash back">
       <span class="ms-top"><span class="ms-coin">💰</span><span style="display:flex;flex-direction:column;align-items:flex-start"><span class="ml" data-t="savedMonth">You saved this month</span><span class="mv num" id="savedMini">RM0.00</span></span></span>
       <span class="ms-row"><span class="k" data-t="cbReward">🎁 Cash back reward</span><span class="v num" id="retMini">RM0.00</span></span>
@@ -629,9 +631,10 @@ let LASTVIEW = 'home';
 function show(view){
   for(const v of ['join','home','results','compare','wallet','me','admin','privacy']){ const el=$(v); el.hidden = v!==view; if(v===view) el.style.display='flex'; }
   document.body.classList.toggle('on-home', view==='home');
+  const gb=$('guestBar'); if(gb){ gb.hidden = !(view==='home' && sb && !USER); if(!gb.hidden){ gb.style.display='flex'; $('guestTxt').textContent = GUEST_TXT[LANG] || GUEST_TXT.en; } }
   const PT = { wallet: () => t('yourSavings') + ($('savMonth').textContent ? ' ' + $('savMonth').textContent : ''), me: () => t('me'), admin: () => 'Admin', results: () => t('tabHome') };
   $('pageTitle').textContent = PT[view] ? PT[view]() : ''; document.body.classList.toggle('has-title', !!PT[view]);
-  document.body.classList.toggle('no-tabs', view==='join' || view==='admin' || (view==='privacy' && !USER));
+  document.body.classList.toggle('no-tabs', view==='join' || view==='admin');
   if(view !== 'privacy') LASTVIEW = view;
   window.scrollTo(0,0);
 }
@@ -774,6 +777,7 @@ function openCompare(it){
     ${other ? `<div class="verdict"><b>${t('cheapestNow',{p:best.p})}</b><span class="num">${t('youSave',{a:rm(saving),p:other.p})}</span></div>`
             : `<div class="note warn">${t('onlyChecked',{p:best.p})}</div>`}
     ${it.checked ? `<p class="checked">${fmtChecked(it.checked)}. ${t('pricesChange')}</p>` : ''}
+    ${(sb && !USER) ? `<div class="note">💰 <button class="link" type="button" id="cbLogin">${GUEST_CB[LANG]||GUEST_CB.en}</button></div>` : ''}
     <div id="offers" style="display:flex;flex-direction:column;gap:10px"></div>
     ${LAZADA_LINKS ? '' : `<div class="soon"><span>${t('comingSoonShops')}</span></div>`}
     ${it.hidden ? `<div class="note bad">${LANG==='en'?it.hidden:t('hiddenListing')}</div>` : ''}
@@ -788,10 +792,12 @@ function openCompare(it){
     if(d.querySelector('a')) d.querySelector('a').addEventListener('click', () => {
       const s2 = (i===0) ? saving : 0;
       if(sb && USER && o.lid){ sb.from('clicks').insert({ user_id: USER.id, listing_id: o.lid, saving_rm: Number(s2.toFixed(2)), price_rm: o.price }).then(()=>loadMySavings()); }
+      if(sb && !USER){ toast(GUEST_TOAST[LANG]||GUEST_TOAST.en); return; }
       toast(s2>0 ? t('tracked',{a:rm(s2),p:o.p}) : t('trackedNone'));
     });
     box.appendChild(d);
   });
+  const cbl=c.querySelector('#cbLogin'); if(cbl) cbl.onclick=()=>goLogin();
   show('compare');
 }
 
@@ -801,6 +807,9 @@ $('reset').onclick = () => { state={saved:0,ret:0,buys:0,missed:[]}; save(); ren
 // ---- Login with invite code (Supabase Auth, magic link) ----
 const sb = window.supabase ? window.supabase.createClient(SB_URL, SB_KEY) : null;
 let USER = null;
+const GUEST_TXT = { en:'💰 Try it free. Log in only when you want cash back.', ms:'💰 Cuba percuma. Log masuk hanya bila nak duit balik.', ta:'💰 இலவசமாக முயற்சி செய்யுங்கள். பணம் திரும்ப வேண்டுமெனில் மட்டும் உள்நுழையவும்.', zh:'💰 免费试用。要拿回扣时再登录。' };
+const GUEST_CB = { en:'Log in to get cash back on this order', ms:'Log masuk untuk dapat duit balik pesanan ini', ta:'இந்த ஆர்டருக்கு பணம் திரும்பப் பெற உள்நுழையவும்', zh:'登录即可获得此订单回扣' };
+const GUEST_TOAST = { en:'Opening Shopee. Log in next time to get cash back.', ms:'Buka Shopee. Log masuk lain kali untuk dapat duit balik.', ta:'Shopee திறக்கிறது. அடுத்த முறை உள்நுழைந்து பணம் திரும்பப் பெறுங்கள்.', zh:'正在打开 Shopee。下次登录即可拿回扣。' };
 const CUSTOMER_SHARE = 0.40;
 function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
 function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
@@ -841,7 +850,7 @@ async function afterLogin(){
 async function boot(){
   if(!sb){ show('home'); return; }
   const { data: { session } } = await sb.auth.getSession();
-  if(session){ USER = session.user; await afterLogin(); } else show('join');
+  if(session){ USER = session.user; await afterLogin(); } else show('home');
   sb.auth.onAuthStateChange((ev, ses)=>{ if(ses && !USER){ USER = ses.user; afterLogin(); } });
 }
 $('joinForm').addEventListener('submit', async e => {
@@ -952,7 +961,9 @@ $('tabMe').onclick = () => { setTab('tabMe'); $('meEmail').textContent = (USER &
 // Send a logged-out person straight to the login screen (email -> 8-digit code).
 function goLogin(why){ setTab('tabHome'); if(!sb){ toast(t('noReach')); return; } $('emailField').hidden = false; $('joinBtn').hidden = false; $('otpField').hidden = true; $('otpBtn').hidden = true; $('otpAgain').hidden = true; $('joinMsg').textContent = (why ? why + ' ' : '') + 'We email you an 8-digit code. Type it here to log in. No password needed.'; show('join'); setTimeout(()=>{ try{ $('email').focus(); }catch(e){} }, 50); }
 $('loginBtn').onclick = () => goLogin();
-$('logoutBtn').onclick = async () => { if(sb){ await sb.auth.signOut(); } USER = null; setTab('tabHome'); show(sb ? 'join' : 'home'); toast(t('loggedOut')); };
+$('guestLogin').onclick = () => goLogin();
+$('skipLogin').onclick = () => { setTab('tabHome'); show('home'); };
+$('logoutBtn').onclick = async () => { if(sb){ await sb.auth.signOut(); } USER = null; setTab('tabHome'); show('home'); toast(t('loggedOut')); };
 $('bellBtn').onclick = () => toast(t('alertsSoon'));
 $('seeAll').onclick = () => { const hits=[...CATALOGUE].sort((a,b)=>a.name.localeCompare(b.name)); const list=$('resultsList'); list.innerHTML=''; hits.forEach(it=>list.appendChild(row(it))); list.hidden=false; $('resultsHead').textContent = `All ${hits.length} products`; $('notFound').hidden=true; $('elsewhere').hidden=true; show('results'); };
 // Photo search: shrink the photo on the phone, send to our photo-search function, then search the phrase it returns.
@@ -1034,7 +1045,7 @@ if(IS_IOS) showInstall();
 if('serviceWorker' in navigator){ window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(()=>{})); }
 
 // ---- Privacy ----
-$('privBack').onclick = () => show(USER || !sb ? (LASTVIEW || 'me') : 'join');
+$('privBack').onclick = () => show(LASTVIEW || 'home');
 
 // ---- Admin: upload price sheet + cash back ----
 const esc = t => String(t ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -1382,7 +1393,7 @@ async function loadStats(){
   box.appendChild(chartCard('Price database', `${nf(t.products_live)} products live · ${nf(t.reports_waiting)} reported prices waiting for review`, { x: xs, series: [{ name: 'Prices recorded', color: 'var(--s1)', values: col('prices') }] }));
 }
 
-renderHome(); boot().catch(()=>{ if(sb && !USER) goLogin(t('loginAgain')); else show('home'); });
+renderHome(); boot().catch(()=>{ show('home'); });
 loadLive().then(renderHome).catch(()=>{ SOURCE='built-in list (database not reachable)'; renderHome(); });
 </script>
 </body></html>
