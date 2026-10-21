@@ -1,10 +1,11 @@
 <!doctype html>
-<html lang="en" data-theme="light"><head><meta charset="utf-8"><meta name="color-scheme" content="light"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<html lang="en" data-theme="light"><head>
+<meta charset="utf-8"><meta name="color-scheme" content="light"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Ngam Beli Ni</title>
-<meta name="description" content="Barang sama, harga lebih murah. Cari harga Shopee paling murah dan dapat cash back untuk pesanan yang layak. Percuma.">
-<meta property="og:title" content="NBN – Ngam Beli Ni">
-<meta property="og:description" content="Barang sama, harga lebih murah. Cari harga Shopee paling murah dan dapat cash back untuk pesanan yang layak.">
-<meta property="og:image" content="https://ngambelini.com/icons/icon-512.png">
+<meta name="description" content="Rezeki kita, kita kongsi. Tampal link Shopee, beli macam biasa, dapat duit balik untuk pesanan yang layak. Percuma.">
+<meta property="og:title" content="NBN – Ngam Beli Ni · Rezeki kita, kita kongsi 🤝">
+<meta property="og:description" content="Tampal link Shopee, beli macam biasa, dapat duit balik ke DuitNow. Percuma.">
+<meta property="og:image" content="https://ngambelini.com/og.png">
 <meta property="og:url" content="https://ngambelini.com/">
 <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
 <link rel="apple-touch-icon" href="/icons/apple-180.png">
@@ -43,6 +44,32 @@ body.has-title .pagetitle{display:block}#wallet>h1,#me>h1{display:none}
 .steps4 .si{font-size:20px;line-height:1}
 .steps4 b{font-size:11px;line-height:1.2;color:#14563A;font-weight:700}
 .steps4 li:last-child{background:#FFF6D6;border-color:#C9A227}
+
+/* ===== Preview layout (21 Oct 2026) ===== */
+#cats,#linkHint,.cat-off{display:none!important}
+body:not(.on-home) .hero{padding:10px 16px 12px!important;border-radius:0 0 18px 18px!important;min-height:0!important}
+body:not(.on-home) .hero .brand{flex-direction:row!important;gap:8px!important;align-items:center}
+body:not(.on-home) .hero .brand .mark{width:30px!important;height:30px!important}
+body:not(.on-home) .hero .word .big{font-size:20px!important}
+body:not(.on-home) .hero .word .sm{display:none!important}
+body:not(.on-home) .hero .pagetitle{font-size:19px!important;margin:6px 0 0!important;text-align:left!important}
+#wallet > h1{display:none}
+.bandbtn,.howrow{background:#fff;border:1.5px solid #C9A227;color:#14563A;padding:13px 14px;font-weight:800;font-size:14px;display:flex;justify-content:space-between;align-items:center;width:100%;border-radius:14px;cursor:pointer;text-align:left}
+.howrow{border:1px solid #e8dfbf;font-weight:700}
+.bandadd{border:2px dashed #C9A227;border-radius:12px;padding:12px;text-align:center;font-size:13px;font-weight:800;color:#8a6a10;background:#FFFBEA;width:100%;cursor:pointer}
+.cbbadge{background:#E8F6EE;color:#14774A;font-weight:700;border-radius:10px;padding:8px 10px;margin:6px 0;font-size:14px}
+.bandrow{background:#fff;border:1.5px solid #e8dfbf;border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.bandrow.win{border:2px solid #14774A;background:#F1FAF4}
+.bandrow b{font-size:13px;color:#14382A}
+.bandrow input,.bandrow select,#ajPhone{border:1.5px solid #e2d9b8;border-radius:10px;padding:10px;font-size:15px;background:#fff;width:100%;box-sizing:border-box}
+.bandnums{display:grid;grid-template-columns:1.2fr 1fr .8fr;gap:6px}
+.bandres{font-weight:800;color:#14563A;font-size:14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ajak{background:#fff;border:2px solid #C9A227;border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.ajak .ajt{font-size:16px;color:#14563A}
+.wabtn{background:#25D366;color:#fff;font-weight:800;border:0;border-radius:12px;padding:13px;font-size:15px;cursor:pointer}
+.ajstats{display:flex;justify-content:space-between;font-size:12px;color:#556;background:#FFF8E1;border-radius:10px;padding:8px 10px;gap:6px}
+#home > p.fine{display:none}
+#home > div:has(#deals),#home > div:has(#popular){display:none!important}
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
@@ -270,8 +297,8 @@ body.no-tabs .tabbar{display:none}
 
 <script src="/vendor/supabase.js"></script>
 <script src="/vendor/html5-qrcode.min.js" defer></script>
-<script src="pricesheet.js"></script>
-<script src="lang.js"></script>
+<script src="/pricesheet.js"></script>
+<script src="/lang.js"></script>
 </head><body>
 <div class="app">
   <header class="hero">
@@ -1431,4 +1458,5 @@ async function loadStats(){
 renderHome(); boot().catch(()=>{ show('home'); });
 loadLive().then(renderHome).catch(()=>{ SOURCE='built-in list (database not reachable)'; renderHome(); });
 </script>
+<script src="/extras.js"></script>
 </body></html>

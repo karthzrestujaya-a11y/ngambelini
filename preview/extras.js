@@ -146,5 +146,87 @@ const ss = $('wsSnap'); if(ss){ ss.style.display = 'none'; }
 const sc = $('snapCard'); if(sc){ sc.style.display = 'none'; }
 window.loadSnap = function(){};
 
+// ---- Paste any Shopee link -> item page with Buy through NBN (21 Oct 2026) ----
+add('en', { pasteBtn:'📋 Paste Shopee link', pasteHelp:'Tap and hold the box, then tap Paste.', linkTitle:'Your Shopee item', linkSub:'Buy on Shopee as usual. Same price, same seller.',
+  gateT:'Log in to get your cash back', gateS:'Takes 1 minute. No password, just a code to your email.', gateLogin:'Log in', gateSkip:'Continue without cash back', ttlLink:'Item', notShopee:'Please paste a Shopee link.' });
+add('ms', { pasteBtn:'📋 Tampal link Shopee', pasteHelp:'Tekan lama dalam kotak, kemudian tekan Paste.', linkTitle:'Barang Shopee anda', linkSub:'Beli di Shopee macam biasa. Harga sama, kedai sama.',
+  gateT:'Log masuk untuk dapat duit balik', gateS:'1 minit sahaja. Tiada kata laluan, hanya kod ke emel anda.', gateLogin:'Log masuk', gateSkip:'Teruskan tanpa duit balik', ttlLink:'Barang', notShopee:'Sila tampal link Shopee.' });
+
+const lp = mk('section', 'view', ''); lp.id = 'linkpage'; lp.hidden = true; lp.style.cssText = 'flex-direction:column;gap:12px';
+sec.after(lp);
+const gate = mk('div', '', ''); gate.id = 'nbnGate';
+gate.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-end;justify-content:center;z-index:999';
+gate.innerHTML = `<div style="background:#fff;border-radius:20px 20px 0 0;padding:20px 18px 26px;width:100%;max-width:520px;display:flex;flex-direction:column;gap:10px">
+  <b style="font-size:17px;color:#14563A" id="gT"></b><p class="fine" style="margin:0" id="gS"></p>
+  <button type="button" class="btn-wide" id="gLogin"></button>
+  <button type="button" class="link" id="gSkip" style="align-self:center;font-weight:700;padding:6px"></button></div>`;
+document.body.appendChild(gate);
+gate.addEventListener('click', e => { if(e.target === gate) gate.style.display = 'none'; });
+
+let CUR = null;   // { url, name, href }
+async function resolveLink(url){
+  if(!(sb && USER)) return null;
+  try{ const { data } = await sb.functions.invoke('resolve-link', { body: { link: url } }); return data || null; }catch(e){ return null; }
+}
+function buyHref(){ return shopeeAff(CUR.full || CUR.url); }
+function openLinkPage(url){
+  const name = (typeof nameFromLink === 'function' ? nameFromLink(url) : '') || '';
+  CUR = { url, name, full: /^(https?:\/\/)?(s\.|my\.shp\.ee|shp\.ee|shope\.ee)/i.test(url) ? '' : url };
+  lp.innerHTML = `<button class="back" type="button" data-go="home">${t('back')}</button>
+    <div class="bandrow" style="gap:6px"><span style="font-size:30px">🛍️</span><b style="font-size:16px" id="lpName">${name || tt('linkTitle')}</b>
+    <span class="fine" style="word-break:break-all">${url.replace(/^https?:\/\//,'').slice(0,60)}</span></div>
+    <p class="muted" style="margin:0">${tt('linkSub')}</p>
+    <div class="cbbadge">${tt('cbAvail')}</div>
+    <a class="btn Shopee primary" id="lpBuy" target="_blank" rel="noopener">${tt('bandBuyBtn')}</a>
+    <button type="button" class="bandadd" id="lpAdd">${tt('bandAdd')}</button>
+    <p class="fine" style="margin:0">${tt('smallNote')}</p>`;
+  const buy = lp.querySelector('#lpBuy'); buy.href = buyHref();
+  buy.addEventListener('click', e => {
+    if(sb && !USER){ e.preventDefault(); openGate(); return; }
+    buy.href = buyHref();
+    try{ track('buy', 'link ' + (CUR.name || CUR.url).slice(0,80)); }catch(_){}
+    if(sb && USER){ sb.from('clicks').insert({ user_id: USER.id, platform: 'shopee', search_term: (CUR.name || CUR.url).slice(0,120), saving_rm: 0 }).then(()=>{}); }
+    lsS('nbn-pending', null);
+  });
+  lp.querySelector('#lpAdd').onclick = () => openBanding({ link: url, name: CUR.name });
+  show('linkpage'); try{ track('compare', 'link'); }catch(e){}
+  resolveLink(url).then(d => { if(!d || CUR.url !== url) return; if(d.resolved) CUR.full = d.resolved; if(d.name){ CUR.name = d.name; const n = $('lpName'); if(n) n.textContent = d.name; } buy.href = buyHref(); });
+}
+function openGate(){
+  $('gT').textContent = tt('gateT'); $('gS').textContent = tt('gateS'); $('gLogin').textContent = tt('gateLogin'); $('gSkip').textContent = tt('gateSkip');
+  gate.style.display = 'flex';
+  $('gLogin').onclick = () => { gate.style.display = 'none'; lsS('nbn-pending', CUR.url); goLogin(); };
+  $('gSkip').onclick = () => { gate.style.display = 'none'; try{ track('buy', 'link guest'); }catch(e){} lsS('nbn-pending', null); window.open(buyHref(), '_blank'); };
+}
+window.searchLink = async function(link){
+  const m = String(link).match(/https?:\/\/\S+/i) || String(link).match(/\b(?:s\.shopee\.com\.my|shopee\.com\.my|my\.shp\.ee|shp\.ee|shope\.ee)\/\S*/i);
+  if(!m) return false;
+  let url = m[0]; if(!/^https?:/i.test(url)) url = 'https://' + url;
+  let host = ''; try{ host = new URL(url).hostname; }catch(e){ return false; }
+  if(!/shopee\.com\.my|shope\.ee|shp\.ee/i.test(host)){ toast(tt('notShopee')); return true; }
+  $('q').value = ''; $('q').blur(); openLinkPage(url); return true;
+};
+// also catch links typed/pasted without https://
+const oldSearch = window.search;
+window.search = function(term, done){ if(!done && /(shopee\.com\.my|shp\.ee|shope\.ee)\//i.test(term || '')){ window.searchLink(term); return; } return oldSearch(term, done); };
+
+// Paste button under the box (iPhone shows its own "Allow Paste" prompt: that's normal)
+const pb = mk('button', 'bandbtn', `<span>${tt('pasteBtn')}</span><span>›</span>`); pb.type = 'button';
+pb.style.cssText = 'margin-top:8px;justify-content:center;gap:8px;background:#14774A;color:#fff;border-color:#14774A';
+pb.onclick = async () => {
+  try{ const txt = await navigator.clipboard.readText(); if(txt && await window.searchLink(txt)) return; toast(tt('notShopee')); }
+  catch(e){ $('q').focus(); toast(tt('pasteHelp')); }
+};
+$('searchForm').after(pb);
+
+// views: page title + link page visibility; reopen the pasted link after login
+const show2 = window.show;
+window.show = function(view){
+  if(view === 'linkpage'){ show2('home'); ['join','home','results','compare','wallet','me','admin','privacy','banding'].forEach(v => { const e = $(v); if(e) e.hidden = true; });
+    lp.hidden = false; lp.style.display = 'flex'; document.body.classList.remove('on-home'); $('pageTitle').textContent = tt('ttlLink'); document.body.classList.add('has-title'); window.scrollTo(0,0); return; }
+  lp.hidden = true; show2(view);
+  if(view === 'home' && USER){ const p = lsG('nbn-pending'); if(p){ lsS('nbn-pending', null); setTimeout(() => openLinkPage(p), 50); } }
+};
+
 if(typeof applyLang === 'function') applyLang();
 })();

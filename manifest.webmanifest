@@ -2,7 +2,7 @@
   "id": "/",
   "name": "NBN – Ngam Beli Ni",
   "short_name": "NBN",
-  "description": "Same item, cheaper price. Compare Shopee and Lazada prices and get cash back.",
+  "description": "Rezeki kita, kita kongsi. Paste a Shopee link, buy as usual, get cash back.",
   "start_url": "/?source=app",
   "scope": "/",
   "display": "standalone",
