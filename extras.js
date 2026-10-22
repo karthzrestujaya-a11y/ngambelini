@@ -7,20 +7,20 @@ add('en', { yourSavings:'Duit balik keluarga NBN', ttlItem:'Item', ttlBand:'⚖�
   bandSub:'Paste 2–3 Shopee links, then type each price and size.', bandLink:'Shopee link (optional)', bandPrice:'Price (RM)', bandSize:'Size',
   bandMore:'➕ Add link 3', bandBest:'Best value', bandBuy:'👉 Buy link {n}', bandSave:'Save {a} per {u}', bandNeed:'Fill in price and size for at least 2 links.',
   bandBuyBtn:'Buy on Shopee through NBN', cbAvail:'✅ Cash back available for this item', howCb:'❓ How cash back works',
-  tabCash:'💸 Cash back', tabAjak:'🤝 Invite friends', ajakT:'🤝 Invite friends, share the rezeki', ajakSub:'RM1 thank-you when your friend buys for the first time (min RM20, max 5 a day)',
+  tabCash:'💸 Cash back', tabAjak:'🤝 Invite friends', ajakT:'🤝 Invite friends, share the rezeki', ajakSub:'Earn 10% of the cash back your friend gets (20% if their first order is RM100+, max RM5). First order min RM30, up to 5 friends a day',
   ajakPh:'Friend\'s phone: 01x-xxxxxxx', ajakSend:'📲 Send invite on WhatsApp', ajakPick:'or choose a friend in WhatsApp', ajakToday:'Today: {n}/5', ajakJoined:'Joined: {n}', ajakReward:'Reward: {a}',
   ajakLogin:'Log in to get your invite link', ajakMax:'You have sent 5 invites today. Try again tomorrow 🙏', ajakHowT:'How it works',
-  ajakH1:'Send an invite to a friend', ajakH2:'Your friend signs up and buys for the first time (min RM20)', ajakH3:'When Shopee confirms the order, you get RM1',
+  ajakH1:'Send an invite to a friend', ajakH2:'Your friend signs up and buys for the first time (min RM30)', ajakH3:'When Shopee confirms the order and pays us, your reward is added. Little by little, it adds up 🌱',
   ajakMsg:'Hi! I use *NBN – Ngam Beli Ni* 🛒\nShop on Shopee as usual, but get *cash back*. Free!\n👉 {link}\nRezeki kita, kita kongsi 🤝', smallNote:'Pilot. Prices checked by hand. We share part of our commission with you.' });
 add('ms', { yourSavings:'Duit balik keluarga NBN', ttlItem:'Barang', ttlBand:'⚖️ Banding harga seunit', ttlJoin:'Log masuk',
   bandBtn:'⚖️ Banding saiz / kedai (harga seunit)', bandAdd:'➕ Ada saiz / kedai lain? Tambah link untuk banding',
   bandSub:'Tampal 2–3 link Shopee, kemudian taip harga dan saiz.', bandLink:'Link Shopee (pilihan)', bandPrice:'Harga (RM)', bandSize:'Saiz',
   bandMore:'➕ Tambah link ke-3', bandBest:'Paling jimat', bandBuy:'👉 Beli link {n}', bandSave:'Jimat {a} se{u}', bandNeed:'Isi harga dan saiz untuk sekurang-kurangnya 2 link.',
   bandBuyBtn:'Beli di Shopee melalui NBN', cbAvail:'✅ Duit balik tersedia untuk barang ini', howCb:'❓ Macam mana duit balik berfungsi',
-  tabCash:'💸 Duit balik', tabAjak:'🤝 Ajak kawan', ajakT:'🤝 Ajak kawan, kongsi rezeki', ajakSub:'RM1 terima kasih bila kawan anda beli kali pertama (min RM20, maks 5 sehari)',
+  tabCash:'💸 Duit balik', tabAjak:'🤝 Ajak kawan', ajakT:'🤝 Ajak kawan, kongsi rezeki', ajakSub:'Dapat 10% daripada duit balik kawan anda (20% jika pesanan pertama RM100+, maks RM5). Pesanan pertama min RM30, sehingga 5 kawan sehari',
   ajakPh:'No. telefon kawan: 01x-xxxxxxx', ajakSend:'📲 Hantar jemputan di WhatsApp', ajakPick:'atau pilih kawan dalam WhatsApp', ajakToday:'Hari ini: {n}/5', ajakJoined:'Berjaya: {n}', ajakReward:'Ganjaran: {a}',
   ajakLogin:'Log masuk untuk dapat link jemputan anda', ajakMax:'Anda dah hantar 5 jemputan hari ini. Cuba esok 🙏', ajakHowT:'Macam mana ia berfungsi',
-  ajakH1:'Hantar jemputan kepada kawan', ajakH2:'Kawan daftar & beli kali pertama (min RM20)', ajakH3:'Bila Shopee sahkan pesanan, anda dapat RM1',
+  ajakH1:'Hantar jemputan kepada kawan', ajakH2:'Kawan daftar & beli kali pertama (min RM30)', ajakH3:'Bila Shopee sahkan pesanan dan bayar kami, ganjaran anda masuk. Sikit-sikit, lama-lama jadi bukit 🌱',
   ajakMsg:'Hi! Aku guna *NBN – Ngam Beli Ni* 🛒\nBeli kat Shopee macam biasa, tapi dapat *duit balik*. Percuma!\n👉 {link}\nRezeki kita, kita kongsi 🤝', smallNote:'Pilot. Harga disemak dengan tangan. Kami kongsi sebahagian komisen dengan anda.' });
 ['ta','zh'].forEach(l => add(l, { yourSavings:'Duit balik keluarga NBN' }));
 
