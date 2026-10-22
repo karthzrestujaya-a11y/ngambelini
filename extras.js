@@ -286,19 +286,19 @@ sb2.style.marginTop = '10px'; sb2.onclick = openStores; hb.after(sb2);
 
 // ---- 22 Oct: Shop by category (items picked from Shopee affiliate offers, data in /cats.json) ----
 add('en', { catT:'🛒 Shop by category', catSub:'Popular items with cash back. Tap to buy on Shopee.', catNote:'Prices from Shopee, checked {d}. Price may change: Shopee shows the final price. Cash back is an estimate, paid after Shopee confirms the order.',
-  catCb:'💸 Cash back ~{a}', catBuy:'Buy on Shopee', catSold:'{n} sold', catLoad:'Loading…', catErr:'Could not load. Check your internet and try again.',
+  catCb:'💸 Est. cash back ~{a}', catCbNo:'💸 Cash back available', catBuy:'Buy on Shopee', catSold:'{n} sold', catLoad:'Loading…', catErr:'Could not load. Check your internet and try again.',
   c_xtra:'🔥 Highest cash back', c_laris:'⭐ Best sellers', c_dapur:'🍚 Kitchen', c_bayi:'👶 Baby & kids', c_rumah:'🏠 Home', c_cantik:'💄 Health & beauty', c_elektrik:'⚡ Appliances', c_dobi:'🧺 Laundry & cleaning', c_kereta:'🚗 Car', c_sekolah:'🎒 School', c_raya:'🪔 Deepavali' });
 add('ms', { catT:'🛒 Beli ikut kategori', catSub:'Barang popular yang ada duit balik. Tekan untuk beli di Shopee.', catNote:'Harga dari Shopee, disemak {d}. Harga boleh berubah: harga akhir ikut Shopee. Duit balik ialah anggaran, dibayar selepas Shopee sahkan pesanan.',
-  catCb:'💸 Duit balik ~{a}', catBuy:'Beli di Shopee', catSold:'{n} terjual', catLoad:'Sedang buka…', catErr:'Tak dapat buka. Semak internet dan cuba lagi.',
+  catCb:'💸 Anggaran duit balik ~{a}', catCbNo:'💸 Ada duit balik', catBuy:'Beli di Shopee', catSold:'{n} terjual', catLoad:'Sedang buka…', catErr:'Tak dapat buka. Semak internet dan cuba lagi.',
   c_xtra:'🔥 Duit balik tinggi', c_laris:'⭐ Paling laris', c_dapur:'🍚 Dapur', c_bayi:'👶 Bayi & kanak-kanak', c_rumah:'🏠 Rumah', c_cantik:'💄 Kesihatan & kecantikan', c_elektrik:'⚡ Elektrik', c_dobi:'🧺 Dobi & cuci', c_kereta:'🚗 Kereta', c_sekolah:'🎒 Sekolah', c_raya:'🪔 Deepavali' });
 ['ta','zh'].forEach(l => add(l, Object.assign({}, L.en, L[l] || {}, { yourSavings:'Duit balik keluarga NBN' })));
-const CATS = ['xtra','laris','dapur','bayi','rumah','cantik','elektrik','dobi'];
+const CATS = ['xtra','laris','raya','dapur','bayi','rumah','cantik','elektrik','dobi'];
 let CATDATA = null;
 const rm = v => 'RM' + (v < 10 ? v.toFixed(2) : v.toFixed(v % 1 ? 2 : 0));
 const soldTxt = n => n >= 1000 ? (Math.floor(n/100)/10).toString().replace(/\.0$/,'') + 'k+' : String(n);
 async function catData(){ if(CATDATA) return CATDATA; const r = await fetch('/cats.json?v=' + (window.CATV || 1)); CATDATA = await r.json(); return CATDATA; }
 function catCard(x, key){
-  const cb = x.p * x.cr / 100 * CUSTOMER_SHARE;
+  const cb = x.p * x.cr / 100 * CUSTOMER_SHARE; const cbShow = Math.floor(cb * 10 + 1e-9) / 10;
   const img = 'https://down-my.img.susercontent.com/file/' + x.img + '_tn';
   const disc = x.d > 0 && x.pb > x.p ? `<s style="color:#9aa39d;font-size:12px;margin-left:6px">${rm(x.pb)}</s><span style="color:#D0021B;font-size:12px;font-weight:800;margin-left:4px">-${x.d}%</span>` : '';
   return `<div style="display:flex;gap:10px;background:#fff;border:1.5px solid #EDE3C3;border-radius:14px;padding:10px">
@@ -308,7 +308,7 @@ function catCard(x, key){
       <div><b style="color:#EE4D2D;font-size:16px">${rm(x.p)}</b>${disc}</div>
       <div style="font-size:11.5px;color:#5b665f">⭐ ${x.r.toFixed(1)} · ${tt('catSold',{n:soldTxt(x.sold)})}${x.mall ? ' · <b style="color:#D0011B">Mall</b>' : ''}</div>
       <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:2px">
-        <span style="font-size:12px;font-weight:800;color:#14774A;background:#E8F6EE;border-radius:8px;padding:3px 7px">${tt('catCb',{a:rm(Math.max(cb,0.01))})}</span>
+        <span style="font-size:12px;font-weight:800;color:#14774A;background:#E8F6EE;border-radius:8px;padding:3px 7px">${cbShow >= 0.1 ? tt('catCb',{a:rm(cbShow)}) : tt('catCbNo')}</span>
         <button type="button" data-cbuy="${x.id}" data-ck="${key}" style="border:0;background:#EE4D2D;color:#fff;font-weight:800;font-size:13px;border-radius:10px;padding:8px 10px;cursor:pointer;white-space:nowrap">${tt('catBuy')} ›</button>
       </div></div></div>`;
 }
