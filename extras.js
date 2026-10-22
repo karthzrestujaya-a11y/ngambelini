@@ -302,7 +302,7 @@ function catCard(x, key){
   const img = 'https://down-my.img.susercontent.com/file/' + x.img + '_tn';
   const disc = x.d > 0 && x.pb > x.p ? `<s style="color:#9aa39d;font-size:12px;margin-left:6px">${rm(x.pb)}</s><span style="color:#D0021B;font-size:12px;font-weight:800;margin-left:4px">-${x.d}%</span>` : '';
   return `<div style="display:flex;gap:10px;background:#fff;border:1.5px solid #EDE3C3;border-radius:14px;padding:10px">
-    <img src="${img}" alt="" loading="lazy" referrerpolicy="no-referrer" style="width:84px;height:84px;border-radius:10px;object-fit:cover;flex:none;background:#F3EED9">
+    <img src="${img}" alt="" referrerpolicy="no-referrer" style="width:84px;height:84px;border-radius:10px;object-fit:cover;flex:none;background:#F3EED9">
     <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
       <div style="font-size:13px;font-weight:700;color:#1d2a22;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${x.n.replace(/</g,'&lt;')}</div>
       <div><b style="color:#EE4D2D;font-size:16px">${rm(x.p)}</b>${disc}</div>
