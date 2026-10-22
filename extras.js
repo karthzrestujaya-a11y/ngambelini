@@ -257,6 +257,33 @@ bb.after(hb);
 // also on the log-in page, under the form
 if($('joinForm')){ const hj = hb.cloneNode(true); hj.onclick = openHow; $('joinForm').after(hj); }
 
+// ---- 22 Oct: "Kedai lain" page (coming soon), split by cash back ----
+add('en', { storesBtn:'🏬 Other shops (coming soon)', storesT:'Other shops', storesLive:'Live now', storesCb:'✅ With cash back · coming soon', storesNo:'❌ No cash back · price check only · coming soon',
+  storesNote:'Today NBN works with Shopee only. Other shops will be added step by step. Cash back depends on each shop\'s rules.', storesActive:'Cash back · active', storesSoon:'Coming soon' });
+add('ms', { storesBtn:'🏬 Kedai lain (akan datang)', storesT:'Kedai lain', storesLive:'Aktif sekarang', storesCb:'✅ Ada duit balik · akan datang', storesNo:'❌ Tiada duit balik · semak harga sahaja · akan datang',
+  storesNote:'Buat masa ini NBN guna Shopee sahaja. Kedai lain akan ditambah satu demi satu. Duit balik ikut peraturan setiap kedai.', storesActive:'Duit balik · aktif', storesSoon:'Akan datang' });
+['ta','zh'].forEach(l => add(l, { storesBtn:'🏬 Other shops (coming soon)', storesT:'Other shops', storesLive:'Live now', storesCb:'✅ With cash back · coming soon', storesNo:'❌ No cash back · price check only · coming soon', storesNote:'Today NBN works with Shopee only. Other shops will be added step by step. Cash back depends on each shop\'s rules.', storesActive:'Cash back · active', storesSoon:'Coming soon' }));
+const STORES_CB = [['TikTok Shop','#111111'],["Lotus's",'#00A19B'],['Watsons','#00A3AD'],['Sephora','#111111'],['Zalora','#111111'],['Uniqlo','#E60012'],['H&M','#E50010'],['iHerb','#458500'],['Xiaomi','#FF6900'],['Pets Wonderland','#7A3E9D'],['AliExpress','#E62E04'],['Shein','#111111']];
+const STORES_NO = [['Lazada','#0F146D']];
+function storeChip(n, c, soon){ return `<div style="display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid #EDE3C3;border-radius:14px;padding:10px 12px">
+  <div style="width:40px;height:40px;border-radius:10px;background:${c};color:#fff;font-weight:900;font-size:16px;display:flex;align-items:center;justify-content:center;flex:none">${n.replace(/[^A-Za-z]/g,'').slice(0,2).toUpperCase()}</div>
+  <div style="flex:1;font-weight:800;color:#14563A;font-size:15px">${n}</div><div style="font-size:11px;font-weight:700;color:${soon?'#8A7A3D':'#14774A'};background:${soon?'#FFF6D6':'#E8F6EE'};border-radius:8px;padding:3px 7px">${soon?tt('storesSoon'):tt('storesActive')}</div></div>`; }
+function openStores(){
+  const o = mk('div', '', ''); o.id = 'storesPage';
+  o.style.cssText = 'position:fixed;inset:0;z-index:9990;background:#FFFBEF;overflow:auto;padding:16px 16px 40px';
+  const grid = a => `<div style="display:grid;gap:8px">${a.map(x=>storeChip(x[0],x[1],true)).join('')}</div>`;
+  o.innerHTML = `<div style="max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:14px">
+   <div style="display:flex;align-items:center;gap:10px"><button type="button" id="storesBack" style="border:0;background:#F3EED9;border-radius:50%;width:38px;height:38px;font-size:18px;cursor:pointer">‹</button><h2 style="margin:0;color:#14563A">${tt('storesT')}</h2></div>
+   <div style="font-weight:800;color:#14563A">${tt('storesLive')}</div>${storeChip('Shopee','#EE4D2D',false)}
+   <div style="font-weight:800;color:#14563A;margin-top:6px">${tt('storesCb')}</div>${grid(STORES_CB)}
+   <div style="font-weight:800;color:#8A2B2B;margin-top:6px">${tt('storesNo')}</div>${grid(STORES_NO)}
+   <p class="fine" style="margin:6px 0 0;color:#5b665f;font-size:13px">${tt('storesNote')}</p></div>`;
+  document.body.appendChild(o); o.querySelector('#storesBack').onclick = () => o.remove();
+}
+window.openStores = openStores;
+const sb2 = mk('button', 'bandbtn', `<span data-t="storesBtn">${tt('storesBtn')}</span><span>›</span>`); sb2.type = 'button';
+sb2.style.marginTop = '10px'; sb2.onclick = openStores; hb.after(sb2);
+
 function langPicker(){
   if($('langPick')) return;
   const o = mk('div', '', ''); o.id = 'langPick';
