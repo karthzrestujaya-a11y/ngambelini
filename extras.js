@@ -292,7 +292,7 @@ add('ms', { catT:'🛒 Beli ikut kategori', catSub:'Barang popular yang ada duit
   catCb:'💸 Anggaran duit balik ~{a}', catCbNo:'💸 Ada duit balik', catBuy:'Beli di Shopee', catSold:'{n} terjual', catLoad:'Sedang buka…', catErr:'Tak dapat buka. Semak internet dan cuba lagi.',
   c_xtra:'🔥 Duit balik tinggi', c_laris:'⭐ Paling laris', c_dapur:'🍚 Dapur', c_bayi:'👶 Bayi & kanak-kanak', c_rumah:'🏠 Rumah', c_cantik:'💄 Kesihatan & kecantikan', c_elektrik:'⚡ Elektrik', c_dobi:'🧺 Dobi & cuci', c_kereta:'🚗 Kereta', c_sekolah:'🎒 Sekolah', c_raya:'🪔 Deepavali' });
 ['ta','zh'].forEach(l => add(l, Object.assign({}, L.en, L[l] || {}, { yourSavings:'Duit balik keluarga NBN' })));
-const CATS = ['xtra','laris','raya','dapur','bayi','rumah','cantik','elektrik','dobi'];
+const CATS = ['xtra','laris','dapur','bayi','rumah','cantik','elektrik','dobi'];
 let CATDATA = null;
 const rm = v => 'RM' + (v < 10 ? v.toFixed(2) : v.toFixed(v % 1 ? 2 : 0));
 const soldTxt = n => n >= 1000 ? (Math.floor(n/100)/10).toString().replace(/\.0$/,'') + 'k+' : String(n);
