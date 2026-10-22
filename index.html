@@ -341,6 +341,17 @@ body.no-tabs .tabbar{display:none}
 <script src="/vendor/html5-qrcode.min.js" defer></script>
 <script src="/pricesheet.js"></script>
 <script src="/lang.js"></script>
+<style id="richsoon">
+.soon-hero{background:linear-gradient(135deg,#C9A227,#F7E08A 50%,#C9A227);color:#0F5C39;border-radius:22px;padding:16px;box-shadow:0 10px 24px rgba(201,162,39,.35)}
+.soon-hero b{font-size:18px;display:block}.soon-hero span{font-size:13px;font-weight:500}
+.soon-card{background:var(--surface,#fff);border:1px solid #efe3b3;border-radius:20px;padding:14px;box-shadow:0 6px 18px rgba(20,86,58,.10)}
+.soon-row{display:flex;gap:12px;align-items:center}
+.soon-ic{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;flex:none;background:linear-gradient(135deg,#E8F5EE,#fff);border:1px solid #cfe8da}
+.soon-t{font-weight:700;color:#14563A;font-size:14.5px}.soon-d{font-size:12px;opacity:.75;margin-top:1px}
+.soon-pill{margin-left:auto;background:linear-gradient(135deg,#F7E08A,#C9A227);color:#0F5C39;font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:99px;white-space:nowrap}
+.soon-shops{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}.soon-shops i{font-style:normal;font-size:11.5px;font-weight:700;padding:6px 10px;border-radius:10px;background:#E3F4EA;border:1px solid #8fcfaa;color:#14563A}
+.tabbar{box-shadow:0 -6px 18px rgba(20,86,58,.08)}
+</style>
 </head><body>
 <div class="app">
   <header class="hero">
@@ -620,6 +631,7 @@ body.no-tabs .tabbar{display:none}
     <p>We may earn a commission when you buy through our links. You never pay extra. A share of what we earn on your confirmed orders comes back to you as cash back.</p>
   </section>
 
+<section id="soon" class="view" hidden style="flex-direction:column;gap:12px"><div class="soon-hero"><b>More coming your way ✨</b><span>We are building these for you, step by step. Rezeki kita, kita kongsi.</span></div><div class="soon-card"><div class="soon-row"><div class="soon-ic">🏬</div><div><div class="soon-t">More shops</div><div class="soon-d">Buy from more shops, one app</div></div><div class="soon-pill">SOON</div></div><div class="soon-shops"><i>Lazada</i><i>TikTok Shop</i></div></div><div class="soon-card"><div class="soon-row"><div class="soon-ic">⚖️</div><div><div class="soon-t">Compare prices across shops</div><div class="soon-d">See the same item side by side</div></div><div class="soon-pill">SOON</div></div></div><div class="soon-card"><div class="soon-row"><div class="soon-ic">🔔</div><div><div class="soon-t">Price alerts</div><div class="soon-d">We tell you when it gets cheaper</div></div><div class="soon-pill">SOON</div></div></div><div class="soon-card"><div class="soon-row"><div class="soon-ic">📸</div><div><div class="soon-t">Snap &amp; Earn</div><div class="soon-d">Share a shelf price, get rewarded</div></div><div class="soon-pill">SOON</div></div></div><div class="soon-card"><div class="soon-row"><div class="soon-ic">🛒</div><div><div class="soon-t">Auto-buy regular items</div><div class="soon-d">Never forget your monthly basics</div></div><div class="soon-pill">LATER</div></div></div></section>
   <!-- COMPARE -->
   <section id="compare" class="view" hidden style="flex-direction:column;gap:12px"></section>
 </div>
@@ -627,6 +639,7 @@ body.no-tabs .tabbar{display:none}
   <button type="button" id="tabHome" class="on"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span data-t="tabHome">Home</span></button>
   
   <button type="button" id="tabSave"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.5 9.5h4a1.7 1.7 0 0 1 0 3.4h-3a1.7 1.7 0 0 0 0 3.4h4"/></svg><span data-t="tabSave">Earnings</span></button>
+  <button type="button" id="tabSoon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 16l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/></svg><span>Coming soon</span></button>
   <button type="button" id="tabMe"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span data-t="tabMe">Me</span></button>
 </nav>
 <div class="toast" id="toast" hidden></div>
@@ -728,10 +741,10 @@ function save(){ try{ localStorage.setItem('nbn-test', JSON.stringify(state)); }
 
 let LASTVIEW = 'home';
 function show(view){
-  for(const v of ['join','home','results','compare','wallet','me','admin','privacy']){ const el=$(v); el.hidden = v!==view; if(v===view) el.style.display='flex'; }
+  for(const v of ['join','home','results','compare','wallet','me','admin','privacy','soon']){ const el=$(v); el.hidden = v!==view; if(v===view) el.style.display='flex'; }
   document.body.classList.toggle('on-home', view==='home');
   const gb=$('guestBar'); if(gb){ gb.hidden = !(view==='home' && sb && !USER); if(!gb.hidden){ gb.style.display='flex'; $('guestTxt').textContent = GUEST_TXT[LANG] || GUEST_TXT.en; } }
-  const PT = { wallet: () => t('yourSavings') + ($('savMonth').textContent ? ' ' + $('savMonth').textContent : ''), me: () => t('me'), admin: () => 'Admin', results: () => t('tabHome') };
+  const PT = { wallet: () => t('yourSavings') + ($('savMonth').textContent ? ' ' + $('savMonth').textContent : ''), me: () => t('me'), soon: () => 'Coming soon', admin: () => 'Admin', results: () => t('tabHome') };
   $('pageTitle').textContent = PT[view] ? PT[view]() : ''; document.body.classList.toggle('has-title', !!PT[view]);
   document.body.classList.toggle('no-tabs', view==='join' || view==='admin');
   if(view !== 'privacy') LASTVIEW = view;
@@ -1091,13 +1104,14 @@ function browseTag(c){
   $('elsewhere').hidden = true;
   show('results');
 }
-function setTab(id){ ['tabHome','tabSave','tabMe'].forEach(t=>$(t).classList.toggle('on', t===id)); }
+function setTab(id){ ['tabHome','tabSave','tabSoon','tabMe'].forEach(t=>$(t).classList.toggle('on', t===id)); }
 $('tabHome').onclick = () => { setTab('tabHome'); show('home'); };
 $('sfPhoto').onclick = () => { $('scanFail').hidden = true; $('photoBtn').click(); };
 $('sfType').onclick = () => { $('scanFail').hidden = true; $('q').focus(); };
 // Hide the 'coming soon' store badge inside the installed app (store/TWA or home-screen app).
 if(window.matchMedia && matchMedia('(display-mode: standalone)').matches || document.referrer.startsWith('android-app://')) document.querySelectorAll('.storesoon').forEach(e=>e.hidden=true);
 $('tabSave').onclick = () => { setTab('tabSave'); show('wallet'); loadSnap(); renderTabung(window.__tbRows||[]); };
+$('tabSoon').onclick = () => { setTab('tabSoon'); show('soon'); };
 $('tbSet').onclick = () => { setTab('tabMe'); show('me'); };
 renderTabung([]);
 $('miniSave').onclick = () => { setTab('tabSave'); show('wallet'); loadSnap(); };
