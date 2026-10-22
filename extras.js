@@ -228,5 +228,53 @@ window.show = function(view){
   if(view === 'home' && USER){ const p = lsG('nbn-pending'); if(p){ lsS('nbn-pending', null); setTimeout(() => openLinkPage(p), 50); } }
 };
 
+// ---- 22 Oct: choose language after first log in + new "How to use" video ----
+add('en', { howBtn:'▶️ How to use NBN (short video)', howT:'How to use NBN', pickT:'Choose your language' });
+add('ms', { howBtn:'▶️ Cara guna NBN (video pendek)', howT:'Cara guna NBN', pickT:'Pilih bahasa anda' });
+add('ta', { howBtn:'▶️ How to use NBN (short video)', howT:'How to use NBN', pickT:'Choose your language' });
+add('zh', { howBtn:'▶️ How to use NBN (short video)', howT:'How to use NBN', pickT:'Choose your language' });
+const HOWV = 3; // bump when the video files change
+const howSrc = () => '/howto/NBN_howto_v' + HOWV + '_' + (LANG === 'ms' ? 'ms' : 'en') + '.mp4';
+// old login-page video (18 Oct) is retired
+if($('howto')) $('howto').remove();
+
+function openHow(){
+  const o = mk('div', 'nbnHow', `<div class="nbnHowBox"><div class="nbnHowTop"><b>${tt('howT')}</b><button type="button" aria-label="Close">✕</button></div>
+    <video controls playsinline autoplay src="${howSrc()}" poster="/howto/poster_v${HOWV}_${LANG==='ms'?'ms':'en'}.jpg"></video></div>`);
+  o.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(10,40,25,.82);display:flex;align-items:center;justify-content:center;padding:16px';
+  const box = o.firstChild; box.style.cssText = 'background:#fff;border-radius:18px;padding:12px;width:100%;max-width:360px;display:flex;flex-direction:column;gap:10px';
+  const top = box.firstChild; top.style.cssText = 'display:flex;justify-content:space-between;align-items:center;color:#14563A;font-size:16px';
+  top.lastChild.style.cssText = 'border:0;background:#F3EED9;border-radius:50%;width:34px;height:34px;font-size:16px;cursor:pointer';
+  const v = box.querySelector('video'); v.style.cssText = 'width:100%;border-radius:12px;background:#0F5C39;aspect-ratio:9/16;max-height:70vh';
+  const close = () => { try{ v.pause(); }catch(e){} o.remove(); };
+  top.lastChild.onclick = close; o.onclick = e => { if(e.target === o) close(); };
+  document.body.appendChild(o);
+}
+window.openHow = openHow;
+const hb = mk('button', 'bandbtn', `<span data-t="howBtn">${tt('howBtn')}</span><span>›</span>`); hb.type = 'button';
+hb.style.marginTop = '10px'; hb.onclick = openHow;
+bb.after(hb);
+// also on the log-in page, under the form
+if($('joinForm')){ const hj = hb.cloneNode(true); hj.onclick = openHow; $('joinForm').after(hj); }
+
+function langPicker(){
+  if($('langPick')) return;
+  const o = mk('div', '', ''); o.id = 'langPick';
+  o.style.cssText = 'position:fixed;inset:0;z-index:9998;background:linear-gradient(160deg,#C99A2E,#F3DE8A 55%,#fff 55%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px';
+  o.innerHTML = `<div style="font-size:44px">🤝</div><div style="font-size:24px;font-weight:900;color:#14563A;text-align:center">Choose your language<br><span style="font-size:18px">Pilih bahasa anda</span></div>`;
+  for(const k in NBN_LANGS){
+    const b = mk('button', '', NBN_LANGS[k].name); b.type = 'button';
+    b.style.cssText = 'width:100%;max-width:320px;padding:16px;border-radius:14px;border:2px solid #14774A;background:#fff;color:#14563A;font-size:18px;font-weight:800;cursor:pointer';
+    b.onclick = () => { LANG = k; lsS('nbn_lang', k); lsS('nbn-lang-chosen', '1'); applyLang(); o.remove(); };
+    o.appendChild(b);
+  }
+  document.body.appendChild(o);
+}
+const show3 = window.show;
+window.show = function(view){
+  show3(view);
+  if(view === 'home' && USER && lsG('nbn-lang-chosen') !== '1') langPicker();
+};
+
 if(typeof applyLang === 'function') applyLang();
 })();
