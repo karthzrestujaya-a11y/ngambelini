@@ -283,6 +283,8 @@ function openStores(){
 window.openStores = openStores;
 const sb2 = mk('button', 'bandbtn', `<span data-t="storesBtn">${tt('storesBtn')}</span><span>›</span>`); sb2.type = 'button';
 sb2.style.marginTop = '10px'; sb2.onclick = openStores; hb.after(sb2);
+// v3 launch layout: Shopee only, so hide the compare and other-shops buttons (code kept for later)
+bb.style.display = 'none'; sb2.style.display = 'none';
 
 // ---- 22 Oct: Shop by category (items picked from Shopee affiliate offers, data in /cats.json) ----
 add('en', { catT:'🛒 Shop by category', catSub:'Popular items with cash back. Tap to buy on Shopee.', catNote:'Prices from Shopee, checked {d}. Price may change: Shopee shows the final price. Cash back is an estimate, paid after Shopee confirms the order.',

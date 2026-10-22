@@ -70,6 +70,34 @@ body:not(.on-home) .hero .pagetitle{font-size:19px!important;margin:6px 0 0!impo
 .ajstats{display:flex;justify-content:space-between;font-size:12px;color:#556;background:#FFF8E1;border-radius:10px;padding:8px 10px;gap:6px}
 #home > p.fine{display:none}
 #home > div:has(#deals),#home > div:has(#popular){display:none!important}
+
+/* ===== v3 layout ===== */
+.v3hide{display:none!important}
+.search .scanbtn{display:none!important}
+.soonapp{background:var(--soft);border-radius:12px;padding:11px 14px;font-size:12px;color:var(--muted)}
+.tabung{display:flex;flex-direction:column;gap:12px}
+.tb-card{position:relative;background:linear-gradient(160deg,#14774A,#0f5c3a);color:#fff;border-radius:22px;padding:16px;min-height:236px;overflow:hidden}
+.tb-txt{position:relative;z-index:2;max-width:58%}
+.tb-txt small{color:#CFE8DA;font-size:12px}
+.tb-big{font-size:32px;font-weight:800;margin:2px 0;line-height:1.1}
+.tb-mn{font-size:12px;color:#FFE98F;font-weight:700;margin-bottom:12px}
+.tb-pills{display:flex;flex-direction:column;gap:6px;font-size:11px;color:#CFE8DA}.tb-pills b{display:block;color:#fff;font-size:14px}
+.tb-jar{position:absolute;right:8px;bottom:4px;width:180px;height:190px;z-index:1}.tb-jar svg{width:100%;height:100%;display:block}
+.tb-ping{position:absolute;right:14px;top:10px;background:#fff;color:#14382A;font-weight:800;font-size:13px;border-radius:14px;padding:6px 10px;box-shadow:0 2px 8px rgba(0,0,0,.18);z-index:3}
+.tb-coin{animation:tbdrop .9s ease-in both}
+@keyframes tbdrop{0%{transform:translateY(-120px);opacity:0}30%{opacity:1}100%{transform:translateY(0)}}
+.tb-pay{background:var(--soft);border-radius:14px;padding:13px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.tb-pay b{font-size:13px;display:block}.tb-pay small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+.tb-btn{background:#D4A52A;color:#3b2a00;border:0;border-radius:10px;padding:10px 14px;font-weight:800;font-size:13px;font-family:var(--body);cursor:pointer;white-space:nowrap}
+.tb-h{font-size:15px;margin:4px 2px 0}
+.tb-orders{display:flex;flex-direction:column;gap:8px}
+.tb-o{border:1px solid var(--line);border-radius:14px;padding:11px 12px;display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13px}
+.tb-o .n{font-weight:600;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tb-o small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+.tb-o .r{font-weight:800;text-align:right;white-space:nowrap}
+.tb-s{display:inline-block;font-size:10px;font-weight:700;border-radius:99px;padding:3px 8px;margin-top:4px}
+.tb-s.w{background:#FFF1D6;color:#6A4200}.tb-s.c{background:#E3F1E8;color:#0B6B3F}.tb-s.p{background:#dfe8f7;color:#1A3A6B}
+.tb-empty{color:var(--muted);font-size:13px;padding:10px 2px}
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
@@ -355,9 +383,9 @@ body.no-tabs .tabbar{display:none}
     </ol>
     <div id="guestBar" class="note" hidden style="display:flex;align-items:center;gap:10px;justify-content:space-between"><span id="guestTxt">💰 Try it free. Log in only when you want cash back.</span><button class="sbtn" type="button" id="guestLogin">Log in</button></div>
     <button type="button" class="minisave" id="miniSave" aria-label="Your savings and cash back">
-      <span class="ms-top"><span class="ms-coin">💰</span><span style="display:flex;flex-direction:column;align-items:flex-start"><span class="ml" data-t="savedMonth">You saved this month</span><span class="mv num" id="savedMini">RM0.00</span></span></span>
-      <span class="ms-row"><span class="k" data-t="cbReward">🎁 Cash back reward</span><span class="v num" id="retMini">RM0.00</span></span>
-      <span class="ms-cta" data-t="startSaving">Start saving ›</span>
+      <span class="ms-top"><span class="ms-coin">💰</span><span style="display:flex;flex-direction:column;align-items:flex-start"><span class="ml" data-t="tbName">Cash back jar</span><span class="mv num" id="savedMini">RM0.00</span></span></span>
+      <span class="ms-row"><span class="k" data-t="tbWait">Waiting for Shopee</span><span class="v num" id="retMini">RM0.00</span></span>
+      <span class="ms-cta" data-t="tbOpen">Open jar ›</span>
     </button>
     <div id="scanner" hidden>
       <div id="reader"></div>
@@ -371,23 +399,23 @@ body.no-tabs .tabbar{display:none}
     </div>
     <div class="cats" id="cats"></div>
 
-    <div style="display:flex;flex-direction:column;gap:10px">
+    <div class="v3hide" style="display:flex;flex-direction:column;gap:10px">
       <div class="secthead"><h2 data-t="bestDeals">Best deals today</h2><button type="button" class="seeall" id="seeAll" data-t="seeAll">See all</button></div>
       <div class="deals" id="deals"></div>
     </div>
 
 
-    <div style="display:flex;flex-direction:column;gap:10px">
+    <div class="v3hide" style="display:flex;flex-direction:column;gap:10px">
       <div class="top"><h2 data-t="popular">Popular this week</h2><span class="muted" style="font-size:13px" data-t="household">Household</span></div>
       <div class="list" id="popular"></div>
     </div>
 
-    <div id="missedBox" hidden style="display:flex;flex-direction:column;gap:6px">
+    <div id="missedBox" class="v3hide" hidden style="display:flex;flex-direction:column;gap:6px">
       <h2 style="font-size:15px" data-t="missedH">Searches we couldn't find yet</h2>
       <p class="fine" id="missed"></p>
     </div>
     <p class="fine">Pilot preview. Data: <span id="src">loading…</span>. <span id="checkedNote">Prices checked by hand.</span> Buy buttons open Shopee through our partner link. <button class="link" id="reset" type="button">Reset my test data</button></p>
-    <div class="premium" id="premCard"><span class="pm-star">⭐</span><div><b data-t="premTitle">NBN Premium</b><span class="pm-sub" data-t="premShort">Barcode · price alerts · compare all shops</span></div><span class="pm-soon" data-t="premSoon">Coming soon</span></div>
+    <div class="premium v3hide" id="premCard"><span class="pm-star">⭐</span><div><b data-t="premTitle">NBN Premium</b><span class="pm-sub" data-t="premShort">Barcode · price alerts · compare all shops</span></div><span class="pm-soon" data-t="premSoon">Coming soon</span></div>
     <div class="install" id="installCard" hidden>
       <img src="/icons/icon-192.png" alt="" width="40" height="40">
       <div class="t"><b data-t="getApp">Get the NBN app</b><span id="installSub" data-t="getAppSub">Free. Opens full screen from your home screen.</span></div>
@@ -398,7 +426,7 @@ body.no-tabs .tabbar{display:none}
 
   <!-- SAVINGS -->
   <section id="wallet" class="view" hidden style="flex-direction:column;gap:16px">
-    <h1 style="font-size:24px"><span data-t="yourSavings">Your earnings</span> <span id="savMonth" style="font-size:14px;font-weight:600;color:var(--muted)"></span></h1>
+    <h1 style="font-size:24px" hidden><span data-t="yourSavings">Your earnings</span> <span id="savMonth" style="font-size:14px;font-weight:600;color:var(--muted)"></span></h1>
     <div class="seg wseg" id="wSeg"><button type="button" id="wsCash" class="on">💸 Cash back</button><button type="button" id="wsSnap" hidden>📸 Snap &amp; Earn</button></div>
     <div class="snapcard" id="snapCard" hidden>
       <div class="sc-head"><b>📸 Snap &amp; Earn</b><i class="betatag">BETA</i></div>
@@ -412,6 +440,19 @@ body.no-tabs .tabbar{display:none}
       <div class="sc-recent" id="snapRecent"></div>
       <p class="fine" style="margin:0">Rules: real shop photos only (no screenshots) · max 30/day, RM20/month · need at least 1 Shopee order via NBN that month and RM5+ to be paid. <a href="/snap-terms.html" target="_blank">Full terms</a></p>
     </div>
+    <div id="tabung" class="tabung">
+      <div class="tb-card">
+        <div class="tb-txt"><small data-t="tbName">Cash back jar</small><div class="tb-big num" id="tbTotal">RM0.00</div><div class="tb-mn" data-t="tbFull">The fuller, the better!</div>
+          <div class="tb-pills"><div><small data-t="tbWait">Waiting for Shopee</small><b class="num" id="tbWait">RM0.00</b></div><div><small data-t="tbConf">Confirmed</small><b class="num" id="tbConf">RM0.00</b></div><div><small data-t="tbPaid">Paid</small><b class="num" id="tbPaid">RM0.00</b></div></div></div>
+        <div class="tb-jar" id="tbJar"></div>
+        <div class="tb-ping" id="tbPing" hidden>pling!</div>
+      </div>
+      <div class="tb-pay"><div><b data-t="payTitle">Paid to your DuitNow</b><small data-t="paySub">Once you reach RM10, and Shopee has paid us</small></div><button type="button" class="tb-btn" id="tbSet" data-t="paySet">Settings</button></div>
+      <h2 class="tb-h" data-t="ordersH">Your orders</h2>
+      <div class="tb-orders" id="tbOrders"></div>
+      <p class="fine" data-t="tbNote">Amounts are estimates. Shopee confirms orders first (usually 3–5 months). After Shopee pays us, your cash back is paid to your DuitNow.</p>
+    </div>
+    <div hidden>
     <div class="savings" aria-live="polite"><div class="sv-ico"><svg width="68" height="68" viewBox="0 0 68 68" fill="none" aria-hidden="true"><rect x="10" y="44" width="9" height="14" rx="2" fill="#F7E08A"/><rect x="23" y="38" width="9" height="20" rx="2" fill="#E6C35C"/><rect x="36" y="30" width="9" height="28" rx="2" fill="#C9A227"/><rect x="49" y="18" width="9" height="40" rx="2" fill="#B8860B"/><path d="M8 42 C20 38 30 32 46 18" stroke="#FFD95A" stroke-width="3.5" stroke-linecap="round" fill="none"/><path d="M38 15 L50 13 L48 25" stroke="#FFD95A" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/><rect x="34" y="2" width="30" height="12" rx="6" fill="#C8102E"/><text x="49" y="11" font-size="8.5" font-weight="900" text-anchor="middle" fill="#fff" font-family="Arial">RM5</text></svg></div>
       <div class="row"><span class="lbl" data-t="savingsMonth">Savings this month</span><span class="lbl num" id="savedSplit">Confirmed RM0.00 · On the way RM0.00</span></div>
       <div class="row">
@@ -438,6 +479,7 @@ body.no-tabs .tabbar{display:none}
       <p class="fine" style="margin-top:6px"><i data-t="pilotTerms">Pilot terms may change.</i> <button type="button" class="link" id="cbMore" data-t="moreInfo">More info ›</button></p>
       <p class="fine" id="cbMoreText" hidden data-t="cbMore">Savings show as "on the way" right after you tap Buy, and become confirmed when Shopee confirms your order. We pay by DuitNow monthly once your cash back reaches RM5 and Shopee has paid us (usually 1–2 months after delivery); smaller amounts carry forward.</p>
     </div>
+  </div>
   </section>
 
   <!-- ME -->
@@ -446,9 +488,10 @@ body.no-tabs .tabbar{display:none}
     <div class="list">
       <div class="item" style="cursor:default"><div class="t"><span class="sub" data-t="loggedInAs">Logged in as</span><span class="name" id="meEmail" data-t="notLoggedIn">Not logged in</span></div></div>
       <div class="item" style="cursor:default"><div class="t"><span class="sub" data-t="cbPaidTo">Cash back paid to</span><span class="name" data-t="duitnowNo">DuitNow phone number (for all payouts)</span><div class="sc-dn" id="snapDn" style="display:flex;gap:6px;margin-top:6px"><input id="snapDnIn" inputmode="tel" placeholder="012xxxxxxx"><button type="button" class="sbtn" id="snapDnSave">Save</button></div></div></div>
-      <div class="item" style="cursor:default"><div class="t"><span class="sub" data-t="plan">Plan</span><span class="name" data-t="planFree">Free (pilot) · ⭐ Premium coming soon</span></div></div>
+      <div class="item v3hide" style="cursor:default"><div class="t"><span class="sub" data-t="plan">Plan</span><span class="name" data-t="planFree">Free (pilot) · ⭐ Premium coming soon</span></div></div>
       <div class="item" style="cursor:default"><div class="t"><span class="sub" data-t="language">Language</span><span class="langs" id="langs"></span></div></div>
     </div>
+    <div class="soonapp" data-t="storeSoon">📱 Google Play & App Store app: coming soon</div>
     <button class="btn-wide" type="button" id="adminBtn" hidden>Admin: prices and cash back</button>
     <button class="btn-wide" type="button" id="loginBtn" hidden data-t="login">Log in</button>
     <button class="btn-wide" type="button" id="logoutBtn" style="background:var(--soft);color:var(--fg)" data-t="logout">Log out</button>
@@ -568,7 +611,7 @@ body.no-tabs .tabbar{display:none}
 <nav class="tabbar" aria-label="Main">
   <button type="button" id="tabHome" class="on"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span data-t="tabHome">Home</span></button>
   
-  <button type="button" id="tabSave"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg><span data-t="tabSave">Earnings</span></button>
+  <button type="button" id="tabSave"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.5 9.5h4a1.7 1.7 0 0 1 0 3.4h-3a1.7 1.7 0 0 0 0 3.4h4"/></svg><span data-t="tabSave">Earnings</span></button>
   <button type="button" id="tabMe"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span data-t="tabMe">Me</span></button>
 </nav>
 <div class="toast" id="toast" hidden></div>
@@ -700,7 +743,7 @@ function renderHome(){
   if($('savedSplit')) $('savedSplit').textContent = t('confirmedOnway',{a:rm(state.saved),b:rm(state.onway||0)});
   $('orders').textContent = t('confirmedOrders',{n:state.buys});
   $('ret').textContent = t('returnMoney',{a:rm(state.ret)});
-  $('savedMini').textContent = rm(total); $('retMini').textContent = rm(state.ret);
+  
   if($('retPaid')) $('retPaid').textContent = state.paidOut ? t('paidAlready',{a:rm(state.paidOut)}) : t('cbRewardLine');
   const pop = $('popular'); pop.innerHTML = '';
   POPULAR.map(id=>CATALOGUE.find(c=>c.id===id)).filter(Boolean).forEach(it => pop.appendChild(row(it)));
@@ -865,10 +908,45 @@ const GUEST_TOAST = { en:'Opening Shopee. Log in next time to get cash back.', m
 const CUSTOMER_SHARE = 0.40;
 function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
 function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+// ---- Tabung (cash back jar) on the cash back tab ----
+function tbJarSvg(n){
+  let coins=''; const xs=[52,84,116,148], rows=Math.ceil(n/4);
+  for(let k=0;k<n;k++){ const r=Math.floor(k/4), c=k%4, x=xs[c]+(r%2)*8, y=186-r*13, last=(k===n-1);
+    coins+=`<g${last&&window.__tbDrop?' class="tb-coin"':''}><ellipse cx="${x}" cy="${y}" rx="17" ry="8" fill="url(#tc)" stroke="#B57F08" stroke-width="1.5"/><ellipse cx="${x}" cy="${y-2}" rx="10" ry="4" fill="#FFF3B0" opacity=".5"/></g>`; }
+  return `<svg viewBox="0 0 200 210" aria-hidden="true"><defs><linearGradient id="tg" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset=".25" stop-color="#fff" stop-opacity=".12"/><stop offset=".8" stop-color="#fff" stop-opacity=".1"/><stop offset="1" stop-color="#fff" stop-opacity=".4"/></linearGradient><radialGradient id="tc" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#FFEE8A"/><stop offset=".6" stop-color="#F2BA25"/><stop offset="1" stop-color="#C98A0A"/></radialGradient><linearGradient id="tl" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#F7CF4A"/><stop offset=".5" stop-color="#FFE68A"/><stop offset="1" stop-color="#D79B12"/></linearGradient><clipPath id="tj"><path d="M40 52Q28 60 28 84L28 172Q28 196 56 196L144 196Q172 196 172 172L172 84Q172 60 160 52Z"/></clipPath></defs><ellipse cx="100" cy="199" rx="76" ry="9" fill="#000" opacity=".2"/><path d="M40 52Q28 60 28 84L28 172Q28 196 56 196L144 196Q172 196 172 172L172 84Q172 60 160 52Z" fill="#E9FFF3" fill-opacity=".18" stroke="#fff" stroke-opacity=".6" stroke-width="2.5"/><g clip-path="url(#tj)">${coins}</g><path d="M40 52Q28 60 28 84L28 172Q28 196 56 196L144 196Q172 196 172 172L172 84Q172 60 160 52Z" fill="url(#tg)"/><path d="M44 70Q38 80 38 100L38 150" stroke="#fff" stroke-width="6" stroke-linecap="round" opacity=".7" fill="none"/><rect x="34" y="30" width="132" height="28" rx="10" fill="url(#tl)" stroke="#B57F08" stroke-width="2"/><rect x="74" y="40" width="52" height="9" rx="4.5" fill="#6b4600"/><rect x="78" y="42" width="44" height="4.5" rx="2.2" fill="#2a1a00"/><g transform="translate(100,128)"><path d="M0 18C-32 -2-18 -26 0 -10C18 -26 32 -2 0 18Z" fill="#14774A" stroke="#fff" stroke-width="2.5"/><text x="0" y="6" text-anchor="middle" font-family="Segoe UI,Arial" font-weight="800" font-size="9" fill="#fff">NBN</text></g></svg>`;
+}
+function renderTabung(rows){
+  if(!$('tbTotal')) return;
+  rows = rows || [];
+  const share = c => (c.commission_rm != null ? Number(c.commission_rm) : Number(c.price_rm||0)*0.04) * CUSTOMER_SHARE;
+  const real = rows.filter(c => (Number(c.price_rm)>0 || Number(c.commission_rm)>0) && ['waiting','confirmed','received','paid'].includes(c.status));
+  const wait = real.filter(c=>c.status==='waiting').reduce((a,c)=>a+share(c),0);
+  const conf = real.filter(c=>c.status==='confirmed'||c.status==='received').reduce((a,c)=>a+share(c),0);
+  const paid = real.filter(c=>c.status==='paid').reduce((a,c)=>a+share(c),0);
+  const total = wait+conf+paid;
+  const prev = Number(lsGet('nbn-tb-total')||0);
+  window.__tbDrop = total > prev + 0.0049 && prev >= 0 && !!USER && lsGet('nbn-tb-total') !== null;
+  lsSet('nbn-tb-total', String(total));
+  $('tbTotal').textContent = rm(total); $('tbWait').textContent = rm(wait); $('tbConf').textContent = rm(conf); $('tbPaid').textContent = rm(paid);
+  if($('savedMini')) $('savedMini').textContent = rm(total); if($('retMini')) $('retMini').textContent = rm(wait);
+  $('tbJar').innerHTML = tbJarSvg(Math.min(12, Math.round(total/1.5)));
+  if(window.__tbDrop){ $('tbPing').hidden=false; setTimeout(()=>{ $('tbPing').hidden=true; }, 2600); }
+  const L = $('tbOrders'); L.innerHTML = '';
+  if(!real.length){ const e=document.createElement('div'); e.className='tb-empty'; e.textContent = t('tbEmpty'); L.appendChild(e); return; }
+  real.slice().sort((a,b)=>new Date(b.clicked_at)-new Date(a.clicked_at)).slice(0,20).forEach(c=>{
+    const d=document.createElement('div'); d.className='tb-o';
+    const nm=(c.search_term||'Shopee').replace(/^cat:[^:]*:\s*/,'');
+    const cls = c.status==='paid'?'p':(c.status==='waiting'?'w':'c');
+    const lab = c.status==='paid'?t('tbPaid'):(c.status==='waiting'?t('stWait'):t('stConf'));
+    const dt = new Date(c.clicked_at).toLocaleDateString(LANG==='ms'?'ms-MY':'en-GB',{day:'numeric',month:'short'});
+    d.innerHTML = `<div><div class="n"></div><small>Shopee · ${dt}</small><span class="tb-s ${cls}">${lab}</span></div><div class="r">${c.status==='waiting'?'~':''}${rm(share(c))}</div>`;
+    d.querySelector('.n').textContent = nm; L.appendChild(d);
+  });
+}
 async function loadMySavings(){
   if(!sb || !USER) return;
-  let { data, error } = await sb.from('clicks').select('saving_rm, price_rm, clicked_at, confirmed_at, status, commission_rm, paid_at').eq('user_id', USER.id);
-  if(error){ ({ data } = await sb.from('clicks').select('saving_rm, price_rm, clicked_at, confirmed_at, status').eq('user_id', USER.id)); }
+  let { data, error } = await sb.from('clicks').select('saving_rm, price_rm, clicked_at, confirmed_at, status, commission_rm, paid_at, search_term').eq('user_id', USER.id);
+  if(error){ ({ data } = await sb.from('clicks').select('saving_rm, price_rm, clicked_at, confirmed_at, status, search_term').eq('user_id', USER.id)); }
   if(!data) return;
   const m0 = new Date(); m0.setDate(1); m0.setHours(0,0,0,0);
   const week = Date.now() - 7*24*3600*1000;
@@ -882,7 +960,7 @@ async function loadMySavings(){
   const share = c => (c.commission_rm != null ? Number(c.commission_rm) : Number(c.price_rm||0)*0.04) * CUSTOMER_SHARE;
   state.ret = conf.filter(c=>c.status==='confirmed' || c.status==='received').reduce((a,c)=>a+share(c),0);
   state.paidOut = conf.filter(c=>c.status==='paid').reduce((a,c)=>a+share(c),0);
-  renderHome();
+  window.__tbRows = data; renderHome(); renderTabung(data);
   $('orders').textContent = rm(state.allSaved) + ' since joining · ' + conf.length + (conf.length===1?' order':' orders');
   const w = wait.reduce((a,c)=>a+Number(c.saving_rm||0),0);
   $('waiting').removeAttribute('data-t'); $('waiting').textContent = wait.length ? t('waiting',{a:rm(w)}) + ' (' + wait.length + ')' : t('nothingWaiting');
@@ -1004,7 +1082,9 @@ $('sfPhoto').onclick = () => { $('scanFail').hidden = true; $('photoBtn').click(
 $('sfType').onclick = () => { $('scanFail').hidden = true; $('q').focus(); };
 // Hide the 'coming soon' store badge inside the installed app (store/TWA or home-screen app).
 if(window.matchMedia && matchMedia('(display-mode: standalone)').matches || document.referrer.startsWith('android-app://')) document.querySelectorAll('.storesoon').forEach(e=>e.hidden=true);
-$('tabSave').onclick = () => { setTab('tabSave'); show('wallet'); loadSnap(); };
+$('tabSave').onclick = () => { setTab('tabSave'); show('wallet'); loadSnap(); renderTabung(window.__tbRows||[]); };
+$('tbSet').onclick = () => { setTab('tabMe'); show('me'); };
+renderTabung([]);
 $('miniSave').onclick = () => { setTab('tabSave'); show('wallet'); loadSnap(); };
 if($('savMonth')) $('savMonth').textContent = '· ' + new Date().toLocaleString(LANG==='zh'?'zh-CN':LANG==='ta'?'ta-MY':LANG==='ms'?'ms-MY':'en-MY',{month:'long'});
 applyLang();
