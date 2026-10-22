@@ -284,6 +284,67 @@ window.openStores = openStores;
 const sb2 = mk('button', 'bandbtn', `<span data-t="storesBtn">${tt('storesBtn')}</span><span>›</span>`); sb2.type = 'button';
 sb2.style.marginTop = '10px'; sb2.onclick = openStores; hb.after(sb2);
 
+// ---- 22 Oct: Shop by category (items picked from Shopee affiliate offers, data in /cats.json) ----
+add('en', { catT:'🛒 Shop by category', catSub:'Popular items with cash back. Tap to buy on Shopee.', catNote:'Prices from Shopee, checked {d}. Price may change: Shopee shows the final price. Cash back is an estimate, paid after Shopee confirms the order.',
+  catCb:'💸 Cash back ~{a}', catBuy:'Buy on Shopee', catSold:'{n} sold', catLoad:'Loading…', catErr:'Could not load. Check your internet and try again.',
+  c_xtra:'🔥 Highest cash back', c_laris:'⭐ Best sellers', c_dapur:'🍚 Kitchen', c_bayi:'👶 Baby & kids', c_rumah:'🏠 Home', c_cantik:'💄 Health & beauty', c_elektrik:'⚡ Appliances', c_dobi:'🧺 Laundry & cleaning', c_kereta:'🚗 Car', c_sekolah:'🎒 School', c_raya:'🪔 Deepavali' });
+add('ms', { catT:'🛒 Beli ikut kategori', catSub:'Barang popular yang ada duit balik. Tekan untuk beli di Shopee.', catNote:'Harga dari Shopee, disemak {d}. Harga boleh berubah: harga akhir ikut Shopee. Duit balik ialah anggaran, dibayar selepas Shopee sahkan pesanan.',
+  catCb:'💸 Duit balik ~{a}', catBuy:'Beli di Shopee', catSold:'{n} terjual', catLoad:'Sedang buka…', catErr:'Tak dapat buka. Semak internet dan cuba lagi.',
+  c_xtra:'🔥 Duit balik tinggi', c_laris:'⭐ Paling laris', c_dapur:'🍚 Dapur', c_bayi:'👶 Bayi & kanak-kanak', c_rumah:'🏠 Rumah', c_cantik:'💄 Kesihatan & kecantikan', c_elektrik:'⚡ Elektrik', c_dobi:'🧺 Dobi & cuci', c_kereta:'🚗 Kereta', c_sekolah:'🎒 Sekolah', c_raya:'🪔 Deepavali' });
+['ta','zh'].forEach(l => add(l, Object.assign({}, L.en, L[l] || {}, { yourSavings:'Duit balik keluarga NBN' })));
+const CATS = ['xtra','laris','dapur','bayi','rumah','cantik','elektrik','dobi','kereta','sekolah','raya'];
+let CATDATA = null;
+const rm = v => 'RM' + (v < 10 ? v.toFixed(2) : v.toFixed(v % 1 ? 2 : 0));
+const soldTxt = n => n >= 1000 ? (Math.floor(n/100)/10).toString().replace(/\.0$/,'') + 'k+' : String(n);
+async function catData(){ if(CATDATA) return CATDATA; const r = await fetch('/cats.json?v=' + (window.CATV || 1)); CATDATA = await r.json(); return CATDATA; }
+function catCard(x, key){
+  const cb = x.p * x.cr / 100 * CUSTOMER_SHARE;
+  const img = 'https://down-my.img.susercontent.com/file/' + x.img + '_tn';
+  const disc = x.d > 0 && x.pb > x.p ? `<s style="color:#9aa39d;font-size:12px;margin-left:6px">${rm(x.pb)}</s><span style="color:#D0021B;font-size:12px;font-weight:800;margin-left:4px">-${x.d}%</span>` : '';
+  return `<div style="display:flex;gap:10px;background:#fff;border:1.5px solid #EDE3C3;border-radius:14px;padding:10px">
+    <img src="${img}" alt="" loading="lazy" style="width:84px;height:84px;border-radius:10px;object-fit:cover;flex:none;background:#F3EED9">
+    <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+      <div style="font-size:13px;font-weight:700;color:#1d2a22;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${x.n.replace(/</g,'&lt;')}</div>
+      <div><b style="color:#EE4D2D;font-size:16px">${rm(x.p)}</b>${disc}</div>
+      <div style="font-size:11.5px;color:#5b665f">⭐ ${x.r.toFixed(1)} · ${tt('catSold',{n:soldTxt(x.sold)})}${x.mall ? ' · <b style="color:#D0011B">Mall</b>' : ''}</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:2px">
+        <span style="font-size:12px;font-weight:800;color:#14774A;background:#E8F6EE;border-radius:8px;padding:3px 7px">${tt('catCb',{a:rm(Math.max(cb,0.01))})}</span>
+        <button type="button" data-cbuy="${x.id}" data-ck="${key}" style="border:0;background:#EE4D2D;color:#fff;font-weight:800;font-size:13px;border-radius:10px;padding:8px 10px;cursor:pointer;white-space:nowrap">${tt('catBuy')} ›</button>
+      </div></div></div>`;
+}
+async function openCat(key){
+  const o = mk('div', '', ''); o.id = 'catPage';
+  o.style.cssText = 'position:fixed;inset:0;z-index:9990;background:#FFFBEF;overflow:auto;padding:16px 16px 40px';
+  const head = `<div style="display:flex;align-items:center;gap:10px"><button type="button" id="catBack" style="border:0;background:#F3EED9;border-radius:50%;width:38px;height:38px;font-size:18px;cursor:pointer;flex:none">‹</button><h2 style="margin:0;color:#14563A;font-size:20px">${tt('c_' + key)}</h2></div>`;
+  o.innerHTML = `<div style="max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:10px">${head}<p style="margin:0;color:#5b665f">${tt('catLoad')}</p></div>`;
+  document.body.appendChild(o); o.querySelector('#catBack').onclick = () => o.remove();
+  track('cat_open', key);
+  let d; try{ d = await catData(); }catch(e){ o.querySelector('p').textContent = tt('catErr'); return; }
+  const items = (d.cats[key] || []);
+  o.firstChild.innerHTML = head + items.map(x => catCard(x, key)).join('') + `<p class="fine" style="margin:6px 0 0;color:#5b665f;font-size:12.5px">${tt('catNote',{d:d.date})}</p>`;
+  o.querySelector('#catBack').onclick = () => o.remove();
+  o.onclick = e => {
+    const b = e.target.closest('[data-cbuy]'); if(!b) return;
+    const x = items.find(i => i.id === b.dataset.cbuy); if(!x) return;
+    track('cat_buy', key + ':' + x.id);
+    if(sb && USER) sb.from('clicks').insert({ user_id: USER.id, platform: 'Shopee', search_term: ('cat:' + key + ': ' + x.n).slice(0,120), price_rm: x.p, saving_rm: 0 }).then(()=>{});
+    window.open(shopeeAff('https://shopee.com.my/product/' + x.shop + '/' + x.id), '_blank');
+  };
+}
+window.openCat = openCat;
+const catBox = mk('div', '', '');
+catBox.style.cssText = 'margin-top:12px;background:#fff;border:1.5px solid #C9A227;border-radius:16px;padding:12px';
+function drawCats(){
+  const tile = (k, wide) => `<button type="button" data-cat="${k}" style="border:1.5px solid #EDE3C3;background:${wide ? '#FFF6D6' : '#FFFDF6'};border-radius:12px;padding:10px 6px;font-weight:800;font-size:12.5px;color:#14563A;cursor:pointer;line-height:1.25;${wide ? 'grid-column:span 3;font-size:14px;text-align:left;padding:11px 12px' : ''}">${tt('c_' + k)}</button>`;
+  catBox.innerHTML = `<div style="font-weight:900;color:#14563A;font-size:16px">${tt('catT')}</div><div style="font-size:12.5px;color:#5b665f;margin:2px 0 10px">${tt('catSub')}</div>
+   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">${tile('xtra',1)}${tile('laris',1)}${CATS.slice(2).map(k => tile(k)).join('')}</div>`;
+}
+drawCats();
+catBox.onclick = e => { const b = e.target.closest('[data-cat]'); if(b) openCat(b.dataset.cat); };
+$('miniSave').after(catBox);
+const applyLang2 = window.applyLang;
+if(typeof applyLang2 === 'function') window.applyLang = function(){ applyLang2.apply(this, arguments); drawCats(); };
+
 function langPicker(){
   if($('langPick')) return;
   const o = mk('div', '', ''); o.id = 'langPick';
