@@ -292,7 +292,7 @@ add('ms', { catT:'🛒 Beli ikut kategori', catSub:'Barang popular yang ada duit
   catCb:'💸 Duit balik ~{a}', catBuy:'Beli di Shopee', catSold:'{n} terjual', catLoad:'Sedang buka…', catErr:'Tak dapat buka. Semak internet dan cuba lagi.',
   c_xtra:'🔥 Duit balik tinggi', c_laris:'⭐ Paling laris', c_dapur:'🍚 Dapur', c_bayi:'👶 Bayi & kanak-kanak', c_rumah:'🏠 Rumah', c_cantik:'💄 Kesihatan & kecantikan', c_elektrik:'⚡ Elektrik', c_dobi:'🧺 Dobi & cuci', c_kereta:'🚗 Kereta', c_sekolah:'🎒 Sekolah', c_raya:'🪔 Deepavali' });
 ['ta','zh'].forEach(l => add(l, Object.assign({}, L.en, L[l] || {}, { yourSavings:'Duit balik keluarga NBN' })));
-const CATS = ['xtra','laris','dapur','bayi','rumah','cantik','elektrik','dobi','kereta','sekolah','raya'];
+const CATS = ['xtra','laris','dapur','bayi','rumah','cantik','elektrik','dobi'];
 let CATDATA = null;
 const rm = v => 'RM' + (v < 10 ? v.toFixed(2) : v.toFixed(v % 1 ? 2 : 0));
 const soldTxt = n => n >= 1000 ? (Math.floor(n/100)/10).toString().replace(/\.0$/,'') + 'k+' : String(n);
@@ -302,7 +302,7 @@ function catCard(x, key){
   const img = 'https://down-my.img.susercontent.com/file/' + x.img + '_tn';
   const disc = x.d > 0 && x.pb > x.p ? `<s style="color:#9aa39d;font-size:12px;margin-left:6px">${rm(x.pb)}</s><span style="color:#D0021B;font-size:12px;font-weight:800;margin-left:4px">-${x.d}%</span>` : '';
   return `<div style="display:flex;gap:10px;background:#fff;border:1.5px solid #EDE3C3;border-radius:14px;padding:10px">
-    <img src="${img}" alt="" loading="lazy" style="width:84px;height:84px;border-radius:10px;object-fit:cover;flex:none;background:#F3EED9">
+    <img src="${img}" alt="" loading="lazy" referrerpolicy="no-referrer" style="width:84px;height:84px;border-radius:10px;object-fit:cover;flex:none;background:#F3EED9">
     <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
       <div style="font-size:13px;font-weight:700;color:#1d2a22;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${x.n.replace(/</g,'&lt;')}</div>
       <div><b style="color:#EE4D2D;font-size:16px">${rm(x.p)}</b>${disc}</div>
