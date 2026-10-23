@@ -398,7 +398,10 @@ body.on-home .hero .brand .mark{box-shadow:0 4px 14px rgba(0,0,0,.35)!important}
       <p class="fine"><span data-t="agree">By logging in you agree to our</span> <button class="link" type="button" data-go="privacy" data-t="privacy" style="font-size:12px">privacy notice</button>.</p>
     </form>
     <div class="howto" id="howto">
-      <h2 data-t="howTitle">How to use NBN</h2>
+      <h2 data-t="howLogin">How to log in</h2>
+      <video id="loginVid" controls playsinline preload="none"></video>
+      <h2 data-t="howTitle">How to install</h2>
+      <div style="display:flex;gap:8px"><button type="button" class="btn-wide" id="howIos" style="flex:1">iPhone</button><button type="button" class="btn-wide" id="howAnd" style="flex:1;background:#fff;color:#14774a;border:2px solid #14774a">Android</button></div>
       <video id="howVid" controls playsinline preload="none"></video>
       <a id="howPdf" class="btn-wide" style="display:flex;align-items:center;justify-content:center;text-decoration:none" target="_blank" rel="noopener" data-t="howPdf">Download the guide (PDF)</a>
     </div>
@@ -736,7 +739,8 @@ function applyLang(){
   document.querySelectorAll('[data-t]').forEach(el => { el.textContent = t(el.dataset.t); });
   document.querySelectorAll('[data-t-ph]').forEach(el => { el.placeholder = t(el.dataset.tPh); });
   const box = $('langs'); if(box){ box.innerHTML = ''; for(const k in NBN_LANGS){ const b = document.createElement('button'); b.type='button'; b.textContent = NBN_LANGS[k].name; b.className = k===LANG ? 'on' : ''; b.onclick = () => { LANG = k; localStorage.setItem('nbn_lang', k); applyLang(); if(typeof renderHome==='function') renderHome(); }; box.appendChild(b); } }
-  if($('howVid')){ const v=$('howVid'); const src='howto/NBN_howto_'+LANG+'.mp4'; if(v.getAttribute('src')!==src){ v.setAttribute('src',src); v.poster='howto/poster_'+LANG+'.jpg'; v.load(); } $('howPdf').href='howto/NBN_guide_'+LANG+'.pdf'; }
+  if($('loginVid')){ const v=$('loginVid'); const src='howto/NBN_howto_'+LANG+'.mp4'; if(v.getAttribute('src')!==src){ v.setAttribute('src',src); v.poster='howto/poster_'+LANG+'.jpg'; v.load(); } }
+  if($('howVid')){ $('howPdf').href='howto/NBN_guide_'+LANG+'.pdf'; if(!window._howInit){ window._howInit=true; const setHow=k=>{ const v=$('howVid'); const src='howto/NBN_pasang_'+k+'.mp4'; if(v.getAttribute('src')!==src){ v.setAttribute('src',src); v.poster='howto/poster_pasang_'+k+'.jpg'; v.load(); } const on=k==='ios'; $('howIos').style.cssText='flex:1;'+(on?'':'background:#fff;color:#14774a;border:2px solid #14774a'); $('howAnd').style.cssText='flex:1;'+(on?'background:#fff;color:#14774a;border:2px solid #14774a':''); }; $('howIos').onclick=()=>setHow('ios'); $('howAnd').onclick=()=>setHow('and'); setHow(/iPhone|iPad|iPod/i.test(navigator.userAgent)?'ios':'and'); } }
   if(typeof renderHome==='function' && window.CATALOGUE){ try{ renderHome(); }catch(e){} }
   if($('cats')) { $('cats').querySelectorAll('.cat').forEach((b,i) => { const c = CATS[i]; if(c) b.lastChild.textContent = t(c.key); }); }
 }
