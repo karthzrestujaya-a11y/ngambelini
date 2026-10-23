@@ -238,9 +238,10 @@ const howSrc = () => '/howto/NBN_howto_v' + HOWV + '_' + (LANG === 'ms' ? 'ms' :
 // old login-page video (18 Oct) is retired
 if($('howto')) $('howto').remove();
 
-function openHow(){
-  const o = mk('div', 'nbnHow', `<div class="nbnHowBox"><div class="nbnHowTop"><b>${tt('howT')}</b><button type="button" aria-label="Close">✕</button></div>
-    <video controls playsinline autoplay src="${howSrc()}" poster="/howto/poster_v${HOWV}_${LANG==='ms'?'ms':'en'}.jpg"></video></div>`);
+function openHow(src, poster, title){
+  if(typeof src!=='string'){ src=howSrc(); poster='/howto/poster_v'+HOWV+'_'+(LANG==='ms'?'ms':'en')+'.jpg'; title=tt('howT'); }
+  const o = mk('div', 'nbnHow', `<div class="nbnHowBox"><div class="nbnHowTop"><b>${title}</b><button type="button" aria-label="Close">✕</button></div>
+    <video controls playsinline autoplay src="${src}" poster="${poster}"></video></div>`);
   o.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(10,40,25,.82);display:flex;align-items:center;justify-content:center;padding:16px';
   const box = o.firstChild; box.style.cssText = 'background:#fff;border-radius:18px;padding:12px;width:100%;max-width:360px;display:flex;flex-direction:column;gap:10px';
   const top = box.firstChild; top.style.cssText = 'display:flex;justify-content:space-between;align-items:center;color:#14563A;font-size:16px';
@@ -252,10 +253,13 @@ function openHow(){
 }
 window.openHow = openHow;
 const hb = mk('button', 'bandbtn', `<span data-t="howBtn">${tt('howBtn')}</span><span>›</span>`); hb.type = 'button';
-hb.style.marginTop = '10px'; hb.onclick = openHow;
+hb.style.marginTop = '10px'; hb.onclick = () => openHow();
 bb.after(hb);
 // also on the log-in page, under the form
-if($('joinForm')){ const hj = hb.cloneNode(true); hj.onclick = openHow; $('joinForm').after(hj); }
+if($('joinForm')){ const hj = hb.cloneNode(true); hj.onclick = () => openHow(); $('joinForm').after(hj);
+  const mkI = (label,k,t) => { const b = hb.cloneNode(false); b.type='button'; b.className = hb.className; b.style.marginTop='10px'; b.innerHTML = '<span>'+label+'</span><span>›</span>'; b.onclick = () => openHow('/howto/NBN_pasang_'+k+'.mp4','/howto/poster_pasang_'+k+'.jpg',t); return b; };
+  const bi = mkI('▶️ How to install: iPhone','ios','How to install: iPhone'), ba = mkI('▶️ How to install: Android','and','How to install: Android');
+  hj.after(bi); bi.after(ba); }
 
 // ---- 22 Oct: "Kedai lain" page (coming soon), split by cash back ----
 add('en', { storesBtn:'🏬 Other shops (coming soon)', storesT:'Other shops', storesLive:'Live now', storesCb:'✅ With cash back · coming soon', storesNo:'❌ No cash back · price check only · coming soon',
