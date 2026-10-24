@@ -427,7 +427,7 @@ body.on-home .hero .brand .mark{box-shadow:0 4px 14px rgba(0,0,0,.35)!important}
     <div id="guestBar" class="note" hidden style="display:flex;align-items:center;gap:10px;justify-content:space-between"><span id="guestTxt">💰 Try it free. Log in only when you want cash back.</span><button class="sbtn" type="button" id="guestLogin">Log in</button></div>
     <button type="button" class="minisave" id="miniSave" aria-label="Your savings and cash back">
       <span class="ms-top"><span class="ms-coin">💰</span><span style="display:flex;flex-direction:column;align-items:flex-start"><span class="ml" data-t="tbName">Cash back jar</span><span class="mv num" id="savedMini">RM0.00</span></span></span>
-      <span class="ms-row"><span class="k" data-t="tbWait">Waiting for Shopee</span><span class="v num" id="retMini">RM0.00</span></span>
+      <span class="ms-row"><span class="k" data-t="bag1">Bag 1 · On the way</span><span class="v num" id="retMini">RM0.00</span></span>
       <span class="ms-cta" data-t="tbOpen">Open jar ›</span>
     </button>
     <div id="scanner" hidden>
@@ -486,14 +486,14 @@ body.on-home .hero .brand .mark{box-shadow:0 4px 14px rgba(0,0,0,.35)!important}
     <div id="tabung" class="tabung">
       <div class="tb-card">
         <div class="tb-txt"><small data-t="tbName">Cash back jar</small><div class="tb-big num" id="tbTotal">RM0.00</div><div class="tb-mn" data-t="tbFull">The fuller, the better!</div>
-          <div class="tb-pills"><div><small data-t="tbWait">Waiting for Shopee</small><b class="num" id="tbWait">RM0.00</b></div><div><small data-t="tbConf">Confirmed</small><b class="num" id="tbConf">RM0.00</b></div><div><small data-t="tbPaid">Paid</small><b class="num" id="tbPaid">RM0.00</b></div></div></div>
+          <div class="tb-pills"><div><small data-t="bag1">Bag 1 · On the way</small><b class="num" id="tbWait">RM0.00</b></div><div><small data-t="bag2">Bag 2 · Credited</small><b class="num" id="tbConf">RM0.00</b></div></div></div>
         <div class="tb-jar" id="tbJar"></div>
         <div class="tb-ping" id="tbPing" hidden>pling!</div>
       </div>
       <div class="tb-pay"><div><b data-t="payTitle">Paid to your DuitNow</b><small data-t="paySub">Once you reach RM5, and Shopee has paid us</small></div><button type="button" class="tb-btn" id="tbSet" data-t="paySet">Settings</button></div>
       <h2 class="tb-h" data-t="ordersH">Your orders</h2>
       <div class="tb-orders" id="tbOrders"></div>
-      <p class="fine" data-t="tbNote">Amounts are estimates. Shopee confirms orders first (usually 3–5 months). After Shopee pays us, your cash back is paid to your DuitNow.</p>
+      <p class="fine" data-t="tbNote">Amounts are estimates. Bag 1 = saving on the way. Bag 2 = Shopee has paid us, ready for your DuitNow.</p>
     </div>
     <div hidden>
     <div class="savings" aria-live="polite"><div class="sv-ico"><svg width="68" height="68" viewBox="0 0 68 68" fill="none" aria-hidden="true"><rect x="10" y="44" width="9" height="14" rx="2" fill="#F7E08A"/><rect x="23" y="38" width="9" height="20" rx="2" fill="#E6C35C"/><rect x="36" y="30" width="9" height="28" rx="2" fill="#C9A227"/><rect x="49" y="18" width="9" height="40" rx="2" fill="#B8860B"/><path d="M8 42 C20 38 30 32 46 18" stroke="#FFD95A" stroke-width="3.5" stroke-linecap="round" fill="none"/><path d="M38 15 L50 13 L48 25" stroke="#FFD95A" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/><rect x="34" y="2" width="30" height="12" rx="6" fill="#C8102E"/><text x="49" y="11" font-size="8.5" font-weight="900" text-anchor="middle" fill="#fff" font-family="Arial">RM5</text></svg></div>
@@ -516,7 +516,7 @@ body.on-home .hero .brand .mark{box-shadow:0 4px 14px rgba(0,0,0,.35)!important}
       <b data-t="cbTitle">Shop smart. Earn cash back! 💰</b>
       <ol style="margin:6px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:4px">
         <li>🛒 <b data-t="cb1a">Tap Buy:</b> <span data-t="cb1b">shop through NBN, same price, nothing extra</span></li>
-        <li>✅ <b data-t="cb2a">Order confirmed:</b> <span data-t="cb2b">Shopee confirms it, usually in 1–2 months</span></li>
+        <li>✅ <b data-t="cb2a">Order confirmed:</b> <span data-t="cb2b">Shopee confirms it</span></li>
         <li>💸 <b data-t="cb3a">Get paid:</b> <span data-t="cb3b">your cash back goes straight to your DuitNow (from RM5)</span></li>
       </ol>
       <p class="fine" style="margin-top:6px"><i data-t="pilotTerms">Pilot terms may change.</i> <button type="button" class="link" id="cbMore" data-t="moreInfo">More info ›</button></p>
@@ -967,14 +967,14 @@ function renderTabung(rows){
   rows = rows || [];
   const share = c => (c.commission_rm != null ? Number(c.commission_rm) : Number(c.price_rm||0)*0.04) * CUSTOMER_SHARE;
   const real = rows.filter(c => (Number(c.price_rm)>0 || Number(c.commission_rm)>0) && ['waiting','confirmed','received','paid'].includes(c.status));
-  const wait = real.filter(c=>c.status==='waiting').reduce((a,c)=>a+share(c),0);
-  const conf = real.filter(c=>c.status==='confirmed'||c.status==='received').reduce((a,c)=>a+share(c),0);
+  const wait = real.filter(c=>c.status==='waiting'||c.status==='confirmed').reduce((a,c)=>a+share(c),0);
+  const conf = real.filter(c=>c.status==='received').reduce((a,c)=>a+share(c),0);
   const paid = real.filter(c=>c.status==='paid').reduce((a,c)=>a+share(c),0);
   const total = wait+conf+paid;
   const prev = Number(lsGet('nbn-tb-total')||0);
   window.__tbDrop = total > prev + 0.0049 && prev >= 0 && !!USER && lsGet('nbn-tb-total') !== null;
   lsSet('nbn-tb-total', String(total));
-  $('tbTotal').textContent = rm(total); $('tbWait').textContent = rm(wait); $('tbConf').textContent = rm(conf); $('tbPaid').textContent = rm(paid);
+  $('tbTotal').textContent = rm(total); $('tbWait').textContent = rm(wait); $('tbConf').textContent = rm(conf); 
   if($('savedMini')) $('savedMini').textContent = rm(total); if($('retMini')) $('retMini').textContent = rm(wait);
   $('tbJar').innerHTML = tbJarSvg(Math.min(12, Math.round(total/1.5)));
   if(window.__tbDrop){ $('tbPing').hidden=false; setTimeout(()=>{ $('tbPing').hidden=true; }, 2600); }
@@ -983,10 +983,10 @@ function renderTabung(rows){
   real.slice().sort((a,b)=>new Date(b.clicked_at)-new Date(a.clicked_at)).slice(0,20).forEach(c=>{
     const d=document.createElement('div'); d.className='tb-o';
     const nm=(c.search_term||'Shopee').replace(/^cat:[^:]*:\s*/,'');
-    const cls = c.status==='paid'?'p':(c.status==='waiting'?'w':'c');
-    const lab = c.status==='paid'?t('tbPaid'):(c.status==='waiting'?t('stWait'):t('stConf'));
+    const cls = c.status==='paid'?'p':(c.status==='received'?'c':'w');
+    const lab = c.status==='paid'?t('tbPaid'):(c.status==='received'?t('bag2'):t('bag1'));
     const dt = new Date(c.clicked_at).toLocaleDateString(LANG==='ms'?'ms-MY':'en-GB',{day:'numeric',month:'short'});
-    d.innerHTML = `<div><div class="n"></div><small>Shopee · ${dt}</small><span class="tb-s ${cls}">${lab}</span></div><div class="r">${c.status==='waiting'?'~':''}${rm(share(c))}</div>`;
+    d.innerHTML = `<div><div class="n"></div><small>Shopee · ${dt}</small><span class="tb-s ${cls}">${lab}</span></div><div class="r">${(c.status==='waiting'||c.status==='confirmed')?'~':''}${rm(share(c))}</div>`;
     d.querySelector('.n').textContent = nm; L.appendChild(d);
   });
 }
