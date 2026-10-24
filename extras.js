@@ -388,7 +388,9 @@ function msGo(name, url){
     <button type="button" id="msCancel" style="width:100%;border:0;background:none;color:#6b756f;font-size:14px;padding:10px;cursor:pointer">Cancel</button></div>`;
   document.body.appendChild(d);
   d.querySelector('#msCancel').onclick = () => d.remove();
-  d.querySelector('#msCont').onclick = () => { window.open(msLink(url, name), '_blank', 'noopener'); d.remove(); };
+  d.querySelector('#msCont').onclick = () => {
+    try{ if(typeof sb !== 'undefined' && sb && typeof USER !== 'undefined' && USER) sb.from('clicks').insert({ user_id: USER.id, platform: name, search_term: 'moreshops:' + name, saving_rm: 0 }).then(()=>{}); if(typeof track === 'function') track('moreshops_tap', name); }catch(err){}
+    window.open(msLink(url, name), '_blank', 'noopener'); d.remove(); };
 }
 function openMoreShops(){
   const o = mk('div', '', ''); o.id = 'moreShopsPage';
