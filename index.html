@@ -892,7 +892,42 @@ const SHOPEE_AFF = '12111910001';
 // Shopee affiliate terms 6.2(e): no links to other shops next to Shopee affiliate links. Lazada prices are shown as information only until a network (e.g. Involve Asia) or Shopee allows both.
 const LAZADA_LINKS = false;
 function subId(){ return USER ? USER.id.replace(/-/g,'').slice(0,12) : 'guest'; }
-function shopeeAff(url){ return 'https://shope.ee/an_redir?origin_link=' + encodeURIComponent(url) + '&affiliate_id=' + SHOPEE_AFF + '&sub_id=' + subId(); }
+function shopeeDirect(url){ return 'https://shope.ee/an_redir?origin_link=' + encodeURIComponent(url) + '&affiliate_id=' + SHOPEE_AFF + '&sub_id=' + subId(); }
+// Involve Asia: Shopee PRODUCT links go through our involve-link function (cached per product); search/other pages stay on the direct link (Involve allows ~1,000 new links per 30 days).
+const INV_KEY = 'nbn-inv-v1'; let INVC = {}; try{ INVC = JSON.parse(localStorage.getItem(INV_KEY) || '{}'); }catch(e){}
+function invNorm(u){ try{ const x = new URL(u); x.hash = ''; return x.toString(); }catch(e){ return ''; } }
+function invIsProduct(u){ return /shopee\.com\.my\/(product\/\d+\/\d+|[^?#]+-i\.\d+\.\d+)/i.test(u || ''); }
+function invTag(l){ return l + (l.indexOf('?') > -1 ? '&' : '?') + 'aff_sub=' + subId() + '&aff_sub2=app'; }
+async function invGet(u){
+  const k = invNorm(u); if(!k || !invIsProduct(k)) return null; if(INVC[k]) return INVC[k]; if(!(sb && USER)) return null;
+  try{
+    const r = await Promise.race([ sb.functions.invoke('involve-link', { body: { url: k } }), new Promise((_, rj) => setTimeout(() => rj('timeout'), 6000)) ]);
+    const l = r && r.data && r.data.link;
+    if(l){ INVC[k] = l; try{ localStorage.setItem(INV_KEY, JSON.stringify(INVC)); }catch(e){} return l; }
+  }catch(e){}
+  return null;
+}
+function shopeeAff(url){ const k = invNorm(url); if(k && INVC[k]) return invTag(INVC[k]); if(invIsProduct(k)) invGet(k); return shopeeDirect(url); }
+// Open a Shopee address in a new tab through Involve when possible (blank tab first so phones do not block it), else direct.
+function openShopee(url){
+  const k = invNorm(url);
+  if(k && INVC[k]){ window.open(invTag(INVC[k]), '_blank'); return; }
+  const direct = shopeeDirect(url);
+  if(!invIsProduct(k) || !(sb && USER)){ window.open(direct, '_blank'); return; }
+  const w = window.open('', '_blank');
+  invGet(k).then(l => { const d = l ? invTag(l) : direct; if(w) w.location.href = d; else window.open(d, '_blank'); });
+}
+window.openShopee = openShopee;
+// Any tap on a direct Shopee product link: swap to Involve (instant if cached, else wait up to 6s, else fall back to direct).
+document.addEventListener('click', e => {
+  const a = e.target.closest && e.target.closest('a[href^="https://shope.ee/an_redir"]'); if(!a) return;
+  let o = ''; try{ o = new URL(a.href).searchParams.get('origin_link') || ''; }catch(_){}
+  const k = invNorm(o); if(!invIsProduct(k)) return;
+  if(INVC[k]){ a.href = invTag(INVC[k]); return; }
+  if(!(sb && USER)) return;
+  e.preventDefault(); const direct = a.href; const w = window.open('', '_blank');
+  invGet(k).then(l => { const d = l ? invTag(l) : direct; if(w) w.location.href = d; else window.open(d, '_blank'); });
+}, true);
 function buyUrl(p, it, o){
   const q = encodeURIComponent(it.name + ' ' + it.size);
   const raw = (o && o.url) ? o.url : (p==='Shopee' ? 'https://shopee.com.my/search?keyword=' + q : 'https://www.lazada.com.my/catalog/?q=' + q);

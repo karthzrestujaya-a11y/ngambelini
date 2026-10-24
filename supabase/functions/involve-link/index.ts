@@ -26,7 +26,8 @@ async function involveToken(): Promise<string> {
     body: new URLSearchParams({ key: Deno.env.get("INVOLVE_KEY")!, secret: Deno.env.get("INVOLVE_SECRET")! }),
   });
   const j = await r.json();
-  token = j?.data?.token || "";
+  token = j?.data?.token || j?.token || j?.data?.access_token || "";
+  if (!token) console.error("involve auth resp", JSON.stringify(j).slice(0, 300));
   if (!token) throw new Error("involve auth failed");
   tokenAt = Date.now();
   return token;
@@ -42,7 +43,7 @@ async function shopeeOfferId(t: string): Promise<number> {
   const j = await r.json();
   const list = j?.data?.data || [];
   const hit = list.find((o: any) => String(o.offer_name).trim() === OFFER_NAME) || list.find((o: any) => /shopee/i.test(o.offer_name) && /malaysia|my/i.test(o.offer_name));
-  if (!hit) throw new Error("shopee offer not found");
+  if (!hit) { console.error("offers resp", JSON.stringify(j).slice(0, 400)); throw new Error("shopee offer not found"); }
   offerId = Number(hit.offer_id);
   return offerId;
 }
@@ -75,7 +76,7 @@ Deno.serve(async (req) => {
       body: new URLSearchParams({ offer_id: String(oid), url: clean, aff_sub: "app" }),
     });
     const j = await r.json();
-    const link = j?.data?.tracking_link;
+    const d = j?.data; const link = (typeof d === "string" ? d : (d?.tracking_link || d?.link || d?.url || (Array.isArray(d) ? (d[0]?.tracking_link || d[0]?.link) : "")));
     if (!link) { console.error("involve-link: no link", JSON.stringify(j).slice(0, 300)); return json({ error: "no link" }, 502); }
     await admin.from("involve_links").upsert({ url: clean, tracking_link: link });
     return json({ link, cached: false });

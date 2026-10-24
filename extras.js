@@ -196,7 +196,7 @@ function openGate(){
   $('gT').textContent = tt('gateT'); $('gS').textContent = tt('gateS'); $('gLogin').textContent = tt('gateLogin'); $('gSkip').textContent = tt('gateSkip');
   gate.style.display = 'flex';
   $('gLogin').onclick = () => { gate.style.display = 'none'; lsS('nbn-pending', CUR.url); goLogin(); };
-  $('gSkip').onclick = () => { gate.style.display = 'none'; try{ track('buy', 'link guest'); }catch(e){} lsS('nbn-pending', null); window.open(buyHref(), '_blank'); };
+  $('gSkip').onclick = () => { gate.style.display = 'none'; try{ track('buy', 'link guest'); }catch(e){} lsS('nbn-pending', null); openShopee(CUR.full || CUR.url); };
 }
 window.searchLink = async function(link){
   const m = String(link).match(/https?:\/\/\S+/i) || String(link).match(/\b(?:s\.shopee\.com\.my|shopee\.com\.my|my\.shp\.ee|shp\.ee|shope\.ee)\/\S*/i);
@@ -334,7 +334,7 @@ async function openCat(key){
     const x = items.find(i => i.id === b.dataset.cbuy); if(!x) return;
     track('cat_buy', key + ':' + x.id);
     if(sb && USER) sb.from('clicks').insert({ user_id: USER.id, platform: 'Shopee', search_term: ('cat:' + key + ': ' + x.n).slice(0,120), price_rm: x.p, saving_rm: 0 }).then(()=>{});
-    window.open(shopeeAff('https://shopee.com.my/product/' + x.shop + '/' + x.id), '_blank');
+    openShopee('https://shopee.com.my/product/' + x.shop + '/' + x.id);
   };
 }
 window.openCat = openCat;
