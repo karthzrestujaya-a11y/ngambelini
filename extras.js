@@ -370,5 +370,43 @@ window.show = function(view){
   if(view === 'home' && USER && lsG('nbn-lang-chosen') !== '1') langPicker();
 };
 
+
+// ---- 24 Oct 2026: More shops page (Involve links, member id as aff_sub) ----
+const MS_LIVE = [
+  ['💄 Beauty', [['Sephora','https://invl.me/clo5mes','#111111'],['Watsons','https://invl.me/clo5mf2','#00A3AD']]],
+  ['👟 Sports & fashion', [['JD Sports','https://invl.me/clo5mfc','#111111']]],
+  ['📱 Phones & tech', [['Xiaomi','https://invl.me/clo5mfg','#FF6900']]] ];
+const MS_WAIT = [['PUMA','#111111'],['Adidas','#111111'],['Shein','#111111'],['Huawei','#C7000B'],["Lotus's",'#00A19B'],['Traveloka','#0770CD']];
+function msLink(u, shop){ const id = (typeof subId === 'function') ? subId() : 'guest'; return u + '?aff_sub=' + encodeURIComponent(id) + '&aff_sub2=' + encodeURIComponent('app-' + shop.toLowerCase().replace(/[^a-z]/g,'')); }
+function msLogo(n, c){ return `<div style="width:40px;height:40px;border-radius:10px;background:${c};color:#fff;font-weight:900;font-size:16px;display:flex;align-items:center;justify-content:center;flex:none">${n.replace(/[^A-Za-z]/g,'').slice(0,2).toUpperCase()}</div>`; }
+function msGo(name, url){
+  const d = mk('div', '', ''); d.style.cssText = 'position:fixed;inset:0;z-index:9995;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:20px';
+  d.innerHTML = `<div style="background:#FFFBEF;border-radius:18px;padding:18px;max-width:340px;width:100%;box-shadow:0 10px 30px rgba(0,0,0,.25)">
+    <div style="font-weight:900;color:#14563A;font-size:17px">Going to ${name}</div>
+    <p style="margin:8px 0 14px;color:#3b4a41;font-size:14px;line-height:1.4">Buy through this button and your cash back is tracked for you. Cash back is paid after ${name} confirms your order.</p>
+    <button type="button" id="msCont" style="width:100%;border:0;border-radius:12px;background:linear-gradient(135deg,#F7E08A,#C9A227);color:#0F5C39;font-weight:900;font-size:15px;padding:12px;cursor:pointer">Continue</button>
+    <button type="button" id="msCancel" style="width:100%;border:0;background:none;color:#6b756f;font-size:14px;padding:10px;cursor:pointer">Cancel</button></div>`;
+  document.body.appendChild(d);
+  d.querySelector('#msCancel').onclick = () => d.remove();
+  d.querySelector('#msCont').onclick = () => { window.open(msLink(url, name), '_blank', 'noopener'); d.remove(); };
+}
+function openMoreShops(){
+  const o = mk('div', '', ''); o.id = 'moreShopsPage';
+  o.style.cssText = 'position:fixed;inset:0;z-index:9990;background:#FFFBEF;overflow:auto;padding:16px 16px 40px';
+  const live = MS_LIVE.map(g => `<div style="font-weight:800;color:#14563A;margin-top:10px">${g[0]}</div><div style="display:grid;gap:8px;margin-top:6px">${g[1].map(s => `<div style="display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid #EDE3C3;border-radius:14px;padding:10px 12px">${msLogo(s[0], s[2])}<div style="flex:1;font-weight:800;color:#14563A;font-size:15px">${s[0]}</div><button type="button" data-shop="${s[0]}" data-url="${s[1]}" style="border:0;border-radius:10px;background:linear-gradient(135deg,#F7E08A,#C9A227);color:#0F5C39;font-weight:900;font-size:13px;padding:8px 14px;cursor:pointer">Shop</button></div>`).join('')}</div>`).join('');
+  const wait = MS_WAIT.map(s => `<div style="display:flex;align-items:center;gap:10px;background:#f4f1e6;border:1.5px dashed #d9cfa6;border-radius:14px;padding:10px 12px;opacity:.75">${msLogo(s[0], s[1])}<div style="flex:1;font-weight:800;color:#6b756f;font-size:15px">${s[0]}</div><div style="font-size:11px;font-weight:700;color:#8A7A3D;background:#FFF6D6;border-radius:8px;padding:3px 7px">Coming soon</div></div>`).join('');
+  o.innerHTML = `<div style="max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:6px">
+    <div style="display:flex;align-items:center;gap:10px"><button type="button" id="msBack" style="border:0;background:#F3EED9;border-radius:50%;width:38px;height:38px;font-size:18px;cursor:pointer">‹</button><h2 style="margin:0;color:#14563A">More shops</h2></div>
+    <p style="margin:6px 0 0;color:#3b4a41;font-size:14px">Shop through these buttons for cash back. Rezeki kita, kita kongsi.</p>
+    ${live}
+    <div style="font-weight:800;color:#8A7A3D;margin-top:16px">⏳ Waiting for approval</div><div style="display:grid;gap:8px;margin-top:6px">${wait}</div>
+    <p class="fine" style="margin:10px 0 0;color:#5b665f;font-size:13px">Pilot terms may change. Cash back is paid after the shop confirms your order. Some links earn NBN a small commission at no extra cost to you.</p></div>`;
+  document.body.appendChild(o);
+  o.querySelector('#msBack').onclick = () => o.remove();
+  o.querySelectorAll('button[data-shop]').forEach(b => b.onclick = () => msGo(b.dataset.shop, b.dataset.url));
+}
+window.openMoreShops = openMoreShops;
+const msCard = document.querySelector('#soon .soon-card'); if(msCard){ msCard.style.cursor = 'pointer'; msCard.onclick = openMoreShops; }
+
 if(typeof applyLang === 'function') applyLang();
 })();
