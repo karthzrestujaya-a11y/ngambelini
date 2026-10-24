@@ -1008,11 +1008,12 @@ function renderTabung(rows){
   const wait = real.filter(c=>c.status==='waiting'||c.status==='confirmed').reduce((a,c)=>a+share(c),0);
   const conf = real.filter(c=>c.status==='received').reduce((a,c)=>a+share(c),0);
   const paid = real.filter(c=>c.status==='paid').reduce((a,c)=>a+share(c),0);
-  const total = wait+conf+paid;
+  const RF = window.__ref || {}, rfReady = Number(RF.ready_rm||0), rfPaid = Number(RF.paid_rm||0);
+  const total = wait+conf+paid+rfReady+rfPaid;
   const prev = Number(lsGet('nbn-tb-total')||0);
   window.__tbDrop = total > prev + 0.0049 && prev >= 0 && !!USER && lsGet('nbn-tb-total') !== null;
   lsSet('nbn-tb-total', String(total));
-  $('tbTotal').textContent = rm(total); $('tbWait').textContent = rm(wait); $('tbConf').textContent = rm(conf); 
+  $('tbTotal').textContent = rm(total); $('tbWait').textContent = rm(wait); $('tbConf').textContent = rm(conf+rfReady); 
   if($('savedMini')) $('savedMini').textContent = rm(total); if($('retMini')) $('retMini').textContent = rm(wait);
   $('tbJar').innerHTML = tbJarSvg(Math.min(12, Math.round(total/1.5)));
   if(window.__tbDrop){ $('tbPing').hidden=false; setTimeout(()=>{ $('tbPing').hidden=true; }, 2600); }
@@ -1045,6 +1046,7 @@ async function loadMySavings(){
   const share = c => (c.commission_rm != null ? Number(c.commission_rm) : Number(c.price_rm||0)*0.04) * CUSTOMER_SHARE;
   state.ret = conf.filter(c=>c.status==='confirmed' || c.status==='received').reduce((a,c)=>a+share(c),0);
   state.paidOut = conf.filter(c=>c.status==='paid').reduce((a,c)=>a+share(c),0);
+  try{ const { data: rf } = await sb.rpc('my_referrals'); window.__ref = rf || null; }catch(e){ window.__ref = null; }
   window.__tbRows = data; renderHome(); renderTabung(data);
   $('orders').textContent = rm(state.allSaved) + ' since joining · ' + conf.length + (conf.length===1?' order':' orders');
   const w = wait.reduce((a,c)=>a+Number(c.saving_rm||0),0);
@@ -1525,7 +1527,7 @@ async function loadCash(){
   pay.innerHTML = due.length ? '' : '<span class="fine">Nobody to pay right now. Members show here once their commission is received.</span>';
   due.forEach(d => { const c = document.createElement('div'); c.className = 'card';
     c.innerHTML = `<div class="r1"><b>${esc(d.email)}</b><b class="num">${rm(Number(d.due_rm))}</b></div>
-      <div class="r2">${d.orders} order${d.orders===1?'':'s'} received · our commission ${rm(Number(d.commission_rm))} · 40% to member${Number(d.due_rm) < 5 ? ' · <b>below RM5 minimum: carry forward</b>' : ''}</div>
+      <div class="r2">${d.orders} order${d.orders===1?'':'s'} received · our commission ${rm(Number(d.commission_rm))} · 40% to member${Number(d.referral_rm)>0?' · + coin box '+rm(Number(d.referral_rm)):''}${Number(d.due_rm) < 5 ? ' · <b>below RM5 minimum: carry forward</b>' : ''}</div>
       <div class="acts"><input placeholder="DuitNow reference" aria-label="Payment reference"><button class="sbtn" type="button">Mark paid</button></div>`;
     c.querySelector('button').onclick = async () => { const ref = c.querySelector('input').value.trim(); if(!ref){ toast('Type the DuitNow reference first.'); return; }
       if(Number(d.due_rm) < 5 && !confirm('Below the RM5 minimum. Pay anyway?')) return;
