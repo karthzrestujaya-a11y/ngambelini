@@ -367,6 +367,9 @@ body.on-home .hero .brand .mark{box-shadow:0 4px 14px rgba(0,0,0,.35)!important}
 .deal{box-shadow:0 6px 18px rgba(20,86,58,.10)}
 </style>
 </head><body>
+<div id="fbBar" hidden style="position:sticky;top:0;z-index:9999;background:#FFF3B0;color:#1b3a2a;padding:8px 12px;font-size:14px;display:none;align-items:center;gap:10px;justify-content:space-between"><span id="fbTxt">For easy login, open in Chrome or Safari.</span><button type="button" id="fbOpen" style="border:0;border-radius:8px;background:#167a4a;color:#fff;padding:7px 12px;font-weight:700;white-space:nowrap">Open</button></div>
+<script>(function(){try{var ua=navigator.userAgent||'';if(!/FBAN|FBAV|FB_IAB|Instagram/i.test(ua))return;var T={en:['For easy login, open in Chrome or Safari.','Open'],ms:['Untuk log masuk mudah, buka dalam Chrome atau Safari.','Buka'],ta:['எளிதாக உள்நுழைய Chrome அல்லது Safari-யில் திறக்கவும்.','திற'],zh:['为方便登录，请在 Chrome 或 Safari 打开。','打开']};var l=(localStorage.getItem('nbn-lang')||(navigator.language||'en').slice(0,2));var t=T[l]||T.en;var b=document.getElementById('fbBar');document.getElementById('fbTxt').textContent=t[0];var o=document.getElementById('fbOpen');o.textContent=t[1];o.onclick=function(){var u=location.href.split('#')[0];if(/Android/i.test(ua)){location.href='intent://'+u.replace(/^https?:\/\//,'')+'#Intent;scheme=https;package=com.android.chrome;end';}else{try{navigator.clipboard.writeText(u);o.textContent='Link copied';}catch(e){prompt('Copy this link',u);}}};b.hidden=false;b.style.display='flex';}catch(e){}})();</script>
+
 <div class="app">
   <header class="hero">
   <div class="top">
