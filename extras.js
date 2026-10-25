@@ -459,5 +459,19 @@ const msCard = document.querySelector('#soon .soon-card'); if(msCard){ msCard.st
   document.addEventListener('click',e=>{ const a=e.target.closest&&e.target.closest('a'); if(!a) return; if(a.id==='goShopee'||(/shopee|involve|s\.shopee/i.test(a.href||'')&&a.closest('#resultsList,#elsewhere'))) offer(); },true);
 })();
 
+
+/* One-tap popular items under the search box: tap = normal search -> Shopee link, no typing */
+(function(){
+  const form=document.getElementById('searchForm'); if(!form||document.getElementById('quickItems')) return;
+  const items=[['🥛','susu tepung'],['🍚','beras'],['🛢️','minyak masak'],['👶','lampin bayi'],['🥚','telur'],['☕','kopi'],['🧴','sabun basuh'],['🧻','tisu']];
+  const box=document.createElement('div'); box.id='quickItems';
+  box.style.cssText='display:flex;flex-wrap:wrap;gap:8px;margin-top:-6px';
+  items.forEach(([e,term])=>{ const b=document.createElement('button'); b.type='button'; b.textContent=e+' '+term;
+    b.style.cssText='background:var(--surface,#fff);border:1.5px solid var(--line,#ddd);border-radius:999px;padding:8px 13px;font:inherit;font-size:14px;color:inherit;cursor:pointer';
+    b.onclick=()=>{ const q=document.getElementById('q'); if(q) q.value=term; if(typeof search==='function') search(term); };
+    box.appendChild(b); });
+  form.insertAdjacentElement('afterend',box);
+})();
+
 if(typeof applyLang === 'function') applyLang();
 })();
