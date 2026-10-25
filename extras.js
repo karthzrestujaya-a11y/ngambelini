@@ -410,5 +410,31 @@ function openMoreShops(){
 window.openMoreShops = openMoreShops;
 const msCard = document.querySelector('#soon .soon-card'); if(msCard){ msCard.style.cursor = 'pointer'; msCard.onclick = openMoreShops; }
 
+
+/* Search suggestions (typeahead) from suggest.json - lazy loaded, tap = run normal search -> Shopee link */
+(function(){
+  const q=document.getElementById('q'), form=document.getElementById('searchForm'); if(!q||!form) return;
+  let DATA=null, loading=false;
+  const box=document.createElement('div'); box.id='sugBox'; box.hidden=true;
+  box.style.cssText='position:absolute;left:0;right:0;top:100%;margin-top:4px;background:var(--surface,#fff);border:1px solid var(--line,#ddd);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.15);z-index:50;max-height:260px;overflow:auto';
+  form.style.position='relative'; form.appendChild(box);
+  function load(){ if(DATA||loading) return; loading=true; fetch('/suggest.json?v=1').then(r=>r.json()).then(d=>{DATA=d.map(x=>[x[0],x[0].toLowerCase()]);show();}).catch(()=>{loading=false;}); }
+  function show(){
+    const v=q.value.trim().toLowerCase();
+    if(!DATA||v.length<2||/^https?:/.test(v)){box.hidden=true;return;}
+    const ws=v.split(/\s+/); const out=[];
+    for(const d of DATA){ if(ws.every(w=>d[1].includes(w))){ out.push(d[0]); if(out.length>=6) break; } }
+    box.innerHTML='';
+    out.forEach(n=>{ const b=document.createElement('button'); b.type='button'; b.textContent=n; b.style.cssText='display:block;width:100%;text-align:left;padding:10px 14px;background:none;border:0;border-bottom:1px solid var(--line,#eee);font:inherit;color:inherit;cursor:pointer';
+      b.onmousedown=e=>e.preventDefault();
+      b.onclick=()=>{ q.value=n; box.hidden=true; if(typeof search==='function') search(n); else form.requestSubmit(); };
+      box.appendChild(b); });
+    box.hidden=!out.length;
+  }
+  q.addEventListener('focus',load); q.addEventListener('input',()=>{load();show();});
+  q.addEventListener('blur',()=>setTimeout(()=>{box.hidden=true;},150));
+  form.addEventListener('submit',()=>{box.hidden=true;});
+})();
+
 if(typeof applyLang === 'function') applyLang();
 })();
