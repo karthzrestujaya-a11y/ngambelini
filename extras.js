@@ -436,5 +436,28 @@ const msCard = document.querySelector('#soon .soon-card'); if(msCard){ msCard.st
   form.addEventListener('submit',()=>{box.hidden=true;});
 })();
 
+
+/* Guest taps Buy -> after they go to Shopee, gently offer login so cash back can be tracked (never blocks the purchase) */
+(function(){
+  function offer(){
+    try{
+      if(typeof USER!=='undefined' && USER) return;
+      if(sessionStorage.getItem('nbn_trk')) return;
+      sessionStorage.setItem('nbn_trk','1');
+    }catch(e){}
+    setTimeout(()=>{
+      if(typeof USER!=='undefined' && USER) return;
+      const bar=document.createElement('div');
+      bar.style.cssText='position:fixed;left:12px;right:12px;bottom:76px;z-index:90;background:#145c3a;color:#fff;border-radius:14px;padding:12px 14px;display:flex;gap:10px;align-items:center;box-shadow:0 8px 24px rgba(0,0,0,.3);font-size:14px';
+      const m=document.createElement('span'); m.style.flex='1'; m.textContent=t('trackMsg');
+      const y=document.createElement('button'); y.textContent=t('trackYes'); y.style.cssText='background:#f5b82e;color:#222;border:0;border-radius:10px;padding:9px 14px;font:inherit;font-weight:700;cursor:pointer';
+      const n=document.createElement('button'); n.textContent=t('trackNo'); n.style.cssText='background:none;color:#fff;border:0;font:inherit;opacity:.8;cursor:pointer';
+      y.onclick=()=>{bar.remove(); if(typeof goLogin==='function') goLogin();}; n.onclick=()=>bar.remove();
+      bar.append(m,y,n); document.body.appendChild(bar);
+    },1500);
+  }
+  document.addEventListener('click',e=>{ const a=e.target.closest&&e.target.closest('a'); if(!a) return; if(a.id==='goShopee'||(/shopee|involve|s\.shopee/i.test(a.href||'')&&a.closest('#resultsList,#elsewhere'))) offer(); },true);
+})();
+
 if(typeof applyLang === 'function') applyLang();
 })();
