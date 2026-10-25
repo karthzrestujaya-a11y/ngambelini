@@ -1,4 +1,4 @@
--- NBN coin box: RM1 per friend's first confirmed order (min RM20), RM500 total pilot budget, paid out with the normal DuitNow payout (min RM5).
+-- NBN coin box: RM1 per friend's first confirmed order (min RM30), RM500 total pilot budget, paid out with the normal DuitNow payout (min RM5).
 -- Safe to run more than once. Run after referral.sql.
 
 create table if not exists public.referral_payouts (
@@ -19,7 +19,7 @@ create view public.referral_rewards as
 with f as (
   select p.referred_by as referrer, p.id as friend, p.referred_at,
          row_number() over (partition by p.referred_by, (p.referred_at at time zone 'Asia/Kuala_Lumpur')::date order by p.referred_at) as n_day,
-         (select min(coalesce(c.confirmed_at, c.clicked_at)) from clicks c where c.user_id = p.id and c.status in ('confirmed','received','paid') and coalesce(c.price_rm,0) >= 20) as qualified_at
+         (select min(coalesce(c.confirmed_at, c.clicked_at)) from clicks c where c.user_id = p.id and c.status in ('confirmed','received','paid') and coalesce(c.price_rm,0) >= 30) as qualified_at
   from profiles p where p.referred_by is not null and p.referred_by <> p.id
 ), r as (
   select f.*, (qualified_at is not null) as qualified,
