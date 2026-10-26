@@ -38,7 +38,9 @@ begin
         select g.day::date as day,
           (select count(*) from auth.users u where (u.created_at at time zone 'Asia/Kuala_Lumpur')::date = g.day::date and not exists (select 1 from profiles pa where pa.id = u.id and (pa.is_admin or pa.is_test))) as signups,
           (select count(*) from photo_searches s where (s.created_at at time zone 'Asia/Kuala_Lumpur')::date = g.day::date and not exists (select 1 from profiles pa where pa.id = s.user_id and (pa.is_admin or pa.is_test))) as photos,
-          (select count(*) from clicks c where (c.clicked_at at time zone 'Asia/Kuala_Lumpur')::date = g.day::date and not exists (select 1 from profiles pa where pa.id = c.user_id and (pa.is_admin or pa.is_test))) as taps
+          (select count(*) from clicks c where (c.clicked_at at time zone 'Asia/Kuala_Lumpur')::date = g.day::date and not exists (select 1 from profiles pa where pa.id = c.user_id and (pa.is_admin or pa.is_test))) as taps,
+          (select count(distinct e.sid) from events e where e.ev = 'visit' and (e."at" at time zone 'Asia/Kuala_Lumpur')::date = g.day::date and not exists (select 1 from events x where x.sid = e.sid and x.user_id in (select id from profiles where is_admin or is_test))) as visitors,
+          (select count(distinct e.sid) from events e where e.ev = 'buy' and (e."at" at time zone 'Asia/Kuala_Lumpur')::date = g.day::date and not exists (select 1 from events x where x.sid = e.sid and x.user_id in (select id from profiles where is_admin or is_test))) as buys
         from generate_series((now() at time zone 'Asia/Kuala_Lumpur')::date - 6, (now() at time zone 'Asia/Kuala_Lumpur')::date, interval '1 day') g(day)) x)
   );
 end $$;
