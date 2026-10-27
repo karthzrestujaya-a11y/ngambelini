@@ -1084,6 +1084,18 @@ async function boot(){
   sb.auth.onAuthStateChange((ev, ses)=>{ if(ses && !USER){ USER = ses.user; afterLogin(); } });
 }
 const GOOGLE_ON = true; if(GOOGLE_ON){ $('googleBtn').hidden = false; $('googleBtn').style.display = 'flex'; $('orEmail').hidden = false; }
+// In-app browsers (TikTok, Facebook, Instagram...) have no Google sign-in: Google asks for a password there. Use the email code, or open in Chrome.
+(function(){
+  const ua = navigator.userAgent || '';
+  const inapp = /TikTok|musical_ly|Bytedance|FBAN|FBAV|FB_IAB|Instagram|Line\/|Snapchat|MicroMessenger|; wv\)/i.test(ua) || /[?&]inapp=1/.test(location.search);
+  if(!inapp) return;
+  try{ track('inapp_browser', ua.slice(0,100)); }catch(e){}
+  $('googleBtn').hidden = true; $('googleBtn').style.display = 'none'; $('orEmail').hidden = true;
+  const isAndroid = /Android/i.test(ua);
+  const tip = document.createElement('div'); tip.className = 'note'; tip.id = 'inappTip';
+  tip.innerHTML = '<b>Easiest login here: use your email below.</b> We send an 8-digit code. Type it back here. No password.' + (isAndroid ? '<br><a class="link" href="intent://ngambelini.com/#Intent;scheme=https;package=com.android.chrome;end">Or open in Chrome</a>' : '<br>Or tap ⋯ and choose “Open in Safari”.');
+  $('googleBtn').parentNode.insertBefore(tip, $('googleBtn'));
+})();
 $('googleBtn').addEventListener('click', async () => {
   const msg = $('joinMsg');
   try{ track('google_tap'); const { error } = await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.origin + '/' } }); if(error){ msg.textContent = error.message; track('google_err', error.message); } }
