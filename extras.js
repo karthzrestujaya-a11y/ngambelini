@@ -233,16 +233,16 @@ add('en', { howBtn:'▶️ How to use NBN (short video)', howT:'How to use NBN',
 add('ms', { howBtn:'▶️ Cara guna NBN (video pendek)', howT:'Cara guna NBN', pickT:'Pilih bahasa anda' });
 add('ta', { howBtn:'▶️ How to use NBN (short video)', howT:'How to use NBN', pickT:'Choose your language' });
 add('zh', { howBtn:'▶️ How to use NBN (short video)', howT:'How to use NBN', pickT:'Choose your language' });
-const HOWV = 3; // bump when the video files change
-const howSrc = () => '/howto/NBN_howto_v' + HOWV + '_' + (LANG === 'ms' ? 'ms' : 'en') + '.mp4';
+const HOWV = 4; // bump when the video files change
+const howSrc = () => '/howto/NBN_howto_v' + HOWV + '_' + (['ms','ta','zh'].includes(LANG) ? LANG : 'en') + '.mp4';
 // old login-page video (18 Oct) is retired
 if($('howto')) $('howto').remove();
 
 function openHow(src, poster, title){
-  if(typeof src!=='string'){ src=howSrc(); poster='/howto/poster_v'+HOWV+'_'+(LANG==='ms'?'ms':'en')+'.jpg'; title=tt('howT'); }
+  if(typeof src!=='string'){ src=howSrc(); poster='/howto/poster_v'+HOWV+'_'+(['ms','ta','zh'].includes(LANG)?LANG:'en')+'.jpg'; title=tt('howT'); }
   const o = mk('div', 'nbnHow', `<div class="nbnHowBox"><div class="nbnHowTop"><b>${title}</b><button type="button" aria-label="Close">✕</button></div>
     <video controls playsinline autoplay src="${src}" poster="${poster}"></video></div>`);
-  o.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(10,40,25,.82);display:flex;align-items:center;justify-content:center;padding:16px';
+  o.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(10,30,70,.82);display:flex;align-items:center;justify-content:center;padding:16px';
   const box = o.firstChild; box.style.cssText = 'background:#fff;border-radius:18px;padding:12px;width:100%;max-width:360px;display:flex;flex-direction:column;gap:10px';
   const top = box.firstChild; top.style.cssText = 'display:flex;justify-content:space-between;align-items:center;color:#0A2A66;font-size:16px';
   top.lastChild.style.cssText = 'border:0;background:#F3EED9;border-radius:50%;width:34px;height:34px;font-size:16px;cursor:pointer';
