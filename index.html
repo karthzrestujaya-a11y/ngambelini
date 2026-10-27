@@ -99,6 +99,15 @@ body:not(.on-home) .hero .pagetitle{font-size:19px!important;margin:6px 0 0!impo
 .tb-s{display:inline-block;font-size:10px;font-weight:700;border-radius:99px;padding:3px 8px;margin-top:4px}
 .tb-s.w{background:#FFF1D6;color:#6A4200}.tb-s.c{background:#E3F1E8;color:#0B6B3F}.tb-s.p{background:#dfe8f7;color:#1A3A6B}
 .tb-empty{color:var(--muted);font-size:13px;padding:10px 2px}
+
+#admin .card{border:0;border-radius:20px;box-shadow:0 6px 18px rgba(20,40,75,.10);background:linear-gradient(180deg,#fff,#fffaf0);padding:16px}
+#admin .card>b{font-family:var(--display);font-size:17px;color:#0A2A66;display:block}
+#admin .gr-kpi{border:0;border-radius:18px;padding:14px 8px;box-shadow:0 4px 12px rgba(20,40,75,.10);background:linear-gradient(160deg,#fff 0%,#fff3c4 100%)}
+#admin .gr-kpi b{font-size:26px;letter-spacing:-.5px}
+#admin .gr-kpi small{font-size:12px;font-weight:600}
+#admin .gr-kpi.warn{background:linear-gradient(160deg,#fff,#ffd9d9)}
+#admin h1{font-family:var(--display);color:#0A2A66}
+.fn-list{display:flex;flex-direction:column;gap:10px}.fn-row .fn-lab{display:flex;justify-content:space-between;font-size:13.5px;color:#0A2A66;margin-bottom:4px;font-weight:600}.fn-row .fn-lab b{font-family:var(--display)}.fn-bar{height:14px;border-radius:99px;background:#efe7cc;overflow:hidden}.fn-bar i{display:block;height:100%;border-radius:99px}.fn-bar .c0{background:#7A8CA5}.fn-bar .c1{background:#FFC400}.fn-bar .c2{background:#1E4A8A}.fn-bar .c3{background:#2e9d5b}
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
@@ -1435,13 +1444,13 @@ $('moSave').onclick = async () => { const v = id => $(id).value === '' ? null : 
   toast(error ? error.message : 'Saved'); if(!error){ ['moFbF','moFbV','moTtF','moTtV'].forEach(i => $(i).value = ''); loadMonitor(); } };
 $('grRefresh').onclick = () => { loadGrowth(); loadEarnings(); loadMonitor(); loadFunnel(); };
 async function loadFunnel(){
-  const K = $('fnKpis'), S = $('fnSrc'); K.innerHTML = ''; S.innerHTML = '';
+  const K = $('fnKpis'), S = $('fnSrc'); K.className = 'fn-list'; K.innerHTML = ''; S.innerHTML = '';
   const { data: f, error } = await sb.rpc('admin_funnel', { p_days: 7 });
   if(error || !f){ K.appendChild(el('p', error ? error.message : 'No data', 'fine')); return; }
   const st = f.steps || {}, v = st.visit || 0;
   const pc = n => v ? ' (' + Math.round(n * 100 / v) + '%)' : '';
   [['visit','visited'],['search','searched'],['compare','opened a compare'],['buy','tapped Buy'],['join','opened log in'],['otp_sent','got email code'],['login','signed up / logged in']]
-    .forEach(([k, l]) => { const n = st[k] || 0; const x = el('div', null, 'gr-kpi'); x.appendChild(el('b', String(n))); x.appendChild(el('small', l + (k === 'visit' ? '' : pc(n)))); K.appendChild(x); });
+    .forEach(([k, l], i) => { const n = st[k] || 0; const w = v ? Math.max(6, Math.round(n * 100 / v)) : 6; const x = el('div', null, 'fn-row'); const lab = el('div', null, 'fn-lab'); lab.appendChild(el('span', l)); lab.appendChild(el('b', String(n) + (k === 'visit' ? '' : pc(n)))); const bar = el('div', null, 'fn-bar'); const fill = el('i'); fill.style.width = w + '%'; fill.className = 'c' + (i % 4); bar.appendChild(fill); x.appendChild(lab); x.appendChild(bar); K.appendChild(x); });
   (f.by_src || []).slice(0, 6).forEach(r => S.appendChild(el('div', r.src + ': ' + r.visits + ' visits, ' + r.logins + ' sign-ups', 'fine')));
 }
 $('adminBtn').onclick = () => { show('admin'); seg('growth'); };
