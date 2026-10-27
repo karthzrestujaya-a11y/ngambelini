@@ -1073,7 +1073,7 @@ async function boot(){
   if(session){ USER = session.user; await afterLogin(); } else show('home');
   sb.auth.onAuthStateChange((ev, ses)=>{ if(ses && !USER){ USER = ses.user; afterLogin(); } });
 }
-const GOOGLE_ON = false; if(GOOGLE_ON){ $('googleBtn').hidden = false; $('googleBtn').style.display = 'flex'; $('orEmail').hidden = false; }
+const GOOGLE_ON = true; if(GOOGLE_ON){ $('googleBtn').hidden = false; $('googleBtn').style.display = 'flex'; $('orEmail').hidden = false; }
 $('googleBtn').addEventListener('click', async () => {
   const msg = $('joinMsg');
   try{ track('google_tap'); const { error } = await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.origin + '/' } }); if(error) msg.textContent = error.message; }
