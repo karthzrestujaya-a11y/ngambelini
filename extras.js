@@ -359,7 +359,7 @@ function langPicker(){
   for(const k in NBN_LANGS){
     const b = mk('button', '', NBN_LANGS[k].name); b.type = 'button';
     b.style.cssText = 'width:100%;max-width:320px;padding:16px;border-radius:14px;border:2px solid #14774A;background:#fff;color:#14563A;font-size:18px;font-weight:800;cursor:pointer';
-    b.onclick = () => { LANG = k; lsS('nbn_lang', k); lsS('nbn-lang-chosen', '1'); applyLang(); o.remove(); };
+    b.onclick = () => { LANG = k; lsS('nbn_lang', k); lsS('nbn-lang-chosen', '1'); applyLang(); o.remove(); setTimeout(() => { if(typeof welcome === 'function') welcome(); }, 400); };
     o.appendChild(b);
   }
   document.body.appendChild(o);
@@ -472,6 +472,61 @@ const msCard = document.querySelector('#soon .soon-card'); if(msCard){ msCard.st
     box.appendChild(b); });
   form.insertAdjacentElement('afterend',box);
 })();
+
+
+// ---- 27 Oct 2026: more attractive home: money first, guide Dayang, welcome moment ----
+const A27 = {
+ en:{ topT:'🔥 Top cash back today', topSub:'Tap Buy. We track your cash back.', gHi:'Paste your Shopee link above 👆 then buy as usual. I track your cash back!', gName:'Dayang · AI guide', wT:'Welcome to NBN 🎉', wB:"Hi, I'm Dayang! Paste a Shopee link and buy as usual. We track your cash back and it fills this jar.", wGo:"Let's go" },
+ ms:{ topT:'🔥 Duit balik tinggi hari ni', topSub:'Tekan Beli. Duit balik kita track untuk anda.', gHi:'Tampal link Shopee kat atas 👆 lepas tu beli macam biasa. Saya track duit balik anda!', gName:'Dayang · Panduan AI', wT:'Selamat datang ke NBN 🎉', wB:'Hai, saya Dayang! Tampal link Shopee, beli macam biasa. Duit balik kita track dan masuk dalam tabung ni.', wGo:'Jom mula' } };
+add('en', A27.en); add('ms', A27.ms); ['ta','zh'].forEach(l => add(l, A27.en));
+
+const dGuide = mk('div', '', ''); dGuide.id = 'dayangGuide';
+dGuide.style.cssText = 'display:flex;gap:10px;align-items:center;background:#fff;border:1.5px solid #EDE3C3;border-radius:16px;padding:8px 12px 8px 8px';
+function drawGuide(){ dGuide.innerHTML = `<img src="/icons/dayang.webp" alt="" width="46" height="46" style="border-radius:50%;flex:none;border:2px solid #C9A227;object-fit:cover"><div style="flex:1"><div style="font-size:13.5px;color:#1d2a22;line-height:1.35;font-weight:600">${tt('gHi')}</div><div style="font-size:11px;color:#8a948d;margin-top:2px">${tt('gName')}</div></div>`; }
+if($('linkHint')) $('linkHint').after(dGuide);
+drawGuide();
+
+const topBox = mk('div', '', ''); topBox.id = 'topCb';
+topBox.style.cssText = 'margin-top:12px;display:flex;flex-direction:column;gap:8px';
+let topItems = [];
+async function drawTop(){
+  try{
+    const d = await catData(); const seen = new Set();
+    topItems = [].concat(d.cats.xtra || [], d.cats.laris || []).filter(x => x && !seen.has(x.id) && seen.add(x.id))
+      .map(x => ({ x, cb: x.p * x.cr / 100 * CUSTOMER_SHARE })).sort((a, b) => b.cb - a.cb).slice(0, 3).map(o => o.x);
+    topBox.innerHTML = `<div><div style="font-weight:900;color:#14563A;font-size:16px">${tt('topT')}</div><div style="font-size:12.5px;color:#5b665f">${tt('topSub')}</div></div>` + topItems.map(x => catCard(x, 'top')).join('');
+  }catch(e){ topBox.innerHTML = ''; }
+}
+topBox.onclick = e => {
+  const b = e.target.closest('[data-cbuy]'); if(!b) return;
+  const x = topItems.find(i => i.id === b.dataset.cbuy); if(!x) return;
+  track('cat_buy', 'top:' + x.id);
+  if(sb && USER) sb.from('clicks').insert({ user_id: USER.id, platform: 'Shopee', search_term: ('cat:top: ' + x.n).slice(0,120), price_rm: x.p, saving_rm: 0 }).then(()=>{});
+  openShopee('https://shopee.com.my/product/' + x.shop + '/' + x.id);
+};
+catBox.before(topBox); drawTop();
+
+function welcome(){
+  if(!USER || lsG('nbn-welcome-1') === '1' || lsG('nbn-lang-chosen') !== '1' || $('welcomeM')) return;
+  lsS('nbn-welcome-1', '1');
+  const o = mk('div', '', ''); o.id = 'welcomeM';
+  o.style.cssText = 'position:fixed;inset:0;z-index:9996;background:rgba(10,40,25,.55);display:flex;align-items:center;justify-content:center;padding:20px';
+  let jar = ''; try{ window.__tbDrop = true; jar = tbJarSvg(1); }catch(e){}
+  o.innerHTML = `<div style="background:#FFFBEF;border-radius:22px;padding:18px;max-width:340px;width:100%;text-align:center;box-shadow:0 14px 40px rgba(0,0,0,.3)">
+    <img src="/icons/dayang.webp" alt="" width="64" height="64" style="border-radius:50%;border:3px solid #C9A227;object-fit:cover">
+    <div style="font-weight:900;color:#14563A;font-size:20px;margin:8px 0 2px">${tt('wT')}</div>
+    <div style="width:120px;margin:4px auto">${jar}</div>
+    <p style="margin:6px 0 14px;color:#3b4a41;font-size:14.5px;line-height:1.45">${tt('wB')}</p>
+    <button type="button" id="wGo" style="width:100%;border:0;border-radius:12px;background:linear-gradient(135deg,#F7E08A,#C9A227);color:#0F5C39;font-weight:900;font-size:16px;padding:13px;cursor:pointer">${tt('wGo')}</button>
+    <div style="font-size:10.5px;color:#9aa39d;margin-top:8px">${tt('gName')}</div></div>`;
+  document.body.appendChild(o);
+  o.querySelector('#wGo').onclick = () => { o.remove(); window.__tbDrop = false; };
+  try{ track('welcome_shown'); }catch(e){}
+}
+const show4 = window.show;
+window.show = function(view){ show4.apply(this, arguments); if(view === 'home') setTimeout(welcome, 500); };
+const applyLang3 = window.applyLang;
+if(typeof applyLang3 === 'function') window.applyLang = function(){ applyLang3.apply(this, arguments); drawGuide(); drawTop(); };
 
 if(typeof applyLang === 'function') applyLang();
 })();
