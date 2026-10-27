@@ -1069,15 +1069,16 @@ async function afterLogin(){
 }
 async function boot(){
   if(!sb){ show('home'); return; }
+  try{ if(navigator.storage && navigator.storage.persist) navigator.storage.persist(); }catch(e){}
   const { data: { session } } = await sb.auth.getSession();
-  if(session){ USER = session.user; await afterLogin(); } else show('home');
+  if(session){ USER = session.user; track('boot_in'); await afterLogin(); } else { track('boot_out', (location.hash||'').slice(0,40) || (document.referrer||'').slice(0,60)); show('home'); }
   sb.auth.onAuthStateChange((ev, ses)=>{ if(ses && !USER){ USER = ses.user; afterLogin(); } });
 }
 const GOOGLE_ON = true; if(GOOGLE_ON){ $('googleBtn').hidden = false; $('googleBtn').style.display = 'flex'; $('orEmail').hidden = false; }
 $('googleBtn').addEventListener('click', async () => {
   const msg = $('joinMsg');
-  try{ track('google_tap'); const { error } = await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.origin + '/' } }); if(error) msg.textContent = error.message; }
-  catch(e){ msg.textContent = String(e && e.message || e); }
+  try{ track('google_tap'); const { error } = await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.origin + '/' } }); if(error){ msg.textContent = error.message; track('google_err', error.message); } }
+  catch(e){ msg.textContent = String(e && e.message || e); track('google_err', msg.textContent); }
 });
 $('joinForm').addEventListener('submit', async e => {
   e.preventDefault();
@@ -1104,7 +1105,7 @@ async function confirmOtp(){
   b.disabled = true; msg.textContent = t('checking');
   try{
     const { data, error } = await sb.auth.verifyOtp({ email, token, type: 'email' });
-    if(error){ msg.textContent = /expired|invalid/i.test(error.message) ? 'Wrong or expired code. Check the latest email, or send again.' : ('Could not log in: ' + error.message); return; }
+    if(error){ track('otp_err', error.message); msg.textContent = /expired|invalid/i.test(error.message) ? 'Wrong or expired code. Check the latest email, or send again.' : ('Could not log in: ' + error.message); return; }
     USER = data.user || (data.session && data.session.user); track('login'); await afterLogin();
   } finally { b.disabled = false; }
 }
@@ -1188,7 +1189,7 @@ applyLang();
 if($('cbMore')) $('cbMore').onclick = () => { $('cbMoreText').hidden = !$('cbMoreText').hidden; };
 $('tabMe').onclick = () => { setTab('tabMe'); $('meEmail').textContent = (USER && USER.email) || t('notLoggedIn'); if(USER) $('meEmail').removeAttribute('data-t'); $('loginBtn').hidden = !!USER; $('logoutBtn').hidden = !USER; show('me'); loadSnap(); };
 // Send a logged-out person straight to the login screen (email -> 8-digit code).
-function goLogin(why){ setTab('tabHome'); if(!sb){ toast(t('noReach')); return; } $('emailField').hidden = false; $('joinBtn').hidden = false; $('otpField').hidden = true; $('otpBtn').hidden = true; $('otpAgain').hidden = true; $('joinMsg').textContent = (why ? why + ' ' : '') + 'We email you an 8-digit code. Type it here to log in. No password needed.'; show('join'); setTimeout(()=>{ try{ $('email').focus(); }catch(e){} }, 50); }
+function goLogin(why){ setTab('tabHome'); if(!sb){ toast(t('noReach')); return; } $('emailField').hidden = false; $('joinBtn').hidden = false; $('otpField').hidden = true; $('otpBtn').hidden = true; $('otpAgain').hidden = true; $('joinMsg').textContent = (why ? why + ' ' : '') + 'We email you an 8-digit code. Type it here to log in. No password needed.'; show('join'); }
 $('loginBtn').onclick = () => goLogin();
 $('guestLogin').onclick = () => goLogin();
 $('skipLogin').onclick = () => { setTab('tabHome'); show('home'); };
