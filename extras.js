@@ -373,10 +373,11 @@ window.show = function(view){
 
 // ---- 24 Oct 2026: More shops page (Involve links, member id as aff_sub) ----
 const MS_LIVE = [
-  ['💄 Beauty', [['Sephora','https://invl.me/clo5mes','#111111'],['Watsons','https://invl.me/clo5mf2','#00A3AD']]],
+  ['✈️ Travel', [['Traveloka','https://invl.me/clo63vm','#0770CD'],['Klook','https://invl.me/clo63vo','#FF5B00'],['Accor Plus','https://invl.me/clo63wz','#1B2A5B']]],
+  ['💄 Beauty', [['Sephora','https://invl.me/clo5mes','#111111'],['Watsons','https://invl.me/clo5mf2','#00A3AD'],['Sasa','https://invl.me/clo63wq','#E4007F'],['Olive Young','https://invl.me/clo63w4','#7AC143'],['Stylevana','https://miniurl.app/clo63vu','#111111']]],
   ['👟 Sports & fashion', [['JD Sports','https://invl.me/clo5mfc','#111111']]],
-  ['📱 Phones & tech', [['Xiaomi','https://invl.me/clo5mfg','#FF6900']]] ];
-const MS_WAIT = [['PUMA','#111111'],['Adidas','#111111'],['Shein','#111111'],['Huawei','#C7000B'],["Lotus's",'#00A19B'],['Traveloka','#0770CD']];
+  ['📱 Phones, tech & internet', [['Xiaomi','https://invl.me/clo5mfg','#FF6900'],['Unifi (TM)','https://invl.us/clo63x3','#F26522']]] ];
+const MS_WAIT = [['PUMA','#111111'],['Huawei','#C7000B'],["Lotus's",'#00A19B']];
 function msLink(u, shop){ const id = (typeof subId === 'function') ? subId() : 'guest'; return u + '?aff_sub=' + encodeURIComponent(id) + '&aff_sub2=' + encodeURIComponent('app-' + shop.toLowerCase().replace(/[^a-z]/g,'')); }
 function msLogo(n, c){ return `<div style="width:40px;height:40px;border-radius:10px;background:${c};color:#fff;font-weight:900;font-size:16px;display:flex;align-items:center;justify-content:center;flex:none">${n.replace(/[^A-Za-z]/g,'').slice(0,2).toUpperCase()}</div>`; }
 function msGo(name, url){
