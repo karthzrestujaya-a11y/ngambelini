@@ -95,7 +95,7 @@ function calc(){
   if(vals.length < 2){ out.appendChild(mk('p','fine', tt('bandNeed'))); return; }
   const labs = new Set(vals.map(v => v.lab)); if(labs.size > 1){ out.appendChild(mk('p','fine','⚠️ g/kg, ml/L, pcs: pilih unit yang sama untuk semua link.')); return; }
   vals.sort((a,b) => a.per - b.per); const w = vals[0], n2 = vals[1];
-  w.r.classList.add('win'); w.r.querySelector('.bandres').innerHTML += ` <span class="badge" style="background:var(--gold);color:#14563A">${tt('bandBest')}</span>`;
+  w.r.classList.add('win'); w.r.querySelector('.bandres').innerHTML += ` <span class="badge" style="background:var(--gold);color:#14295A">${tt('bandBest')}</span>`;
   out.appendChild(mk('div', 'verdict', `<b>${tt('bandBuy',{n:w.i})}</b><span class="num">${tt('bandSave',{a:'RM'+(n2.per-w.per).toFixed(2), u:w.lab})}</span>`));
   const a = mk('a', 'btn Shopee primary', tt('bandBuyBtn')); a.target = '_blank'; a.rel = 'noopener';
   a.href = /shopee|shope\.ee|shp\.ee/i.test(w.link) ? shopeeAff(w.link) : shopeeAff('https://shopee.com.my/');
@@ -157,7 +157,7 @@ sec.after(lp);
 const gate = mk('div', '', ''); gate.id = 'nbnGate';
 gate.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-end;justify-content:center;z-index:999';
 gate.innerHTML = `<div style="background:#fff;border-radius:20px 20px 0 0;padding:20px 18px 26px;width:100%;max-width:520px;display:flex;flex-direction:column;gap:10px">
-  <b style="font-size:17px;color:#14563A" id="gT"></b><p class="fine" style="margin:0" id="gS"></p>
+  <b style="font-size:17px;color:#14295A" id="gT"></b><p class="fine" style="margin:0" id="gS"></p>
   <button type="button" class="btn-wide" id="gLogin"></button>
   <button type="button" class="link" id="gSkip" style="align-self:center;font-weight:700;padding:6px"></button></div>`;
 document.body.appendChild(gate);
@@ -212,7 +212,7 @@ window.search = function(term, done){ if(!done && /(shopee\.com\.my|shp\.ee|shop
 
 // Paste button under the box (iPhone shows its own "Allow Paste" prompt: that's normal)
 const pb = mk('button', 'bandbtn', `<span>${tt('pasteBtn')}</span><span>›</span>`); pb.type = 'button';
-pb.style.cssText = 'margin-top:8px;justify-content:center;gap:8px;background:#14774A;color:#fff;border-color:#14774A';
+pb.style.cssText = 'margin-top:8px;justify-content:center;gap:8px;background:#1E4A8A;color:#fff;border-color:#1E4A8A';
 pb.onclick = async () => {
   try{ const txt = await navigator.clipboard.readText(); if(txt && await window.searchLink(txt)) return; toast(tt('notShopee')); }
   catch(e){ $('q').focus(); toast(tt('pasteHelp')); }
@@ -244,9 +244,9 @@ function openHow(src, poster, title){
     <video controls playsinline autoplay src="${src}" poster="${poster}"></video></div>`);
   o.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(10,40,25,.82);display:flex;align-items:center;justify-content:center;padding:16px';
   const box = o.firstChild; box.style.cssText = 'background:#fff;border-radius:18px;padding:12px;width:100%;max-width:360px;display:flex;flex-direction:column;gap:10px';
-  const top = box.firstChild; top.style.cssText = 'display:flex;justify-content:space-between;align-items:center;color:#14563A;font-size:16px';
+  const top = box.firstChild; top.style.cssText = 'display:flex;justify-content:space-between;align-items:center;color:#14295A;font-size:16px';
   top.lastChild.style.cssText = 'border:0;background:#F3EED9;border-radius:50%;width:34px;height:34px;font-size:16px;cursor:pointer';
-  const v = box.querySelector('video'); v.style.cssText = 'width:100%;border-radius:12px;background:#0F5C39;aspect-ratio:9/16;max-height:70vh';
+  const v = box.querySelector('video'); v.style.cssText = 'width:100%;border-radius:12px;background:#102A5C;aspect-ratio:9/16;max-height:70vh';
   const close = () => { try{ v.pause(); }catch(e){} o.remove(); };
   top.lastChild.onclick = close; o.onclick = e => { if(e.target === o) close(); };
   document.body.appendChild(o);
@@ -271,15 +271,15 @@ const STORES_CB = [['TikTok Shop','#111111'],["Lotus's",'#00A19B'],['Watsons','#
 const STORES_NO = [['Lazada','#0F146D']];
 function storeChip(n, c, soon){ return `<div style="display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid #EDE3C3;border-radius:14px;padding:10px 12px">
   <div style="width:40px;height:40px;border-radius:10px;background:${c};color:#fff;font-weight:900;font-size:16px;display:flex;align-items:center;justify-content:center;flex:none">${n.replace(/[^A-Za-z]/g,'').slice(0,2).toUpperCase()}</div>
-  <div style="flex:1;font-weight:800;color:#14563A;font-size:15px">${n}</div><div style="font-size:11px;font-weight:700;color:${soon?'#8A7A3D':'#14774A'};background:${soon?'#FFF6D6':'#E8F6EE'};border-radius:8px;padding:3px 7px">${soon?tt('storesSoon'):tt('storesActive')}</div></div>`; }
+  <div style="flex:1;font-weight:800;color:#14295A;font-size:15px">${n}</div><div style="font-size:11px;font-weight:700;color:${soon?'#8A7A3D':'#1E4A8A'};background:${soon?'#FFF6D6':'#E6EDFA'};border-radius:8px;padding:3px 7px">${soon?tt('storesSoon'):tt('storesActive')}</div></div>`; }
 function openStores(){
   const o = mk('div', '', ''); o.id = 'storesPage';
   o.style.cssText = 'position:fixed;inset:0;z-index:9990;background:#FFFBEF;overflow:auto;padding:16px 16px 40px';
   const grid = a => `<div style="display:grid;gap:8px">${a.map(x=>storeChip(x[0],x[1],true)).join('')}</div>`;
   o.innerHTML = `<div style="max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:14px">
-   <div style="display:flex;align-items:center;gap:10px"><button type="button" id="storesBack" style="border:0;background:#F3EED9;border-radius:50%;width:38px;height:38px;font-size:18px;cursor:pointer">‹</button><h2 style="margin:0;color:#14563A">${tt('storesT')}</h2></div>
-   <div style="font-weight:800;color:#14563A">${tt('storesLive')}</div>${storeChip('Shopee','#EE4D2D',false)}
-   <div style="font-weight:800;color:#14563A;margin-top:6px">${tt('storesCb')}</div>${grid(STORES_CB)}
+   <div style="display:flex;align-items:center;gap:10px"><button type="button" id="storesBack" style="border:0;background:#F3EED9;border-radius:50%;width:38px;height:38px;font-size:18px;cursor:pointer">‹</button><h2 style="margin:0;color:#14295A">${tt('storesT')}</h2></div>
+   <div style="font-weight:800;color:#14295A">${tt('storesLive')}</div>${storeChip('Shopee','#EE4D2D',false)}
+   <div style="font-weight:800;color:#14295A;margin-top:6px">${tt('storesCb')}</div>${grid(STORES_CB)}
    <div style="font-weight:800;color:#8A2B2B;margin-top:6px">${tt('storesNo')}</div>${grid(STORES_NO)}
    <p class="fine" style="margin:6px 0 0;color:#5b665f;font-size:13px">${tt('storesNote')}</p></div>`;
   document.body.appendChild(o); o.querySelector('#storesBack').onclick = () => o.remove();
@@ -314,14 +314,14 @@ function catCard(x, key){
       <div><b style="color:#EE4D2D;font-size:16px">${rm(x.p)}</b>${disc}</div>
       <div style="font-size:11.5px;color:#5b665f">⭐ ${x.r.toFixed(1)} · ${tt('catSold',{n:soldTxt(x.sold)})}${x.mall ? ' · <b style="color:#D0011B">Mall</b>' : ''}</div>
       <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:2px">
-        <span style="font-size:12px;font-weight:800;color:#14774A;background:#E8F6EE;border-radius:8px;padding:3px 7px">${cbShow >= 0.1 ? tt('catCb',{a:rm(cbShow)}) : tt('catCbNo')}</span>
+        <span style="font-size:12px;font-weight:800;color:#1E4A8A;background:#E6EDFA;border-radius:8px;padding:3px 7px">${cbShow >= 0.1 ? tt('catCb',{a:rm(cbShow)}) : tt('catCbNo')}</span>
         <button type="button" data-cbuy="${x.id}" data-ck="${key}" style="border:0;background:#EE4D2D;color:#fff;font-weight:800;font-size:13px;border-radius:10px;padding:8px 10px;cursor:pointer;white-space:nowrap">${tt('catBuy')} ›</button>
       </div></div></div>`;
 }
 async function openCat(key){
   const o = mk('div', '', ''); o.id = 'catPage';
   o.style.cssText = 'position:fixed;inset:0;z-index:9990;background:#FFFBEF;overflow:auto;padding:16px 16px 40px';
-  const head = `<div style="display:flex;align-items:center;gap:10px"><button type="button" id="catBack" style="border:0;background:#F3EED9;border-radius:50%;width:38px;height:38px;font-size:18px;cursor:pointer;flex:none">‹</button><h2 style="margin:0;color:#14563A;font-size:20px">${tt('c_' + key)}</h2></div>`;
+  const head = `<div style="display:flex;align-items:center;gap:10px"><button type="button" id="catBack" style="border:0;background:#F3EED9;border-radius:50%;width:38px;height:38px;font-size:18px;cursor:pointer;flex:none">‹</button><h2 style="margin:0;color:#14295A;font-size:20px">${tt('c_' + key)}</h2></div>`;
   o.innerHTML = `<div style="max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:10px">${head}<p style="margin:0;color:#5b665f">${tt('catLoad')}</p></div>`;
   document.body.appendChild(o); o.querySelector('#catBack').onclick = () => o.remove();
   track('cat_open', key);
@@ -341,8 +341,8 @@ window.openCat = openCat;
 const catBox = mk('div', '', '');
 catBox.style.cssText = 'margin-top:12px;background:#fff;border:1.5px solid #C9A227;border-radius:16px;padding:12px';
 function drawCats(){
-  const tile = (k, wide) => `<button type="button" data-cat="${k}" style="border:1.5px solid #EDE3C3;background:${wide ? '#FFF6D6' : '#FFFDF6'};border-radius:12px;padding:10px 6px;font-weight:800;font-size:12.5px;color:#14563A;cursor:pointer;line-height:1.25;${wide ? 'grid-column:span 3;font-size:14px;text-align:left;padding:11px 12px' : ''}">${tt('c_' + k)}</button>`;
-  catBox.innerHTML = `<div style="font-weight:900;color:#14563A;font-size:16px">${tt('catT')}</div><div style="font-size:12.5px;color:#5b665f;margin:2px 0 10px">${tt('catSub')}</div>
+  const tile = (k, wide) => `<button type="button" data-cat="${k}" style="border:1.5px solid #EDE3C3;background:${wide ? '#FFF6D6' : '#FFFDF6'};border-radius:12px;padding:10px 6px;font-weight:800;font-size:12.5px;color:#14295A;cursor:pointer;line-height:1.25;${wide ? 'grid-column:span 3;font-size:14px;text-align:left;padding:11px 12px' : ''}">${tt('c_' + k)}</button>`;
+  catBox.innerHTML = `<div style="font-weight:900;color:#14295A;font-size:16px">${tt('catT')}</div><div style="font-size:12.5px;color:#5b665f;margin:2px 0 10px">${tt('catSub')}</div>
    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">${tile('xtra',1)}${tile('laris',1)}${CATS.slice(2).map(k => tile(k)).join('')}</div>`;
 }
 drawCats();
@@ -355,10 +355,10 @@ function langPicker(){
   if($('langPick')) return;
   const o = mk('div', '', ''); o.id = 'langPick';
   o.style.cssText = 'position:fixed;inset:0;z-index:9998;background:linear-gradient(160deg,#C99A2E,#F3DE8A 55%,#fff 55%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px';
-  o.innerHTML = `<div style="font-size:44px">🤝</div><div style="font-size:24px;font-weight:900;color:#14563A;text-align:center">Choose your language<br><span style="font-size:18px">Pilih bahasa anda</span></div>`;
+  o.innerHTML = `<div style="font-size:44px">🤝</div><div style="font-size:24px;font-weight:900;color:#14295A;text-align:center">Choose your language<br><span style="font-size:18px">Pilih bahasa anda</span></div>`;
   for(const k in NBN_LANGS){
     const b = mk('button', '', NBN_LANGS[k].name); b.type = 'button';
-    b.style.cssText = 'width:100%;max-width:320px;padding:16px;border-radius:14px;border:2px solid #14774A;background:#fff;color:#14563A;font-size:18px;font-weight:800;cursor:pointer';
+    b.style.cssText = 'width:100%;max-width:320px;padding:16px;border-radius:14px;border:2px solid #1E4A8A;background:#fff;color:#14295A;font-size:18px;font-weight:800;cursor:pointer';
     b.onclick = () => { LANG = k; lsS('nbn_lang', k); lsS('nbn-lang-chosen', '1'); applyLang(); o.remove(); setTimeout(() => { if(typeof welcome === 'function') welcome(); }, 400); };
     o.appendChild(b);
   }
@@ -382,9 +382,9 @@ function msLogo(n, c){ return `<div style="width:40px;height:40px;border-radius:
 function msGo(name, url){
   const d = mk('div', '', ''); d.style.cssText = 'position:fixed;inset:0;z-index:9995;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:20px';
   d.innerHTML = `<div style="background:#FFFBEF;border-radius:18px;padding:18px;max-width:340px;width:100%;box-shadow:0 10px 30px rgba(0,0,0,.25)">
-    <div style="font-weight:900;color:#14563A;font-size:17px">Going to ${name}</div>
+    <div style="font-weight:900;color:#14295A;font-size:17px">Going to ${name}</div>
     <p style="margin:8px 0 14px;color:#3b4a41;font-size:14px;line-height:1.4">Buy through this button and your cash back is tracked for you. Cash back is paid after ${name} confirms your order.</p>
-    <button type="button" id="msCont" style="width:100%;border:0;border-radius:12px;background:linear-gradient(135deg,#F7E08A,#C9A227);color:#0F5C39;font-weight:900;font-size:15px;padding:12px;cursor:pointer">Continue</button>
+    <button type="button" id="msCont" style="width:100%;border:0;border-radius:12px;background:linear-gradient(135deg,#F7E08A,#C9A227);color:#102A5C;font-weight:900;font-size:15px;padding:12px;cursor:pointer">Continue</button>
     <button type="button" id="msCancel" style="width:100%;border:0;background:none;color:#6b756f;font-size:14px;padding:10px;cursor:pointer">Cancel</button></div>`;
   document.body.appendChild(d);
   d.querySelector('#msCancel').onclick = () => d.remove();
@@ -395,10 +395,10 @@ function msGo(name, url){
 function openMoreShops(){
   const o = mk('div', '', ''); o.id = 'moreShopsPage';
   o.style.cssText = 'position:fixed;inset:0;z-index:9990;background:#FFFBEF;overflow:auto;padding:16px 16px 40px';
-  const live = MS_LIVE.map(g => `<div style="font-weight:800;color:#14563A;margin-top:10px">${g[0]}</div><div style="display:grid;gap:8px;margin-top:6px">${g[1].map(s => `<div style="display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid #EDE3C3;border-radius:14px;padding:10px 12px">${msLogo(s[0], s[2])}<div style="flex:1;font-weight:800;color:#14563A;font-size:15px">${s[0]}</div><button type="button" data-shop="${s[0]}" data-url="${s[1]}" style="border:0;border-radius:10px;background:linear-gradient(135deg,#F7E08A,#C9A227);color:#0F5C39;font-weight:900;font-size:13px;padding:8px 14px;cursor:pointer">Shop</button></div>`).join('')}</div>`).join('');
+  const live = MS_LIVE.map(g => `<div style="font-weight:800;color:#14295A;margin-top:10px">${g[0]}</div><div style="display:grid;gap:8px;margin-top:6px">${g[1].map(s => `<div style="display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid #EDE3C3;border-radius:14px;padding:10px 12px">${msLogo(s[0], s[2])}<div style="flex:1;font-weight:800;color:#14295A;font-size:15px">${s[0]}</div><button type="button" data-shop="${s[0]}" data-url="${s[1]}" style="border:0;border-radius:10px;background:linear-gradient(135deg,#F7E08A,#C9A227);color:#102A5C;font-weight:900;font-size:13px;padding:8px 14px;cursor:pointer">Shop</button></div>`).join('')}</div>`).join('');
   const wait = MS_WAIT.map(s => `<div style="display:flex;align-items:center;gap:10px;background:#f4f1e6;border:1.5px dashed #d9cfa6;border-radius:14px;padding:10px 12px;opacity:.75">${msLogo(s[0], s[1])}<div style="flex:1;font-weight:800;color:#6b756f;font-size:15px">${s[0]}</div><div style="font-size:11px;font-weight:700;color:#8A7A3D;background:#FFF6D6;border-radius:8px;padding:3px 7px">Coming soon</div></div>`).join('');
   o.innerHTML = `<div style="max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:6px">
-    <div style="display:flex;align-items:center;gap:10px"><button type="button" id="msBack" style="border:0;background:#F3EED9;border-radius:50%;width:38px;height:38px;font-size:18px;cursor:pointer">‹</button><h2 style="margin:0;color:#14563A">More shops</h2></div>
+    <div style="display:flex;align-items:center;gap:10px"><button type="button" id="msBack" style="border:0;background:#F3EED9;border-radius:50%;width:38px;height:38px;font-size:18px;cursor:pointer">‹</button><h2 style="margin:0;color:#14295A">More shops</h2></div>
     <p style="margin:6px 0 0;color:#3b4a41;font-size:14px">Shop through these buttons for cash back. Rezeki kita, kita kongsi.</p>
     ${live}
     <div style="font-weight:800;color:#8A7A3D;margin-top:16px">⏳ Waiting for approval</div><div style="display:grid;gap:8px;margin-top:6px">${wait}</div>
@@ -448,7 +448,7 @@ const msCard = document.querySelector('#soon .soon-card'); if(msCard){ msCard.st
     setTimeout(()=>{
       if(typeof USER!=='undefined' && USER) return;
       const bar=document.createElement('div');
-      bar.style.cssText='position:fixed;left:12px;right:12px;bottom:76px;z-index:90;background:#145c3a;color:#fff;border-radius:14px;padding:12px 14px;display:flex;gap:10px;align-items:center;box-shadow:0 8px 24px rgba(0,0,0,.3);font-size:14px';
+      bar.style.cssText='position:fixed;left:12px;right:12px;bottom:76px;z-index:90;background:#14295A;color:#fff;border-radius:14px;padding:12px 14px;display:flex;gap:10px;align-items:center;box-shadow:0 8px 24px rgba(0,0,0,.3);font-size:14px';
       const m=document.createElement('span'); m.style.flex='1'; m.textContent=t('trackMsg');
       const y=document.createElement('button'); y.textContent=t('trackYes'); y.style.cssText='background:#f5b82e;color:#222;border:0;border-radius:10px;padding:9px 14px;font:inherit;font-weight:700;cursor:pointer';
       const n=document.createElement('button'); n.textContent=t('trackNo'); n.style.cssText='background:none;color:#fff;border:0;font:inherit;opacity:.8;cursor:pointer';
@@ -494,7 +494,7 @@ async function drawTop(){
     const d = await catData(); const seen = new Set();
     topItems = [].concat(d.cats.xtra || [], d.cats.laris || []).filter(x => x && !seen.has(x.id) && seen.add(x.id))
       .map(x => ({ x, cb: x.p * x.cr / 100 * CUSTOMER_SHARE })).sort((a, b) => b.cb - a.cb).slice(0, 3).map(o => o.x);
-    topBox.innerHTML = `<div><div style="font-weight:900;color:#14563A;font-size:16px">${tt('topT')}</div><div style="font-size:12.5px;color:#5b665f">${tt('topSub')}</div></div>` + topItems.map(x => catCard(x, 'top')).join('');
+    topBox.innerHTML = `<div><div style="font-weight:900;color:#14295A;font-size:16px">${tt('topT')}</div><div style="font-size:12.5px;color:#5b665f">${tt('topSub')}</div></div>` + topItems.map(x => catCard(x, 'top')).join('');
   }catch(e){ topBox.innerHTML = ''; }
 }
 topBox.onclick = e => {
@@ -514,10 +514,10 @@ function welcome(){
   let jar = ''; try{ window.__tbDrop = true; jar = tbJarSvg(1); }catch(e){}
   o.innerHTML = `<div style="background:#FFFBEF;border-radius:22px;padding:18px;max-width:340px;width:100%;text-align:center;box-shadow:0 14px 40px rgba(0,0,0,.3)">
     <img src="/icons/dayang.webp" alt="" width="64" height="64" style="border-radius:50%;border:3px solid #C9A227;object-fit:cover">
-    <div style="font-weight:900;color:#14563A;font-size:20px;margin:8px 0 2px">${tt('wT')}</div>
+    <div style="font-weight:900;color:#14295A;font-size:20px;margin:8px 0 2px">${tt('wT')}</div>
     <div style="width:120px;margin:4px auto">${jar}</div>
     <p style="margin:6px 0 14px;color:#3b4a41;font-size:14.5px;line-height:1.45">${tt('wB')}</p>
-    <button type="button" id="wGo" style="width:100%;border:0;border-radius:12px;background:linear-gradient(135deg,#F7E08A,#C9A227);color:#0F5C39;font-weight:900;font-size:16px;padding:13px;cursor:pointer">${tt('wGo')}</button>
+    <button type="button" id="wGo" style="width:100%;border:0;border-radius:12px;background:linear-gradient(135deg,#F7E08A,#C9A227);color:#102A5C;font-weight:900;font-size:16px;padding:13px;cursor:pointer">${tt('wGo')}</button>
     <div style="font-size:10.5px;color:#9aa39d;margin-top:8px">${tt('gName')}</div></div>`;
   document.body.appendChild(o);
   o.querySelector('#wGo').onclick = () => { o.remove(); window.__tbDrop = false; };
