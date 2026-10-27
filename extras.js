@@ -7,20 +7,20 @@ add('en', { yourSavings:'Duit balik keluarga NBN', ttlItem:'Item', ttlBand:'⚖�
   bandSub:'Paste 2–3 Shopee links, then type each price and size.', bandLink:'Shopee link (optional)', bandPrice:'Price (RM)', bandSize:'Size',
   bandMore:'➕ Add link 3', bandBest:'Best value', bandBuy:'👉 Buy link {n}', bandSave:'Save {a} per {u}', bandNeed:'Fill in price and size for at least 2 links.',
   bandBuyBtn:'Buy on Shopee through NBN', cbAvail:'✅ Cash back available for this item', howCb:'❓ How cash back works',
-  tabCash:'💸 Cash back', tabAjak:'🤝 Invite friends', ajakT:'🤝 Invite friends, share the rezeki', ajakSub:'RM1 goes into your coin box when your friend makes their first order (min RM30). Take it out once you reach RM5.',
+  tabCash:'💸 Cash back', tabAjak:'🤝 Invite friends', ajakT:'🤝 Invite friends, share the rezeki', ajakSub:'RM5 goes into your coin box when your friend makes their first order (min RM30). Take it out once you reach RM5.',
   ajakPh:'Friend\'s phone: 01x-xxxxxxx', ajakSend:'📲 Send invite on WhatsApp', ajakPick:'or choose a friend in WhatsApp', ajakToday:'Today: {n}/5', ajakJoined:'Joined: {n}', ajakReward:'Coin box: {a}',
   ajakLogin:'Log in to get your invite link', ajakMax:'You have sent 5 invites today. Try again tomorrow 🙏', ajakHowT:'How it works',
-  ajakH1:'Send an invite to a friend', ajakH2:'Your friend signs up and buys for the first time (min RM30)', ajakH3:'When Shopee confirms the order, RM1 goes into your coin box (paid out from RM5)',
+  ajakH1:'Send an invite to a friend', ajakH2:'Your friend signs up and buys for the first time (min RM30)', ajakH3:'When Shopee confirms the order, RM5 goes into your coin box (paid out from RM5)',
   ajakMsg:'Hi! I use *NBN – Ngam Beli Ni* 🛒\nShop on Shopee as usual, but get *cash back*. Free!\n👉 {link}\nRezeki kita, kita kongsi 🤝', smallNote:'Pilot. Prices checked by hand. We share part of our commission with you.' });
 add('ms', { yourSavings:'Duit balik keluarga NBN', ttlItem:'Barang', ttlBand:'⚖️ Banding harga seunit', ttlJoin:'Log masuk',
   bandBtn:'⚖️ Banding saiz / kedai (harga seunit)', bandAdd:'➕ Ada saiz / kedai lain? Tambah link untuk banding',
   bandSub:'Tampal 2–3 link Shopee, kemudian taip harga dan saiz.', bandLink:'Link Shopee (pilihan)', bandPrice:'Harga (RM)', bandSize:'Saiz',
   bandMore:'➕ Tambah link ke-3', bandBest:'Paling jimat', bandBuy:'👉 Beli link {n}', bandSave:'Jimat {a} se{u}', bandNeed:'Isi harga dan saiz untuk sekurang-kurangnya 2 link.',
   bandBuyBtn:'Beli di Shopee melalui NBN', cbAvail:'✅ Duit balik tersedia untuk barang ini', howCb:'❓ Macam mana duit balik berfungsi',
-  tabCash:'💸 Duit balik', tabAjak:'🤝 Ajak kawan', ajakT:'🤝 Ajak kawan, kongsi rezeki', ajakSub:'RM1 masuk Tabung Syiling bila kawan anda buat pesanan pertama (min RM30). Keluarkan bila cukup RM5.',
+  tabCash:'💸 Duit balik', tabAjak:'🤝 Ajak kawan', ajakT:'🤝 Ajak kawan, kongsi rezeki', ajakSub:'RM5 masuk Tabung Syiling bila kawan anda buat pesanan pertama (min RM30). Keluarkan bila cukup RM5.',
   ajakPh:'No. telefon kawan: 01x-xxxxxxx', ajakSend:'📲 Hantar jemputan di WhatsApp', ajakPick:'atau pilih kawan dalam WhatsApp', ajakToday:'Hari ini: {n}/5', ajakJoined:'Berjaya: {n}', ajakReward:'Tabung Syiling: {a}',
   ajakLogin:'Log masuk untuk dapat link jemputan anda', ajakMax:'Anda dah hantar 5 jemputan hari ini. Cuba esok 🙏', ajakHowT:'Macam mana ia berfungsi',
-  ajakH1:'Hantar jemputan kepada kawan', ajakH2:'Kawan daftar & beli kali pertama (min RM30)', ajakH3:'Bila Shopee sahkan pesanan, RM1 masuk Tabung Syiling anda (boleh keluarkan bila cukup RM5)',
+  ajakH1:'Hantar jemputan kepada kawan', ajakH2:'Kawan daftar & beli kali pertama (min RM30)', ajakH3:'Bila Shopee sahkan pesanan, RM5 masuk Tabung Syiling anda (boleh keluarkan bila cukup RM5)',
   ajakMsg:'Hi! Aku guna *NBN – Ngam Beli Ni* 🛒\nBeli kat Shopee macam biasa, tapi dapat *duit balik*. Percuma!\n👉 {link}\nRezeki kita, kita kongsi 🤝', smallNote:'Pilot. Harga disemak dengan tangan. Kami kongsi sebahagian komisen dengan anda.' });
 ['ta','zh'].forEach(l => add(l, { yourSavings:'Duit balik keluarga NBN' }));
 

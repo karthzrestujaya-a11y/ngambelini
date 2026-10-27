@@ -1,14 +1,15 @@
--- NBN coin box: RM1 per friend's first confirmed order (min RM30), RM500 total pilot budget, paid out with the normal DuitNow payout (min RM5).
+-- NBN coin box: RM5 per friend's first confirmed order (min RM30), max 5 per day, RM500 total pilot budget (= 100 rewards), paid out with the normal DuitNow payout (min RM5).
 -- Safe to run more than once. Run after referral.sql.
 
 create table if not exists public.referral_payouts (
   friend uuid primary key references auth.users(id) on delete cascade,
   referrer uuid not null references auth.users(id) on delete cascade,
-  amount_rm numeric(10,2) not null default 1,
+  amount_rm numeric(10,2) not null default 5,
   paid_at timestamptz not null default now(),
   payout_ref text
 );
 alter table public.referral_payouts enable row level security;
+alter table public.referral_payouts alter column amount_rm set default 5;
 
 create table if not exists public.referral_budget (id int primary key default 1, total_rm numeric(10,2) not null default 500);
 insert into public.referral_budget(id) values (1) on conflict do nothing;
@@ -27,7 +28,7 @@ with f as (
   from f
 )
 select referrer, friend, referred_at, (n_day <= 5) as within_cap, qualified, qualified_at,
-       case when qualified and n_day <= 5 and budget_rank <= (select total_rm from referral_budget where id = 1) then 1.00 else 0 end::numeric(10,2) as reward_rm
+       case when qualified and n_day <= 5 and budget_rank * 5 <= (select total_rm from referral_budget where id = 1) then 5.00 else 0 end::numeric(10,2) as reward_rm
 from r;
 revoke all on public.referral_rewards from anon, authenticated;
 
