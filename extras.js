@@ -478,7 +478,7 @@ const msCard = document.querySelector('#soon .soon-card'); if(msCard){ msCard.st
 const A27 = {
  en:{ topT:'🔥 Top cash back today', topSub:'Tap Buy. We track your cash back.', gHi:'Paste your Shopee link above 👆 then buy as usual. I track your cash back!', gName:'Dayang · AI guide', wT:'Welcome to NBN 🎉', wB:"Hi, I'm Dayang! Paste a Shopee link and buy as usual. We track your cash back and it fills this jar.", wGo:"Let's go" },
  ms:{ topT:'🔥 Duit balik tinggi hari ni', topSub:'Tekan Beli. Duit balik kita track untuk anda.', gHi:'Tampal link Shopee kat atas 👆 lepas tu beli macam biasa. Saya track duit balik anda!', gName:'Dayang · Panduan AI', wT:'Selamat datang ke NBN 🎉', wB:'Hai, saya Dayang! Tampal link Shopee, beli macam biasa. Duit balik kita track dan masuk dalam tabung ni.', wGo:'Jom mula' } };
-add('en', A27.en); add('ms', A27.ms); ['ta','zh'].forEach(l => add(l, A27.en));
+add('en', Object.assign({google:'Continue with Google', orEmail:'or use your email'}, A27.en)); add('ms', {google:'Teruskan dengan Google', orEmail:'atau guna e-mel'}); add('ms', A27.ms); ['ta','zh'].forEach(l => add(l, A27.en));
 
 const dGuide = mk('div', '', ''); dGuide.id = 'dayangGuide';
 dGuide.style.cssText = 'display:flex;gap:10px;align-items:center;background:#fff;border:1.5px solid #EDE3C3;border-radius:16px;padding:8px 12px 8px 8px';

@@ -388,6 +388,8 @@ body.on-home .hero .brand .mark{box-shadow:0 4px 14px rgba(0,0,0,.35)!important}
     <h1 style="font-size:24px" data-t="login">Log in</h1>
     <form id="joinForm" style="display:flex;flex-direction:column;gap:14px">
       <input id="code" type="hidden" value="">
+      <button type="button" id="googleBtn" hidden style="display:none;align-items:center;justify-content:center;gap:10px;height:52px;border-radius:14px;border:1.5px solid #dadce0;background:#fff;color:#1f1f1f;font-weight:700;font-size:16px;font-family:var(--body);cursor:pointer"><svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.7 6c4.5-4.2 6.9-10.3 6.9-17.7z"/><path fill="#FBBC05" d="M10.5 28.7c-.5-1.4-.8-3-.8-4.7s.3-3.2.8-4.7l-7.9-6.1C.9 16.4 0 20.1 0 24s.9 7.6 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.7-6c-2.2 1.5-4.9 2.3-8.2 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg><span data-t="google">Continue with Google</span></button>
+      <p class="fine" id="orEmail" hidden style="text-align:center;margin:-4px 0" data-t="orEmail">or use your email</p>
       <div class="field" id="emailField"><label for="email" data-t="email">Email</label><input id="email" type="email" autocomplete="email" placeholder="you@example.com" data-t-ph="emailPh"></div>
       <button class="btn-wide" id="joinBtn" type="submit" data-t="login">Log in</button>
       <div class="field" id="otpField" hidden><label for="otp" data-t="code">Code from your email</label><input id="otp" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="8-digit code" style="font-size:22px;letter-spacing:6px;text-align:center"></div>
@@ -1071,6 +1073,12 @@ async function boot(){
   if(session){ USER = session.user; await afterLogin(); } else show('home');
   sb.auth.onAuthStateChange((ev, ses)=>{ if(ses && !USER){ USER = ses.user; afterLogin(); } });
 }
+const GOOGLE_ON = false; if(GOOGLE_ON){ $('googleBtn').hidden = false; $('googleBtn').style.display = 'flex'; $('orEmail').hidden = false; }
+$('googleBtn').addEventListener('click', async () => {
+  const msg = $('joinMsg');
+  try{ track('google_tap'); const { error } = await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.origin + '/' } }); if(error) msg.textContent = error.message; }
+  catch(e){ msg.textContent = String(e && e.message || e); }
+});
 $('joinForm').addEventListener('submit', async e => {
   e.preventDefault();
   const code = $('code').value.trim().toUpperCase(), btn = $('joinBtn'), msg = $('joinMsg');
