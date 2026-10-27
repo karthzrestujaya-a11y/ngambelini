@@ -374,9 +374,10 @@ window.show = function(view){
 // ---- 24 Oct 2026: More shops page (Involve links, member id as aff_sub) ----
 const MS_LIVE = [
   ['✈️ Travel', [['Traveloka','https://invl.me/clo63vm','#0770CD'],['KKday','https://invl.me/clo646v','#FF5B5B'],['Klook','https://invl.me/clo63vo','#FF5B00'],['Accor Plus','https://invl.me/clo63wz','#1B2A5B']]],
-  ['💄 Beauty', [['Sephora','https://invl.me/clo5mes','#111111'],['Watsons','https://invl.me/clo5mf2','#00A3AD'],['Sasa','https://invl.me/clo63wq','#E4007F'],['Olive Young','https://invl.me/clo63w4','#7AC143'],['Stylevana','https://miniurl.app/clo63vu','#111111']]],
-  ['👟 Sports & fashion', [['JD Sports','https://invl.me/clo5mfc','#111111']]],
-  ['🛍️ Marketplaces & fashion', [['Love Bonito','https://invl.me/clo647e','#111111'],['AliExpress','https://invl.me/clo642f','#E62E04'],['Shein','https://miniurl.app/clo6438','#111111']]],
+  ['💄 Beauty', [['Sephora','https://invl.me/clo5mes','#111111'],['Watsons','https://invl.me/clo5mf2','#00A3AD'],['Sasa','https://invl.me/clo63wq','#E4007F'],['Olive Young','https://invl.me/clo63w4','#7AC143'],['Stylevana','https://miniurl.app/clo63vu','#111111'],['Foreo','https://invl.me/clo649i','#E6007E']]],
+  ['👟 Sports & fashion', [['JD Sports','https://invl.me/clo5mfc','#111111'],['Juice Store','https://invl.me/clo649a','#111111']]],
+  ['🛍️ Marketplaces & fashion', [['Love Bonito','https://invl.me/clo647e','#111111'],['Poplook','https://invl.me/clo649k','#C2185B'],['Bernardelli','https://invl.me/clo648x','#6B4F3A'],['Corvan','https://invol.co/clo6491','#0F766E'],['AliExpress','https://invl.me/clo642f','#E62E04'],['Shein','https://miniurl.app/clo6438','#111111']]],
+  ['💚 Health & wellness', [['Pai Wellness','https://invl.me/clo6495','#2E7D32'],['Total Image','https://invl.me/clo649r','#E4002B']]],
   ['📱 Phones, tech & internet', [['Xiaomi','https://invl.me/clo5mfg','#FF6900'],['Unifi (TM)','https://invl.us/clo63x3','#F26522']]] ];
 const MS_WAIT = [['PUMA','#111111'],['Huawei','#C7000B'],["Lotus's",'#00A19B']];
 function msLink(u, shop){ const id = (typeof subId === 'function') ? subId() : 'guest'; return u + '?aff_sub=' + encodeURIComponent(id) + '&aff_sub2=' + encodeURIComponent('app-' + shop.toLowerCase().replace(/[^a-z]/g,'')); }
