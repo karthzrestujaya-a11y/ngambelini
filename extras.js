@@ -512,7 +512,8 @@ topBox.onclick = e => {
 catBox.before(topBox); drawTop();
 
 function welcome(){
-  if(!USER || lsG('nbn-welcome-1') === '1' || lsG('nbn-lang-chosen') !== '1' || $('welcomeM')) return;
+  const force = /[?&]welcome=1/.test(location.search);
+  if(!USER || (lsG('nbn-welcome-1') === '1' && !force) || (lsG('nbn-lang-chosen') !== '1' && !force) || $('welcomeM')) return;
   lsS('nbn-welcome-1', '1');
   const o = mk('div', '', ''); o.id = 'welcomeM';
   o.style.cssText = 'position:fixed;inset:0;z-index:9996;background:rgba(10,40,25,.55);display:flex;align-items:center;justify-content:center;padding:20px';
