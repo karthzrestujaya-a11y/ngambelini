@@ -1100,7 +1100,7 @@ const GOOGLE_ON = true; if(GOOGLE_ON){ $('googleBtn').hidden = false; $('googleB
     const bn = document.createElement('div'); bn.id = 'inappBanner'; bn.className = 'note';
     bn.style.cssText = 'background:#FFF3C4;border:1.5px solid #C9A227;border-radius:14px;padding:10px 12px;color:#0A2A66;font-size:13.5px;line-height:1.4';
     bn.innerHTML = '<b>📲 Open in your browser for the best NBN</b><br>Tap <b>⋯</b> (top right), then <b>Open in browser</b>. You stay logged in and your cash back is saved.<br><button type="button" id="bnCopy" class="sbtn" style="margin-top:6px">Copy link</button>' + (isAndroid ? ' <a class="link" href="intent://ngambelini.com/#Intent;scheme=https;package=com.android.chrome;end">Open in Chrome</a>' : '');
-    const hm = $('home'); if(hm) hm.insertBefore(bn, hm.firstChild);
+    bn.style.marginTop = '14px'; const sf = $('searchForm'); if(sf) sf.after(bn);
     $('bnCopy').onclick = async () => { const b = $('bnCopy'); try{ await navigator.clipboard.writeText('https://ngambelini.com/'); b.textContent = 'Copied. Paste in Chrome'; }catch(e){ b.textContent = 'Type ngambelini.com in Chrome'; } };
   }catch(e){}
 
