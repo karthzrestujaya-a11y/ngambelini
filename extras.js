@@ -479,8 +479,8 @@ const msCard = document.querySelector('#soon .soon-card'); if(msCard){ msCard.st
 
 // ---- 27 Oct 2026: more attractive home: money first, guide Dayang, welcome moment ----
 const A27 = {
- en:{ topT:'🔥 Top cash back today', topSub:'Tap Buy. We track your cash back.', gHi:'Paste your Shopee link above 👆 then buy as usual. I track your cash back!', gName:'Dayang · AI guide', wT:'Welcome to NBN 🎉', wB:"Hi, I'm Dayang! Paste a Shopee link and buy as usual. We track your cash back and it fills this jar.", wGo:"Let's go" },
- ms:{ topT:'🔥 Duit balik tinggi hari ni', topSub:'Tekan Beli. Duit balik kita track untuk anda.', gHi:'Tampal link Shopee kat atas 👆 lepas tu beli macam biasa. Saya track duit balik anda!', gName:'Dayang · Panduan AI', wT:'Selamat datang ke NBN 🎉', wB:'Hai, saya Dayang! Tampal link Shopee, beli macam biasa. Duit balik kita track dan masuk dalam tabung ni.', wGo:'Jom mula' } };
+ en:{ topT:'🔥 Top cash back today', topSub:'Tap Buy. We track your cash back.', gHi:'Paste your Shopee link above 👆 then buy as usual. I track your cash back!', gName:'Dayang · AI guide', wT:'Welcome to NBN 🎉', wB:"Hi, I'm Dayang! Paste a Shopee link and buy as usual. We track your cash back and it fills this jar.", wGo:"Let's go", wInv:'🤝 Invite a friend: get RM5 when their first order (min RM30) is confirmed.', wInvB:'Invite friends, get RM5' },
+ ms:{ topT:'🔥 Duit balik tinggi hari ni', topSub:'Tekan Beli. Duit balik kita track untuk anda.', gHi:'Tampal link Shopee kat atas 👆 lepas tu beli macam biasa. Saya track duit balik anda!', gName:'Dayang · Panduan AI', wT:'Selamat datang ke NBN 🎉', wB:'Hai, saya Dayang! Tampal link Shopee, beli macam biasa. Duit balik kita track dan masuk dalam tabung ni.', wGo:'Jom mula', wInv:'🤝 Ajak kawan: dapat RM5 bila pesanan pertama mereka (min RM30) disahkan.', wInvB:'Ajak kawan, dapat RM5' } };
 add('en', Object.assign({google:'Continue with Google', orEmail:'or use your email'}, A27.en)); add('ms', {google:'Teruskan dengan Google', orEmail:'atau guna e-mel'}); add('ms', A27.ms);
 add('ta', { google:'Google மூலம் தொடரவும்', orEmail:'அல்லது மின்னஞ்சல் பயன்படுத்தவும்', topT:'🔥 இன்று அதிக கேஷ் பேக்', topSub:'வாங்கு அழுத்துங்கள். உங்கள் கேஷ் பேக்கை நாங்கள் கண்காணிக்கிறோம்.', gHi:'மேலே Shopee லிங்கை ஒட்டுங்கள் 👆 பிறகு வழக்கம் போல் வாங்குங்கள். உங்கள் கேஷ் பேக்கை நான் கண்காணிக்கிறேன்!', gName:'Dayang · AI வழிகாட்டி', wT:'NBN-க்கு வரவேற்கிறோம் 🎉', wB:'வணக்கம், நான் Dayang! Shopee லிங்கை ஒட்டி வழக்கம் போல் வாங்குங்கள். உங்கள் கேஷ் பேக்கை நாங்கள் கண்காணிக்கிறோம்; அது இந்த ஜாடியில் நிரம்பும்.', wGo:'தொடங்குவோம்' });
 add('zh', { google:'使用 Google 继续', orEmail:'或使用电子邮件', topT:'🔥 今日高返现', topSub:'点“购买”，我们帮你追踪返现。', gHi:'在上方粘贴 Shopee 链接 👆 然后照常下单。我帮你追踪返现！', gName:'Dayang · AI 向导', wT:'欢迎来到 NBN 🎉', wB:'你好，我是 Dayang！粘贴 Shopee 链接并照常下单。我们会追踪你的返现，并装进这个存钱罐。', wGo:'开始吧' });
@@ -522,10 +522,13 @@ function welcome(){
     <div style="font-weight:900;color:#0A2A66;font-size:20px;margin:8px 0 2px">${tt('wT')}</div>
     <div style="width:120px;margin:4px auto">${jar}</div>
     <p style="margin:6px 0 14px;color:#3b4a41;font-size:14.5px;line-height:1.45">${tt('wB')}</p>
+    <div style="background:#FFF3C4;border:1.5px solid #C9A227;border-radius:12px;padding:9px 10px;margin:0 0 10px;color:#0A2A66;font-size:13.5px;font-weight:700;line-height:1.35">${tt('wInv')}</div>
     <button type="button" id="wGo" style="width:100%;border:0;border-radius:12px;background:linear-gradient(135deg,#F7E08A,#C9A227);color:#0A2A66;font-weight:900;font-size:16px;padding:13px;cursor:pointer">${tt('wGo')}</button>
+    <button type="button" id="wInv" style="width:100%;border:1.5px solid #C9A227;border-radius:12px;background:#fff;color:#0A2A66;font-weight:800;font-size:14.5px;padding:11px;margin-top:8px;cursor:pointer">${tt('wInvB')}</button>
     <div style="font-size:10.5px;color:#9aa39d;margin-top:8px">${tt('gName')}</div></div>`;
   document.body.appendChild(o);
   o.querySelector('#wGo').onclick = () => { o.remove(); window.__tbDrop = false; };
+  o.querySelector('#wInv').onclick = () => { o.remove(); window.__tbDrop = false; try{ track('welcome_invite'); }catch(e){} const t = $('tabSave'); if(t) t.click(); setTimeout(() => { const a = $('wsAjak'); if(a) a.click(); }, 250); };
   try{ track('welcome_shown'); }catch(e){}
 }
 const show4 = window.show;
