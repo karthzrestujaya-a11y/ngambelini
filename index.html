@@ -1093,8 +1093,9 @@ const GOOGLE_ON = true; if(GOOGLE_ON){ $('googleBtn').hidden = false; $('googleB
   $('googleBtn').hidden = true; $('googleBtn').style.display = 'none'; $('orEmail').hidden = true;
   const isAndroid = /Android/i.test(ua);
   const tip = document.createElement('div'); tip.className = 'note'; tip.id = 'inappTip';
-  tip.innerHTML = '<b>Easiest login here: use your email below.</b> We send an 8-digit code. Type it back here. No password.' + (isAndroid ? '<br><a class="link" href="intent://ngambelini.com/#Intent;scheme=https;package=com.android.chrome;end">Or open in Chrome</a>' : '<br>Or tap ⋯ and choose “Open in Safari”.');
+  tip.innerHTML = '<b>TikTok keeps logging you out.</b><br>Best: tap <b>⋯</b> (top right), then <b>Open in browser</b>. Google login then works with one tap and stays logged in.<br><button type="button" id="copyLinkBtn" class="sbtn" style="margin-top:8px">Copy link to open in Chrome</button>' + (isAndroid ? ' <a class="link" href="intent://ngambelini.com/#Intent;scheme=https;package=com.android.chrome;end">Open in Chrome</a>' : '') + '<br><span class="fine">Or use your email below: we send an 8-digit code. Type it back here.</span>';
   $('googleBtn').parentNode.insertBefore(tip, $('googleBtn'));
+  const cb = $('copyLinkBtn'); if(cb) cb.onclick = async () => { try{ await navigator.clipboard.writeText('https://ngambelini.com/'); cb.textContent = 'Copied. Paste in Chrome'; }catch(e){ cb.textContent = 'Type ngambelini.com in Chrome'; } };
 })();
 $('googleBtn').addEventListener('click', async () => {
   const msg = $('joinMsg');
@@ -1120,15 +1121,17 @@ $('joinForm').addEventListener('submit', async e => {
       : ('Could not send the email: ' + error.message);
   } finally { btn.disabled = false; }
 });
+let OTP_BUSY = false;
 async function confirmOtp(){
-  const email = $('email').value.trim(), token = $('otp').value.replace(/\D/g,''), msg = $('joinMsg'), b = $('otpBtn');
+  const email = $('email').value.trim().toLowerCase(), token = $('otp').value.replace(/\D/g,''), msg = $('joinMsg'), b = $('otpBtn');
   if(token.length < 6){ msg.textContent = t('typeCode'); return; }
-  b.disabled = true; msg.textContent = t('checking');
+  if(OTP_BUSY || USER) return;
+  OTP_BUSY = true; b.disabled = true; msg.textContent = t('checking');
   try{
-    const { data, error } = await sb.auth.verifyOtp({ email, token, type: 'email' });
+    const { data, error } = await Promise.race([ sb.auth.verifyOtp({ email, token, type: 'email' }), new Promise(r => setTimeout(() => r({ error: { message: 'slow network, try again' } }), 15000)) ]);
     if(error){ track('otp_err', error.message); msg.textContent = /expired|invalid/i.test(error.message) ? 'Wrong or expired code. Check the latest email, or send again.' : ('Could not log in: ' + error.message); return; }
     USER = data.user || (data.session && data.session.user); track('login'); await afterLogin();
-  } finally { b.disabled = false; }
+  } finally { b.disabled = false; OTP_BUSY = false; }
 }
 // App-store review account only: password login (reviewers can't receive email codes)
 const REVIEW_EMAILS = ['review@ngambelini.com'];
