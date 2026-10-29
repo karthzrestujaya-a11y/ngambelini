@@ -539,3 +539,37 @@ if(typeof applyLang3 === 'function') window.applyLang = function(){ applyLang3.a
 
 if(typeof applyLang === 'function') applyLang();
 })();
+
+
+/* 29 Oct 2026: Shop selector under the search box. Shopee (default) = normal search. Other shops = Involve link, search word copied to clipboard. */
+(function(){
+  const form=document.getElementById('searchForm'), q=document.getElementById('q'); if(!form||!q||document.getElementById('shopPick')) return;
+  const SHOPS=[['Shopee','#EE4D2D',null],['Sephora','#111111','https://invl.me/clo5mes'],['Watsons','#00A3AD','https://invl.me/clo5mf2'],['JD Sports','#111111','https://invl.me/clo5mfc'],['Xiaomi','#FF6900','https://invl.me/clo5mfg'],['AliExpress','#E62E04','https://invl.me/clo642f'],['Shein','#111111','https://miniurl.app/clo6438']];
+  let SHOP='Shopee'; const origPh=q.placeholder;
+  const row=document.createElement('div'); row.id='shopPick'; row.setAttribute('role','group'); row.setAttribute('aria-label','Choose a shop to search in');
+  row.style.cssText='display:flex;gap:8px;overflow-x:auto;padding:2px 2px 4px;margin-top:-6px;-webkit-overflow-scrolling:touch;scrollbar-width:none';
+  function paint(){
+    row.innerHTML='';
+    SHOPS.forEach(s=>{ const on=s[0]===SHOP; const b=document.createElement('button'); b.type='button'; b.dataset.shop=s[0];
+      b.style.cssText='flex:none;display:flex;align-items:center;gap:6px;border-radius:999px;padding:6px 12px 6px 6px;font:inherit;font-size:13px;font-weight:800;cursor:pointer;border:1.5px solid '+(on?'#C9A227':'#EDE3C3')+';background:'+(on?'linear-gradient(135deg,#F7E08A,#C9A227)':'#fff')+';color:#0A2A66';
+      b.innerHTML='<span style="width:24px;height:24px;border-radius:50%;background:'+s[1]+';color:#fff;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center">'+s[0].replace(/[^A-Za-z]/g,'').slice(0,2).toUpperCase()+'</span>'+s[0];
+      b.onclick=()=>{ SHOP=s[0]; q.placeholder=SHOP==='Shopee'?origPh:'Search in '+SHOP; paint(); q.focus(); };
+      row.appendChild(b); });
+  }
+  paint(); form.after(row);
+  function go(term){
+    const s=SHOPS.find(x=>x[0]===SHOP); if(!s||!s[2]) return false;
+    term=(term||'').trim(); if(!term){ q.focus(); return true; }
+    try{ if(navigator.clipboard) navigator.clipboard.writeText(term).catch(()=>{}); }catch(e){}
+    try{ if(typeof sb!=='undefined'&&sb&&typeof USER!=='undefined'&&USER) sb.from('clicks').insert({user_id:USER.id,platform:SHOP,search_term:('shopsearch:'+SHOP+':'+term).slice(0,120),saving_rm:0}).then(()=>{}); if(typeof track==='function') track('shop_search',SHOP+':'+term); }catch(e){}
+    const d=document.createElement('div'); d.style.cssText='position:fixed;inset:0;z-index:9995;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:20px';
+    d.innerHTML='<div style="background:#FFFBEF;border-radius:18px;padding:18px;max-width:340px;width:100%;box-shadow:0 10px 30px rgba(0,0,0,.25)"><div style="font-weight:900;color:#0A2A66;font-size:17px">Search in '+SHOP+'</div><p style="margin:8px 0 14px;color:#3b4a41;font-size:14px;line-height:1.4">We copied <b></b>. In '+SHOP+', paste it in the search box. Buy through this button so your cash back is tracked.</p><button type="button" id="spGo" style="width:100%;border:0;border-radius:12px;background:linear-gradient(135deg,#F7E08A,#C9A227);color:#0A2A66;font-weight:900;font-size:15px;padding:12px;cursor:pointer">Open '+SHOP+'</button><button type="button" id="spNo" style="width:100%;border:0;background:none;color:#6b756f;font-size:14px;padding:10px;cursor:pointer">Cancel</button></div>';
+    d.querySelector('b').textContent='"'+term+'"';
+    document.body.appendChild(d);
+    d.querySelector('#spNo').onclick=()=>d.remove();
+    d.querySelector('#spGo').onclick=()=>{ window.open(s[2]+'?aff_sub='+encodeURIComponent(typeof subId==='function'?subId():'guest')+'&aff_sub2='+encodeURIComponent('app-'+SHOP.toLowerCase().replace(/[^a-z]/g,'')),'_blank','noopener'); d.remove(); };
+    return true;
+  }
+  form.addEventListener('submit',e=>{ if(SHOP==='Shopee') return; if(/^https?:\/\//i.test(q.value.trim())){ SHOP='Shopee'; q.placeholder=origPh; paint(); return; } e.preventDefault(); e.stopImmediatePropagation(); go(q.value); },true);
+  if(typeof window.search==='function'){ const o=window.search; window.search=function(t,f){ if(SHOP!=='Shopee'&&t&&!/^https?:\/\//i.test(t)){ q.value=t; return go(t); } return o.apply(this,arguments); }; }
+})();
