@@ -69,8 +69,8 @@ body:not(.on-home) .hero .pagetitle{font-size:19px!important;margin:6px 0 0!impo
 .ajak .ajt{font-size:16px;color:#0A2A66}
 .wabtn{background:#25D366;color:#fff;font-weight:800;border:0;border-radius:12px;padding:13px;font-size:15px;cursor:pointer}
 .ajstats{display:flex;justify-content:space-between;font-size:12px;color:#556;background:#FFF8E1;border-radius:10px;padding:8px 10px;gap:6px}
-#home > p.fine{display:none}
-#home > div:has(#deals),#home > div:has(#popular){display:none!important}
+#home .hc > p.fine{display:none}
+#home .hc > div:has(#deals),#home .hc > div:has(#popular){display:none!important}
 
 /* ===== v3 layout ===== */
 .v3hide{display:none!important}
@@ -271,7 +271,7 @@ body.on-home .heroline br,body.on-home .heroline span:first-child{display:none}
 body.on-home #linkHint{display:none}
 body.on-home #home{gap:10px!important}
 body.on-home .steps4 li{padding:6px 4px!important}
-body.on-home #home>p.fine:last-of-type{display:none}
+body.on-home #home .hc>p.fine:last-of-type{display:none}
 
 .search.float{margin-top:-62px;position:relative;z-index:1;border:none;border-radius:20px;height:64px;padding:0 10px 0 14px;box-shadow:0 10px 28px rgba(20,41,90,.18)}
 .search.float .scanbtn{background:var(--navy);color:var(--gold);width:46px;height:46px;border-radius:14px}
@@ -376,6 +376,28 @@ body.on-home .hero .brand .mark{box-shadow:0 4px 14px rgba(0,0,0,.35)!important}
 .cat,.catbtn,#catBox button{box-shadow:0 4px 12px rgba(20,41,90,.08)}
 .deal{box-shadow:0 6px 18px rgba(20,41,90,.10)}
 </style>
+<style id="desktop">
+.hc{display:contents}
+@media (min-width:900px){
+ body{padding-inline:28px}
+ .app{max-width:1120px}
+ .hero{margin:0!important;border-radius:26px!important;padding:26px 24px 70px!important}
+ body.on-home .hero{padding-bottom:70px!important}
+ #home .hc1{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:repeat(3,auto) repeat(3,min-content) 1fr;gap:18px 28px;align-items:start}
+ #home .hc1>*{grid-column:1/-1}
+ #home .hc1>#searchForm{max-width:680px;width:100%;margin-inline:auto}
+ #home .hc1>#shopPick,#home .hc1>#quickItems{max-width:760px;margin-inline:auto;justify-content:safe center}
+ #home .hc1>button:first-of-type{grid-column:1;grid-row:4}
+ #home .hc1>#dayangGuide{grid-column:1;grid-row:5}
+ #home .hc1>.steps4{grid-column:1;grid-row:6}
+ #home .hc1>#miniSave{grid-column:1;grid-row:7}
+ #home .hc1>#topCb{grid-column:2;grid-row:4/span 4}
+ #home .hc2{display:flex;flex-direction:column;gap:18px}
+ .tabbar{left:50%;right:auto;transform:translateX(-50%);width:min(560px,100%);border-radius:18px 18px 0 0;border:1px solid var(--line);border-bottom:0}
+ .toast{max-width:420px}
+ .view:not(#home):not([hidden]){max-width:760px;width:100%;margin-inline:auto}
+}
+</style>
 </head><body>
 <div id="fbBar" hidden style="position:sticky;top:0;z-index:9999;background:#FFF3B0;color:#14284A;padding:8px 12px;font-size:14px;display:none;align-items:center;gap:10px;justify-content:space-between"><span id="fbTxt">For easy login, open in Chrome or Safari.</span><button type="button" id="fbOpen" style="border:0;border-radius:8px;background:#1E4A8A;color:#fff;padding:7px 12px;font-weight:700;white-space:nowrap">Open</button></div>
 <script>(function(){try{var ua=navigator.userAgent||'';if(!/FBAN|FBAV|FB_IAB|Instagram/i.test(ua))return;var T={en:['For easy login, open in Chrome or Safari.','Open'],ms:['Untuk log masuk mudah, buka dalam Chrome atau Safari.','Buka'],ta:['எளிதாக உள்நுழைய Chrome அல்லது Safari-யில் திறக்கவும்.','திற'],zh:['为方便登录，请在 Chrome 或 Safari 打开。','打开']};var l=(localStorage.getItem('nbn-lang')||(navigator.language||'en').slice(0,2));var t=T[l]||T.en;var b=document.getElementById('fbBar');document.getElementById('fbTxt').textContent=t[0];var o=document.getElementById('fbOpen');o.textContent=t[1];o.onclick=function(){var u=location.href.split('#')[0];if(/Android/i.test(ua)){location.href='intent://'+u.replace(/^https?:\/\//,'')+'#Intent;scheme=https;package=com.android.chrome;end';}else{try{navigator.clipboard.writeText(u);o.textContent='Link copied';}catch(e){prompt('Copy this link',u);}}};b.hidden=false;b.style.display='flex';}catch(e){}})();</script>
@@ -424,6 +446,7 @@ body.on-home .hero .brand .mark{box-shadow:0 4px 14px rgba(0,0,0,.35)!important}
 
   <!-- HOME -->
   <section id="home" class="view" hidden style="flex-direction:column;gap:18px">
+    <div class="hc hc1">
     <form id="searchForm" class="search float" role="search">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color:var(--muted)"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
       
@@ -455,6 +478,8 @@ body.on-home .hero .brand .mark{box-shadow:0 4px 14px rgba(0,0,0,.35)!important}
       <div class="sf-acts"><button type="button" class="btn-wide" id="sfPhoto" data-t="sfPhoto">📷 Search by photo</button>
       <button type="button" class="btn-wide sf-type" id="sfType" data-t="sfType">Type the name</button></div>
     </div>
+    </div><!-- /hc1 -->
+    <div class="hc hc2">
     <div class="cats" id="cats"></div>
 
     <div class="v3hide" style="display:flex;flex-direction:column;gap:10px">
@@ -480,6 +505,7 @@ body.on-home .hero .brand .mark{box-shadow:0 4px 14px rgba(0,0,0,.35)!important}
       <button type="button" id="installBtn" data-t="install">Install</button>
       <button type="button" class="x" id="installX" aria-label="Hide">×</button>
     </div>
+    </div><!-- /hc2 -->
   </section>
 
   <!-- SAVINGS -->
