@@ -614,8 +614,9 @@ if(typeof applyLang === 'function') applyLang();
   (function(){
     const lt=document.getElementById('langTop'); if(!lt||document.getElementById('guideTopBtn')) return;
     const gb=document.createElement('button'); gb.type='button'; gb.id='guideTopBtn'; gb.setAttribute('aria-label','Guide'); gb.innerHTML='📖';
-    gb.style.cssText='border:0;background:rgba(255,255,255,.9);color:#0A2A66;border-radius:999px;width:34px;height:31px;font-size:15px;box-shadow:0 2px 8px rgba(10,42,102,.18);cursor:pointer;position:absolute;right:calc(100% + 8px);top:0;line-height:1';
-    lt.style.position='absolute'; lt.appendChild(gb);
+    gb.style.cssText='border:0;background:rgba(255,255,255,.9);color:#0A2A66;border-radius:999px;width:34px;height:31px;font-size:15px;box-shadow:0 2px 8px rgba(10,42,102,.18);cursor:pointer;position:absolute;top:10px;left:-6px;z-index:30;line-height:1';
+    gb.className='guidetop'; const stl=document.createElement('style'); stl.textContent='@media (min-width:900px){.guidetop{left:10px!important}}'; document.head.appendChild(stl);
+    lt.after(gb);
     gb.onclick=()=>{
       const ms=(typeof LANG!=='undefined'&&LANG==='ms');
       const data=ms?GUIDE_MS:GUIDE_EN;
