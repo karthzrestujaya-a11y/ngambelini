@@ -606,6 +606,7 @@ body.on-home .hero .brand .mark{box-shadow:0 4px 14px rgba(0,0,0,.35)!important}
     <div id="elsewhere" style="display:flex;flex-direction:column;gap:8px">
       <p class="fine" id="elsewhereHead"></p>
       <a class="btn Shopee primary" id="goShopee" target="_blank" rel="noopener" href="#">Search on Shopee</a>
+      <a class="btn Shopee" id="goShopeeCheap" target="_blank" rel="noopener" href="#" style="background:#FFF3B0;color:#0A2A66;border:1.5px solid #C9A227">💰 Cheapest first on Shopee</a>
       <a class="btn Lazada primary" id="goLazada" target="_blank" rel="noopener" href="#">Search on Lazada</a>
       <div class="soon" id="soonResults"><span data-t="comingSoonShops">🔜 Price comparison across platforms: coming soon (beta)</span></div>
     </div>
@@ -936,6 +937,8 @@ function search(term, fromLinkDone){
   $('goShopee').href = shopeeAff('https://shopee.com.my/search?keyword=' + term);
   $('goLazada').href = 'https://www.lazada.com.my/catalog/?q=' + enc;
   $('goShopee').textContent = t('searchOn',{q:term,p:'Shopee'});
+  $('goShopeeCheap').href = shopeeAff('https://shopee.com.my/search?keyword=' + term + '&sortBy=price&order=asc&ratingFilter=4');
+  $('goShopeeCheap').textContent = (LANG==='ms' ? '💰 Paling murah dahulu di Shopee' : '💰 Cheapest first on Shopee');
   LAST_TERM = term;
   $('goLazada').textContent = t('searchOn',{q:term,p:'Lazada'});
   $('goLazada').hidden = !LAZADA_LINKS; if($('soonResults')) $('soonResults').hidden = LAZADA_LINKS;
@@ -947,6 +950,7 @@ function search(term, fromLinkDone){
 let LAST_TERM = '';
 function logSearchTap(platform){ if(sb && USER && LAST_TERM){ sb.from('clicks').insert({ user_id: USER.id, platform, search_term: LAST_TERM.slice(0,120), saving_rm: 0 }).then(()=>{}); } }
 $('goShopee').addEventListener('click', () => { logSearchTap('shopee'); track('buy', 'Shopee search'); });
+$('goShopeeCheap').addEventListener('click', () => { logSearchTap('shopee'); track('buy', 'Shopee cheapest search'); });
 $('goLazada').addEventListener('click', () => logSearchTap('lazada'));
 $('searchForm').addEventListener('submit', e => { e.preventDefault(); search($('q').value); });
 $('q').addEventListener('paste', e => { const t = (e.clipboardData || window.clipboardData)?.getData('text') || ''; if(/https?:\/\//i.test(t)){ e.preventDefault(); $('q').value = t.trim(); searchLink(t); } });
