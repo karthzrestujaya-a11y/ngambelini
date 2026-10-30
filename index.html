@@ -1068,7 +1068,7 @@ function renderTabung(rows){
   rows = rows || [];
   const share = c => (c.commission_rm != null ? Number(c.commission_rm) : Number(c.price_rm||0)*0.04) * CUSTOMER_SHARE;
   const real = rows.filter(c => (Number(c.price_rm)>0 || Number(c.commission_rm)>0) && ['waiting','confirmed','received','paid'].includes(c.status));
-  const wait = real.filter(c=>c.status==='waiting'||c.status==='confirmed').reduce((a,c)=>a+share(c),0);
+  const wait = real.filter(c=>c.status==='confirmed').reduce((a,c)=>a+share(c),0); /* 30 Oct: a tap alone ('waiting') is NOT cash back; only counts once the order is confirmed */
   const conf = real.filter(c=>c.status==='received').reduce((a,c)=>a+share(c),0);
   const paid = real.filter(c=>c.status==='paid').reduce((a,c)=>a+share(c),0);
   const RF = window.__ref || {}, rfReady = Number(RF.ready_rm||0), rfPaid = Number(RF.paid_rm||0);
@@ -1086,9 +1086,9 @@ function renderTabung(rows){
     const d=document.createElement('div'); d.className='tb-o';
     const nm=(c.search_term||'Shopee').replace(/^cat:[^:]*:\s*/,'');
     const cls = c.status==='paid'?'p':(c.status==='received'?'c':'w');
-    const lab = c.status==='paid'?t('tbPaid'):(c.status==='received'?t('bag2'):t('bag1'));
+    const lab = c.status==='paid'?t('tbPaid'):(c.status==='received'?t('bag2'):(c.status==='waiting'?(LANG==='ms'?'Ditekan, belum beli':'Tapped, not bought yet'):t('bag1')));
     const dt = new Date(c.clicked_at).toLocaleDateString(LANG==='ms'?'ms-MY':'en-GB',{day:'numeric',month:'short'});
-    d.innerHTML = `<div><div class="n"></div><small>Shopee · ${dt}</small><span class="tb-s ${cls}">${lab}</span></div><div class="r">${(c.status==='waiting'||c.status==='confirmed')?'~':''}${rm(share(c))}</div>`;
+    d.innerHTML = `<div><div class="n"></div><small>Shopee · ${dt}</small><span class="tb-s ${cls}">${lab}</span></div><div class="r">${c.status==='waiting'?'<span style="color:#9aa39d;font-weight:600">–</span>':((c.status==='confirmed'?'~':'')+rm(share(c)))}</div>`;
     d.querySelector('.n').textContent = nm; L.appendChild(d);
   });
 }
