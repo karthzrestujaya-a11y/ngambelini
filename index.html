@@ -400,7 +400,9 @@ body.on-home .hero .brand .mark{box-shadow:0 4px 14px rgba(0,0,0,.35)!important}
 </style>
 <style id="langtopcss">
 #quickItems{display:none!important}
-.langtop{position:absolute!important;top:10px;right:10px;z-index:30}
+.app{position:relative}
+.langtop{position:absolute;top:10px;right:-6px;z-index:30}
+@media (min-width:900px){.langtop{right:10px}}
 .langtop button{border:0;background:rgba(255,255,255,.9);color:#0A2A66;border-radius:999px;padding:7px 11px;font-size:12.5px;font-weight:700;font-family:var(--body);box-shadow:0 2px 8px rgba(10,42,102,.18);cursor:pointer;display:flex;align-items:center;gap:4px;line-height:1}
 .langmenu{position:absolute;right:0;top:36px;background:#fff;border:1px solid #e8dfbf;border-radius:14px;box-shadow:0 10px 28px rgba(20,41,90,.25);padding:6px;min-width:150px}
 .langmenu button{width:100%;justify-content:flex-start;background:transparent;box-shadow:none;border-radius:10px;padding:10px 12px;font-size:14px;font-weight:600;color:#14284A}
@@ -412,9 +414,9 @@ body.on-home .hero .brand .mark{box-shadow:0 4px 14px rgba(0,0,0,.35)!important}
 <script>(function(){try{var ua=navigator.userAgent||'';if(!/FBAN|FBAV|FB_IAB|Instagram/i.test(ua))return;var T={en:['For easy login, open in Chrome or Safari.','Open'],ms:['Untuk log masuk mudah, buka dalam Chrome atau Safari.','Buka'],ta:['எளிதாக உள்நுழைய Chrome அல்லது Safari-யில் திறக்கவும்.','திற'],zh:['为方便登录，请在 Chrome 或 Safari 打开。','打开']};var l=(localStorage.getItem('nbn-lang')||(navigator.language||'en').slice(0,2));var t=T[l]||T.en;var b=document.getElementById('fbBar');document.getElementById('fbTxt').textContent=t[0];var o=document.getElementById('fbOpen');o.textContent=t[1];o.onclick=function(){var u=location.href.split('#')[0];if(/Android/i.test(ua)){location.href='intent://'+u.replace(/^https?:\/\//,'')+'#Intent;scheme=https;package=com.android.chrome;end';}else{try{navigator.clipboard.writeText(u);o.textContent='Link copied';}catch(e){prompt('Copy this link',u);}}};b.hidden=false;b.style.display='flex';}catch(e){}})();</script>
 
 <div class="app">
-  <header class="hero">
   <div class="langtop" id="langTop"><button type="button" id="langTopBtn" aria-haspopup="true" aria-expanded="false" aria-label="Language">🌐 <b id="langTopCode">EN</b> ▾</button><div class="langmenu" id="langTopMenu" hidden role="menu"></div></div>
-  <div class="top">
+  <header class="hero">
+    <div class="top">
     <div class="brand">
       <img class="mark" alt="" width="40" height="40" src="/icons/icon-192.png">
       <span class="word"><span class="big">NBN</span><span class="sm">Ngam Beli Ni</span></span>
