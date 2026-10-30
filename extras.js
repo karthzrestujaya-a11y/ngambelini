@@ -565,7 +565,6 @@ if(typeof applyLang === 'function') applyLang();
   nav.innerHTML='<style>#catNav{position:relative;background:#fff;border:1.5px solid #EDE3C3;border-radius:16px;box-shadow:0 2px 10px rgba(10,42,102,.08)}'
    +'#catNav .cn-bar{display:flex;align-items:stretch;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}'
    +'#catNav .cn-bar::-webkit-scrollbar{display:none}'
-   +'@media(min-width:900px){#catNav .cn-bar{overflow:visible;justify-content:space-between}#catNav .cn-bar button{padding:13px 6px;font-size:12.5px}}'
    +'#catNav .cn-bar button{flex:none;border:0;background:transparent;font:inherit;font-size:13.5px;font-weight:700;color:#14284A;padding:13px 14px;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap}'
    +'#catNav .cn-bar button.on{border-bottom-color:#F5B800;background:#FFF8D6}'
    +'#catNav .cn-bar button.all{font-weight:900;border-right:1px solid #EDE3C3}'
@@ -574,6 +573,7 @@ if(typeof applyLang === 'function') applyLang();
    +'#catNav .cn-panel button.it{border:0;background:transparent;text-align:left;font:inherit;font-size:14.5px;font-weight:600;color:#14284A;padding:10px 6px;border-radius:10px;cursor:pointer}'
    +'#catNav .cn-panel button.it:hover{background:#FFF3B0}'
    +'#catNav .cn-panel h3{grid-column:1/-1;margin:2px 0 4px;font-size:14px;color:#0A2A66}'
+   +'@media(min-width:900px){#catNav .cn-bar{overflow:visible;justify-content:space-between}#catNav .cn-bar button{flex:1 1 auto;min-width:0;padding:13px 4px;font-size:12.5px;text-align:center}}'
    +'#catNav .cn-stores{grid-column:1/-1}</style>'
    +'<div class="cn-bar" role="tablist"></div><div class="cn-panel" hidden></div>';
   const bar=nav.querySelector('.cn-bar'), panel=nav.querySelector('.cn-panel');
