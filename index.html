@@ -1115,9 +1115,12 @@ function renderEarnDash(rows){
   const seg=(v,c,p)=>tot>0&&v>0?`<i style="width:${(v/tot*100).toFixed(1)}%;background:${c}${p?`;background-image:${p}`:''}"></i>`:'';
   const row=(c,t,s,v)=>`<div class="r"><span class="d" style="background:${c}"></span><span class="t">${t}<small>${s}</small></span><b>${v}</b></div>`;
   const payable=vRec>=5?vRec:0;
-  D.innerHTML=`<h3>${L.h}</h3><p class="sub">${L.s}</p><div class="bar">${seg(vOrd,'#F2B84B','repeating-linear-gradient(45deg,rgba(0,0,0,.25) 0 2px,transparent 2px 6px)')}${seg(vRec,'#2F7DD1')}${seg(vPd,'#1F8A4C')}</div>`+
-   row('#CBD3DF',L.tap,L.tapS(taps),taps)+row('#F2B84B',L.ord,L.ordS(ord.length),'~'+rm(vOrd))+row('#2F7DD1',L.rec,L.recS,rm(vRec))+row('#1F8A4C',L.pd,L.pdS,rm(vPd))+
-   `<div class="r tot"><span class="t">${L.tot}</span><b>${rm(tot)}</b></div><div class="pay${payable?'':' no'}">${L.pay}: ${rm(payable)}${payable?'':'<br><span style="font-weight:500">'+L.need+'</span>'}</div>`;
+  const nOrd=ord.length+rec.length+pd.length, avg=nOrd?tot/nOrd:0;
+  const big = ms ? {o:'Pesanan anda',e:'Anda dapat',a:'Purata ~'+rm(avg)+' setiap pesanan',n:'Anda tekan Beli '+taps+' kali, tapi hanya '+nOrd+' dibeli. '+noOrder+' tekan tiada pesanan = tiada duit balik. Beli melalui NBN setiap kali untuk dapat lebih.'}
+    : {o:'Your orders',e:'You earned',a:'Average ~'+rm(avg)+' per order',n:'You tapped Buy '+taps+' times but only '+nOrd+' became orders. '+noOrder+' taps with no purchase earn nothing. Buy through NBN every time to earn more.'};
+  D.innerHTML=`<h3>${L.h}</h3><div style="display:flex;gap:10px;margin:8px 0"><div style="flex:1;text-align:center;background:#F1F5FB;border-radius:12px;padding:10px"><div style="font-size:12px;color:#5b6b82">${big.o}</div><div style="font-size:30px;font-weight:800">${nOrd}</div></div><div style="flex:1;text-align:center;background:#EAF7EE;border-radius:12px;padding:10px"><div style="font-size:12px;color:#5b6b82">${big.e}</div><div style="font-size:30px;font-weight:800">${rm(tot)}</div></div></div><p class="sub" style="text-align:center">${big.a}</p><div class="bar">${seg(vOrd,'#F2B84B','repeating-linear-gradient(45deg,rgba(0,0,0,.25) 0 2px,transparent 2px 6px)')}${seg(vRec,'#2F7DD1')}${seg(vPd,'#1F8A4C')}</div>`+
+   row('#F2B84B',L.ord,L.ordS(ord.length),'~'+rm(vOrd))+row('#2F7DD1',L.rec,L.recS,rm(vRec))+row('#1F8A4C',L.pd,L.pdS,rm(vPd))+
+   `<div class="pay${payable?'':' no'}">${L.pay}: ${rm(payable)}${payable?'':'<br><span style="font-weight:500">'+L.need+'</span>'}</div><p class="sub" style="margin:10px 0 0">${big.n}</p>`;
   D.hidden=false;
 }
 async function loadMySavings(){
