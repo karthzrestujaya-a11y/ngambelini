@@ -288,7 +288,7 @@ window.openStores = openStores;
 const sb2 = mk('button', 'bandbtn', `<span data-t="storesBtn">${tt('storesBtn')}</span><span>›</span>`); sb2.type = 'button';
 sb2.style.marginTop = '10px'; sb2.onclick = openStores; hb.after(sb2);
 // v3 launch layout: Shopee only, so hide the compare and other-shops buttons (code kept for later)
-bb.style.display = 'none'; sb2.style.display = 'none';
+bb.style.display = 'none'; sb2.style.display = 'none'; hb.style.display = 'none'; /* 30 Oct: video button removed; text Guide tab replaces it */
 
 // ---- 22 Oct: Shop by category (items picked from Shopee affiliate offers, data in /cats.json) ----
 add('en', { catT:'🛒 Shop by category', catSub:'Popular items with cash back. Tap to buy on Shopee.', catNote:'Prices from Shopee, checked {d}. Price may change: Shopee shows the final price. Cash back is an estimate, paid after Shopee confirms the order.',
@@ -588,11 +588,28 @@ if(typeof applyLang === 'function') applyLang();
     if(which==='all'){
       const h=document.createElement('h3'); h.textContent=MS?'Semua kategori':'All categories'; panel.appendChild(h);
       TABS.forEach(t=>{ const i=btn(t[1]+' '+lab(t),'it',()=>{ close(); window.openCat&&window.openCat(t[0]); }); panel.appendChild(i); });
+    } else if(which==='guide'){
+      GUIDE.forEach(g=>{ const d=document.createElement('details'); d.style.cssText='grid-column:1/-1;border:1px solid #EDE3C3;border-radius:12px;padding:10px 12px;background:#FFFDF3';
+        d.innerHTML='<summary style="font-weight:800;color:#0A2A66;cursor:pointer;font-size:14.5px"></summary><ul style="margin:8px 0 0;padding-left:18px;color:#14284A;font-size:14px;line-height:1.5;list-style:none;padding-left:0"></ul>';
+        d.querySelector('summary').textContent=g[0]; const u=d.querySelector('ul'); g[1].forEach(x=>{ const li=document.createElement('li'); li.textContent=x; u.appendChild(li); }); panel.appendChild(d); });
+      panel.firstChild&&(panel.firstChild.open=true);
     } else if(which==='stores'){
       const h=document.createElement('h3'); h.textContent=MS?'Kedai lain: pilih kedai, lepas tu taip barang di kotak carian':'Other shops: pick a shop, then type the item in the search box'; panel.appendChild(h);
       const w=document.createElement('div'); w.className='cn-stores'; w.appendChild(row); panel.appendChild(w);
     }
   }
+  const GUIDE=MS?[
+   ['Cara beli (dapat duit balik)',['1. Buka Shopee, pilih barang, tekan Kongsi → Salin pautan.','2. Tampal pautan di kotak carian NBN.','3. Tekan Beli di Shopee dan beli macam biasa.','4. Lepas Shopee sahkan pesanan, duit balik masuk dalam tabung anda.']],
+   ['Cara guna NBN',['Cari barang atau tampal pautan Shopee di atas.','Pilih kategori di bar atas untuk lihat barang popular.','Tekan Tabung (Duit balik) untuk lihat duit balik anda.','Log masuk hanya bila nak duit balik.']],
+   ['Bila duit balik masuk?',['Tekan Beli sahaja belum dikira.','Bila Shopee sahkan pesanan: "Dalam perjalanan".','Lepas itu "Dikreditkan", kemudian dibayar ke nombor DuitNow anda (ada di tab Saya).']],
+   ['Kedai lain?',['Shopee sudah aktif. Kedai lain ada di tab Kedai.']]
+  ]:[
+   ['How to purchase (and get cash back)',['1. Open Shopee, pick an item, tap Share → Copy link.','2. Paste the link in the NBN search box.','3. Tap Buy on Shopee and shop as usual.','4. After Shopee confirms your order, the cash back goes into your jar.']],
+   ['How to use NBN',['Search an item or paste a Shopee link at the top.','Pick a category in the bar to see popular items.','Open Cash back to see your jar.','Log in only when you want cash back.']],
+   ['When do I get cash back?',['Tapping Buy alone does not count.','When Shopee confirms your order: "On the way".','Then "Credited", then paid to your DuitNow number (set it in Me).']],
+   ['Other shops?',['Shopee is live now. Other shops are under the Stores tab.']]
+  ];
+  const gB=btn('📖 '+(MS?'Panduan':'Guide'),'all',()=>show('guide',gB)); bar.appendChild(gB);
   const allB=btn('☰ '+(MS?'Kategori':'Categories'),'all',()=>show('all',allB)); bar.appendChild(allB);
   TABS.forEach(t=>bar.appendChild(btn(t[1]+' '+lab(t),'',()=>{ close(); window.openCat&&window.openCat(t[0]); })));
   const stB=btn('🏬 '+(MS?'Kedai':'Stores'),'',()=>show('stores',stB)); bar.appendChild(stB);
