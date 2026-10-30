@@ -588,33 +588,48 @@ if(typeof applyLang === 'function') applyLang();
     if(which==='all'){
       const h=document.createElement('h3'); h.textContent=MS?'Semua kategori':'All categories'; panel.appendChild(h);
       TABS.forEach(t=>{ const i=btn(t[1]+' '+lab(t),'it',()=>{ close(); window.openCat&&window.openCat(t[0]); }); panel.appendChild(i); });
-    } else if(which==='guide'){
-      GUIDE.forEach(g=>{ const d=document.createElement('details'); d.style.cssText='grid-column:1/-1;border:1px solid #EDE3C3;border-radius:12px;padding:10px 12px;background:#FFFDF3';
-        d.innerHTML='<summary style="font-weight:800;color:#0A2A66;cursor:pointer;font-size:14.5px"></summary><ul style="margin:8px 0 0;padding-left:18px;color:#14284A;font-size:14px;line-height:1.5;list-style:none;padding-left:0"></ul>';
-        d.querySelector('summary').textContent=g[0]; const u=d.querySelector('ul'); g[1].forEach(x=>{ const li=document.createElement('li'); li.textContent=x; u.appendChild(li); }); panel.appendChild(d); });
-      panel.firstChild&&(panel.firstChild.open=true);
     } else if(which==='stores'){
       const h=document.createElement('h3'); h.textContent=MS?'Kedai lain: pilih kedai, lepas tu taip barang di kotak carian':'Other shops: pick a shop, then type the item in the search box'; panel.appendChild(h);
       const w=document.createElement('div'); w.className='cn-stores'; w.appendChild(row); panel.appendChild(w);
     }
   }
-  const GUIDE=MS?[
+  const GUIDE_MS=[
    ['Cara beli (dapat duit balik)',['1. Buka Shopee, pilih barang, tekan Kongsi → Salin pautan.','2. Tampal pautan di kotak carian NBN.','3. Tekan Beli di Shopee dan beli macam biasa.','4. Lepas Shopee sahkan pesanan, duit balik masuk dalam tabung anda.']],
    ['Cara guna NBN',['Cari barang atau tampal pautan Shopee di atas.','Pilih kategori di bar atas untuk lihat barang popular.','Tekan Tabung (Duit balik) untuk lihat duit balik anda.','Log masuk hanya bila nak duit balik.']],
-   ['Bila duit balik masuk?',['Tekan Beli sahaja belum dikira.','Bila Shopee sahkan pesanan: "Dalam perjalanan".','Lepas itu "Dikreditkan", kemudian dibayar ke nombor DuitNow anda (ada di tab Saya).']],
+   ['Bila duit balik masuk?',['Tekan Beli sahaja belum dikira.','Bila Shopee sahkan pesanan: "Dalam perjalanan".','Lepas itu "Dikreditkan". Kami bayar melalui DuitNow setiap bulan bila duit balik dikreditkan sampai RM5 (letak nombor di tab Saya). Jumlah lebih kecil dibawa ke bulan depan.']],
    ['Kedai lain?',['Shopee sudah aktif. Kedai lain ada di tab Kedai.']]
-  ]:[
+  ];
+  const GUIDE_EN=[
    ['How to purchase (and get cash back)',['1. Open Shopee, pick an item, tap Share → Copy link.','2. Paste the link in the NBN search box.','3. Tap Buy on Shopee and shop as usual.','4. After Shopee confirms your order, the cash back goes into your jar.']],
    ['How to use NBN',['Search an item or paste a Shopee link at the top.','Pick a category in the bar to see popular items.','Open Cash back to see your jar.','Log in only when you want cash back.']],
-   ['When do I get cash back?',['Tapping Buy alone does not count.','When Shopee confirms your order: "On the way".','Then "Credited", then paid to your DuitNow number (set it in Me).']],
+   ['When do I get cash back?',['Tapping Buy alone does not count.','When Shopee confirms your order: "On the way".','Then "Credited". We pay by DuitNow every month once your credited cash back reaches RM5 (set your number in Me). Smaller amounts carry forward.']],
    ['Other shops?',['Shopee is live now. Other shops are under the Stores tab.']]
-  ];
-  const gB=btn('📖 '+(MS?'Panduan':'Guide'),'all',()=>show('guide',gB)); bar.appendChild(gB);
+];
   const allB=btn('☰ '+(MS?'Kategori':'Categories'),'all',()=>show('all',allB)); bar.appendChild(allB);
   TABS.forEach(t=>bar.appendChild(btn(t[1]+' '+lab(t),'',()=>{ close(); window.openCat&&window.openCat(t[0]); })));
   const stB=btn('🏬 '+(MS?'Kedai':'Stores'),'',()=>show('stores',stB)); bar.appendChild(stB);
   document.addEventListener('click',e=>{ if(open&&!nav.contains(e.target)) close(); });
   form.after(nav);
+  /* 30 Oct: Guide = one icon next to the language button, opens a text FAQ on any page */
+  (function(){
+    const lt=document.getElementById('langTop'); if(!lt||document.getElementById('guideTopBtn')) return;
+    const gb=document.createElement('button'); gb.type='button'; gb.id='guideTopBtn'; gb.setAttribute('aria-label','Guide'); gb.innerHTML='📖';
+    gb.style.cssText='border:0;background:rgba(255,255,255,.9);color:#0A2A66;border-radius:999px;width:34px;height:31px;font-size:15px;box-shadow:0 2px 8px rgba(10,42,102,.18);cursor:pointer;position:absolute;right:calc(100% + 8px);top:0;line-height:1';
+    lt.style.position='absolute'; lt.appendChild(gb);
+    gb.onclick=()=>{
+      const ms=(typeof LANG!=='undefined'&&LANG==='ms');
+      const data=ms?GUIDE_MS:GUIDE_EN;
+      const o=document.createElement('div'); o.style.cssText='position:fixed;inset:0;z-index:9996;background:rgba(0,0,0,.45);display:flex;align-items:flex-start;justify-content:center;padding:60px 14px 14px;overflow:auto';
+      const box=document.createElement('div'); box.style.cssText='background:#FFFBEF;border-radius:18px;padding:16px;max-width:520px;width:100%;box-shadow:0 10px 30px rgba(0,0,0,.3);display:flex;flex-direction:column;gap:8px';
+      const h=document.createElement('div'); h.style.cssText='display:flex;justify-content:space-between;align-items:center'; h.innerHTML='<b style="font-size:18px;color:#0A2A66"></b><button type="button" aria-label="Close" style="border:0;background:#F3EED9;border-radius:50%;width:34px;height:34px;font-size:18px;cursor:pointer">×</button>';
+      h.querySelector('b').textContent='📖 '+(ms?'Panduan':'Guide'); box.appendChild(h);
+      data.forEach((g,i)=>{ const d=document.createElement('details'); d.style.cssText='border:1px solid #EDE3C3;border-radius:12px;padding:10px 12px;background:#FFFDF3'; if(i===0) d.open=true;
+        d.innerHTML='<summary style="font-weight:800;color:#0A2A66;cursor:pointer;font-size:14.5px"></summary><ul style="margin:8px 0 0;padding:0;list-style:none;color:#14284A;font-size:14px;line-height:1.5"></ul>';
+        d.querySelector('summary').textContent=g[0]; const u=d.querySelector('ul'); g[1].forEach(x=>{ const li=document.createElement('li'); li.textContent=x; u.appendChild(li); }); box.appendChild(d); });
+      o.appendChild(box); document.body.appendChild(o);
+      const close=()=>o.remove(); h.querySelector('button').onclick=close; o.addEventListener('click',e=>{ if(e.target===o) close(); });
+    };
+  })();
   function go(term){
     const s=SHOPS.find(x=>x[0]===SHOP); if(!s||!s[2]) return false;
     term=(term||'').trim(); if(!term){ q.focus(); return true; }

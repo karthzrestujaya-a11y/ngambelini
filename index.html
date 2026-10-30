@@ -581,6 +581,7 @@ body.on-home .hero .brand .mark{box-shadow:0 4px 14px rgba(0,0,0,.35)!important}
   <!-- ME -->
   <section id="me" class="view" hidden style="flex-direction:column;gap:14px">
     <h1 style="font-size:24px" data-t="me">Me</h1>
+    <div id="meWelcome" hidden style="background:#FFF3B0;border-radius:14px;padding:12px 14px;font-weight:800;font-size:17px;color:#0A2A66"></div>
     <div class="list">
       <div class="item" style="cursor:default"><div class="t"><span class="sub" data-t="loggedInAs">Logged in as</span><span class="name" id="meEmail" data-t="notLoggedIn">Not logged in</span></div></div>
       <div class="item" style="cursor:default"><div class="t"><span class="sub" data-t="cbPaidTo">Cash back paid to</span><span class="name" data-t="duitnowNo">DuitNow phone number (for all payouts)</span><div class="sc-dn" id="snapDn" style="display:flex;gap:6px;margin-top:6px"><input id="snapDnIn" inputmode="tel" placeholder="012xxxxxxx"><button type="button" class="sbtn" id="snapDnSave">Save</button></div></div></div>
@@ -1271,7 +1272,7 @@ $('miniSave').onclick = () => { setTab('tabSave'); show('wallet'); loadSnap(); }
 if($('savMonth')) $('savMonth').textContent = '· ' + new Date().toLocaleString(LANG==='zh'?'zh-CN':LANG==='ta'?'ta-MY':LANG==='ms'?'ms-MY':'en-MY',{month:'long'});
 applyLang();
 if($('cbMore')) $('cbMore').onclick = () => { $('cbMoreText').hidden = !$('cbMoreText').hidden; };
-$('tabMe').onclick = () => { setTab('tabMe'); $('meEmail').textContent = (USER && USER.email) || t('notLoggedIn'); if(USER) $('meEmail').removeAttribute('data-t'); $('loginBtn').hidden = !!USER; $('logoutBtn').hidden = !USER; show('me'); loadSnap(); };
+$('tabMe').onclick = () => { setTab('tabMe'); try{ const W=$('meWelcome'); if(USER){ const md=USER.user_metadata||{}; let nm=(md.full_name||md.name||'').trim().split(/\s+/)[0]||String(USER.email||'').split('@')[0].split(/[._\d]/)[0]; nm=nm?nm.charAt(0).toUpperCase()+nm.slice(1):''; const G={en:'Welcome, ',ms:'Selamat datang, ',ta:'வணக்கம், ',zh:'欢迎，'}; W.textContent='👋 '+(G[LANG]||G.en)+nm; W.hidden=!nm; } else W.hidden=true; }catch(_){} $('meEmail').textContent = (USER && USER.email) || t('notLoggedIn'); if(USER) $('meEmail').removeAttribute('data-t'); $('loginBtn').hidden = !!USER; $('logoutBtn').hidden = !USER; show('me'); loadSnap(); };
 // Send a logged-out person straight to the login screen (email -> 8-digit code).
 function goLogin(why){ setTab('tabHome'); if(!sb){ toast(t('noReach')); return; } $('emailField').hidden = false; $('joinBtn').hidden = false; $('otpField').hidden = true; $('otpBtn').hidden = true; $('otpAgain').hidden = true; $('joinMsg').textContent = (why ? why + ' ' : '') + 'We email you an 8-digit code. Type it here to log in. No password needed.'; show('join'); }
 $('loginBtn').onclick = () => goLogin();
