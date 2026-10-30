@@ -556,7 +556,48 @@ if(typeof applyLang === 'function') applyLang();
       b.onclick=()=>{ SHOP=s[0]; q.placeholder=SHOP==='Shopee'?origPh:'Search in '+SHOP; paint(); q.focus(); };
       row.appendChild(b); });
   }
-  paint(); form.after(row);
+  paint();
+  /* 30 Oct: ShopBack-style category bar. Shop chips live inside the Stores panel, not on the first screen */
+  row.style.cssText='display:flex;flex-wrap:wrap;gap:8px;padding:2px';
+  const MS=(typeof LANG!=='undefined'&&LANG==='ms');
+  const TABS=[['xtra','🔥','Top cash back','Duit balik tinggi'],['laris','⭐','Best sellers','Paling laris'],['dapur','🍚','Food & kitchen','Dapur'],['bayi','👶','Baby & kids','Bayi'],['rumah','🏠','Home','Rumah'],['cantik','💄','Health & beauty','Kecantikan'],['elektrik','⚡','Electronics','Elektrik'],['dobi','🧺','Laundry','Dobi']];
+  const nav=document.createElement('nav'); nav.id='catNav'; nav.setAttribute('aria-label','Categories');
+  nav.innerHTML='<style>#catNav{position:relative;background:#fff;border:1.5px solid #EDE3C3;border-radius:16px;box-shadow:0 2px 10px rgba(10,42,102,.08)}'
+   +'#catNav .cn-bar{display:flex;align-items:stretch;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}'
+   +'#catNav .cn-bar::-webkit-scrollbar{display:none}'
+   +'@media(min-width:900px){#catNav .cn-bar{overflow:visible;justify-content:space-between}#catNav .cn-bar button{padding:13px 10px;font-size:13px}}'
+   +'#catNav .cn-bar button{flex:none;border:0;background:transparent;font:inherit;font-size:13.5px;font-weight:700;color:#14284A;padding:13px 14px;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap}'
+   +'#catNav .cn-bar button.on{border-bottom-color:#F5B800;background:#FFF8D6}'
+   +'#catNav .cn-bar button.all{font-weight:900;border-right:1px solid #EDE3C3}'
+   +'#catNav .cn-panel{border-top:1px solid #EDE3C3;padding:12px;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:4px 12px;background:#fff;border-radius:0 0 16px 16px}'
+   +'#catNav .cn-panel[hidden]{display:none}'
+   +'#catNav .cn-panel button.it{border:0;background:transparent;text-align:left;font:inherit;font-size:14.5px;font-weight:600;color:#14284A;padding:10px 6px;border-radius:10px;cursor:pointer}'
+   +'#catNav .cn-panel button.it:hover{background:#FFF3B0}'
+   +'#catNav .cn-panel h3{grid-column:1/-1;margin:2px 0 4px;font-size:14px;color:#0A2A66}'
+   +'#catNav .cn-stores{grid-column:1/-1}</style>'
+   +'<div class="cn-bar" role="tablist"></div><div class="cn-panel" hidden></div>';
+  const bar=nav.querySelector('.cn-bar'), panel=nav.querySelector('.cn-panel');
+  const lab=t=>MS?t[3]:t[2];
+  function btn(txt,cls,fn){ const b=document.createElement('button'); b.type='button'; b.className=cls||''; b.textContent=txt; b.onclick=fn; return b; }
+  let open=null;
+  function close(){ panel.hidden=true; open=null; bar.querySelectorAll('button').forEach(x=>x.classList.remove('on')); }
+  function show(which,b){
+    if(open===which){ close(); return; }
+    open=which; panel.hidden=false; panel.innerHTML='';
+    bar.querySelectorAll('button').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+    if(which==='all'){
+      const h=document.createElement('h3'); h.textContent=MS?'Semua kategori':'All categories'; panel.appendChild(h);
+      TABS.forEach(t=>{ const i=btn(t[1]+' '+lab(t),'it',()=>{ close(); window.openCat&&window.openCat(t[0]); }); panel.appendChild(i); });
+    } else if(which==='stores'){
+      const h=document.createElement('h3'); h.textContent=MS?'Kedai lain: pilih kedai, lepas tu taip barang di kotak carian':'Other shops: pick a shop, then type the item in the search box'; panel.appendChild(h);
+      const w=document.createElement('div'); w.className='cn-stores'; w.appendChild(row); panel.appendChild(w);
+    }
+  }
+  const allB=btn('☰ '+(MS?'Kategori':'Categories'),'all',()=>show('all',allB)); bar.appendChild(allB);
+  TABS.forEach(t=>bar.appendChild(btn(t[1]+' '+lab(t),'',()=>{ close(); window.openCat&&window.openCat(t[0]); })));
+  const stB=btn('🏬 '+(MS?'Kedai':'Stores'),'',()=>show('stores',stB)); bar.appendChild(stB);
+  document.addEventListener('click',e=>{ if(open&&!nav.contains(e.target)) close(); });
+  form.after(nav);
   function go(term){
     const s=SHOPS.find(x=>x[0]===SHOP); if(!s||!s[2]) return false;
     term=(term||'').trim(); if(!term){ q.focus(); return true; }
