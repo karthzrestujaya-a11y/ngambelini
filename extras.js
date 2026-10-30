@@ -647,3 +647,30 @@ if(typeof applyLang === 'function') applyLang();
   form.addEventListener('submit',e=>{ if(SHOP==='Shopee') return; if(/^https?:\/\//i.test(q.value.trim())){ SHOP='Shopee'; q.placeholder=origPh; paint(); return; } e.preventDefault(); e.stopImmediatePropagation(); go(q.value); },true);
   if(typeof window.search==='function'){ const o=window.search; window.search=function(t,f){ if(SHOP!=='Shopee'&&t&&!/^https?:\/\//i.test(t)){ q.value=t; return go(t); } return o.apply(this,arguments); }; }
 })();
+
+
+/* 30 Oct 2026: "Cash back by shop" box under search results. INFORMATION ONLY, no links to other shops (Shopee affiliate terms 6.2(e)).
+   Rates = Involve Asia "up to" commission read on 30 Oct 2026 x 40% customer share, rounded DOWN. Shopee = typical estimate (4% x 40%). Refresh when rates change. */
+(function(){
+  const RATES_DATE='30 Oct 2026';
+  const SHOPS=[['Shein',21],['AliExpress',6.3],['Sephora',5.6],['Xiaomi',4.2],['JD Sports',3.5],['Watsons',1.96]]
+    .map(s=>[s[0], Math.floor(s[1]*0.40*10+1e-9)/10]);
+  function render(){
+    const res=document.getElementById('results'); if(!res) return;
+    let box=document.getElementById('cbByShop');
+    if(!box){ box=document.createElement('div'); box.id='cbByShop'; box.style.cssText='background:#fff;border:1.5px solid #EDE3C3;border-radius:16px;padding:12px 14px;display:flex;flex-direction:column;gap:6px'; const el=document.getElementById('elsewhere'); (el||res).after(box); }
+    const ms=(typeof LANG!=='undefined'&&LANG==='ms');
+    const rows=[['Shopee',1.6,true]].concat(SHOPS.map(s=>[s[0],s[1],false])).sort((a,b)=>b[1]-a[1]);
+    box.innerHTML='<b style="color:#0A2A66;font-size:15px">💸 '+(ms?'Duit balik ikut kedai':'Cash back by shop')+'</b>'
+      +'<p class="fine" style="margin:0">'+(ms?'Peratus duit balik untuk anda. Beli di Shopee sekarang.':'Your cash back rate. Buy on Shopee now.')+'</p>';
+    rows.forEach(r=>{
+      const d=document.createElement('div'); d.style.cssText='display:flex;justify-content:space-between;align-items:center;padding:7px 10px;border-radius:10px;font-size:14px;'+(r[2]?'background:#FFF3B0;font-weight:800;color:#0A2A66':'background:#FAF6E6;color:#14284A');
+      d.innerHTML='<span></span><b></b>'; d.firstChild.textContent=r[0]+(r[2]?(ms?' · boleh beli sekarang':' · buy now'):'');
+      d.lastChild.textContent=(r[2]?'~':(ms?'Sehingga ':'Up to '))+r[1].toFixed(1)+'%'; box.appendChild(d);
+    });
+    const n=document.createElement('p'); n.className='fine'; n.style.margin='2px 0 0';
+    n.textContent=(ms?'Anggaran. Kadar kedai boleh berubah. Disemak ':'Estimates. Shops can change their rates. Checked ')+RATES_DATE+(ms?'. Shopee: lebih tinggi untuk barang pilihan.':'. Shopee: higher on selected items.');
+    box.appendChild(n);
+  }
+  const prev=window.show; window.show=function(view){ const r=prev.apply(this,arguments); if(view==='results') try{ render(); }catch(e){} return r; };
+})();
